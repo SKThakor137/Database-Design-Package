@@ -172,13 +172,18 @@ schemagraph ./backend -f dbml,md --output=./docs
 
 ## 🌐 Interactive HTML Single-Page Viewer Features
 
-When you export with `--format=html` (or `all`), `schemagraph` produces a standalone, self-contained HTML app ([preview here](./assets/database-design.html)):
+When you export with `--format=html` (or `all`), `schemagraph` produces a standalone, self-contained single-page web app.
 
-- 🔍 **Live Model & Column Filter**: Instantly search by table name or property name.
-- 🖱️ **Pan & Zoom Canvas**: Smooth mouse dragging, scroll zooming, and one-click reset.
-- 📈 **Schema Statistics HUD**: Real-time metrics for total tables, columns, and foreign key relations.
-- 💾 **Instant One-Click Exports**: Download raw SVG vector, PNG raster, or JSON AST directly from your browser.
-- 📦 **Zero External Scripts**: Fully embedded CSS and Vanilla JS — works completely offline without CDN connections.
+👉 [**🚀 Click Here to Open the Live Interactive HTML Explorer in your Browser**](https://htmlpreview.github.io/?https://github.com/SKThakor137/Database-Design-Package/blob/main/assets/database-design.html)
+
+> 💡 **Offline & Local Use**: When generated in your project, simply double-click `database-design.html` or open it with your browser (`open database-design.html` or `start database-design.html`). It has **zero CDN dependencies** and works 100% offline.
+
+### What's Inside the Interactive Viewer:
+- 🔍 **Live Search & Filter**: Instantly filter tables or columns by typing in the search bar.
+- 🖱️ **Smooth Pan & Zoom**: Drag to pan around the canvas and use mouse scroll to zoom in/out.
+- 📈 **Schema Statistics HUD**: Real-time counters for total models, columns, and foreign key relations.
+- 💾 **Instant 1-Click Exports**: Download raw SVG vector, PNG raster image, or JSON AST directly from your browser.
+- 🎨 **Dark & Light Modes**: Pre-styled with modern developer aesthetics (Catppuccin Mocha / Tokyo Dark).
 
 ---
 
