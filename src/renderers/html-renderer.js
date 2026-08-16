@@ -1,10 +1,15 @@
 /**
  * Interactive Single-Page HTML Viewer
- * Self-contained HTML application with pan/zoom canvas, search/filter, schema metrics, and instant export tools.
+ * Fully interactive visual ERD explorer with:
+ * - Real-time draggable table cards with dynamic Bézier connector re-routing
+ * - Left-sidebar Connection Inspector (Incoming & Outgoing relations with jump links)
+ * - Sub-graph relationship highlighting & dimming
+ * - Search filter, pan/zoom canvas, and instant PNG/SVG/JSON export tools.
  * Pure Node.js - Zero dependencies.
  */
 
 const SVGRenderer = require('./svg-renderer');
+const LayoutEngine = require('../layout/layout-engine');
 
 class HTMLRenderer {
     static generateHTML(schemaMap, options = {}) {
@@ -13,6 +18,46 @@ class HTMLRenderer {
         const tables = Object.keys(schemaMap);
         const totalCols = tables.reduce((acc, t) => acc + schemaMap[t].columns.length, 0);
         const totalRels = tables.reduce((acc, t) => acc + schemaMap[t].relations.length, 0);
+
+        // Precompute relations map for each table for instant client-side lookup
+        const schemaMetadata = {};
+        tables.forEach(tableName => {
+            const table = schemaMap[tableName];
+            const outgoing = [];
+            const incoming = [];
+
+            table.relations.forEach(r => {
+                outgoing.push({
+                    fromField: r.from,
+                    toTable: r.toTable,
+                    toField: r.toField,
+                    cardinality: r.cardinality || 'N:1'
+                });
+            });
+
+            tables.forEach(otherName => {
+                if (otherName === tableName) return;
+                const otherTable = schemaMap[otherName];
+                otherTable.relations.forEach(r => {
+                    if (r.toTable === tableName) {
+                        incoming.push({
+                            fromTable: otherName,
+                            fromField: r.from,
+                            toField: r.toField,
+                            cardinality: r.cardinality || 'N:1'
+                        });
+                    }
+                });
+            });
+
+            schemaMetadata[tableName] = {
+                name: tableName,
+                sourceType: table.sourceType || 'TABLE',
+                columns: table.columns,
+                outgoing,
+                incoming
+            };
+        });
 
         return `<!DOCTYPE html>
 <html lang="en">
@@ -25,12 +70,16 @@ class HTMLRenderer {
       --bg: #11111b;
       --surface: #181825;
       --card: #1e1e2e;
+      --card-hover: #252538;
       --border: #313244;
+      --border-bright: #45475a;
       --text: #cdd6f4;
       --text-muted: #a6adc8;
       --primary: #89b4fa;
       --accent: #f38ba8;
       --success: #a6e3a1;
+      --purple: #cba6f7;
+      --yellow: #f9e2af;
       --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       --mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
     }
@@ -46,7 +95,7 @@ class HTMLRenderer {
       flex-direction: column;
     }
 
-    /* Top Navigation */
+    /* Top Header */
     header {
       height: 60px;
       background: var(--surface);
@@ -55,7 +104,7 @@ class HTMLRenderer {
       align-items: center;
       justify-content: space-between;
       padding: 0 20px;
-      z-index: 10;
+      z-index: 20;
     }
 
     .brand {
@@ -85,7 +134,7 @@ class HTMLRenderer {
       color: var(--text-muted);
     }
 
-    /* Center Search Bar */
+    /* Search Box */
     .search-box {
       position: relative;
       width: 320px;
@@ -105,7 +154,7 @@ class HTMLRenderer {
 
     .search-box input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.2);
+      box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.25);
     }
 
     .search-icon {
@@ -118,7 +167,7 @@ class HTMLRenderer {
       pointer-events: none;
     }
 
-    /* Actions & Controls */
+    /* Action Buttons */
     .controls {
       display: flex;
       align-items: center;
@@ -156,7 +205,7 @@ class HTMLRenderer {
       color: #11111b;
     }
 
-    /* Main Workspace */
+    /* Main Workspace Layout */
     .workspace {
       display: flex;
       flex: 1;
@@ -164,35 +213,37 @@ class HTMLRenderer {
       overflow: hidden;
     }
 
-    /* Sidebar Drawer */
+    /* Left Sidebar */
     aside {
-      width: 280px;
+      width: 340px;
       background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       overflow-y: auto;
-      z-index: 5;
+      z-index: 10;
+      transition: width 0.2s;
     }
 
     .stats-card {
-      padding: 16px;
+      padding: 14px 16px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.1);
     }
 
     .stat-item {
       background: var(--card);
-      padding: 10px 8px;
+      padding: 8px 6px;
       border-radius: 6px;
       text-align: center;
       border: 1px solid var(--border);
     }
 
     .stat-val {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
       color: var(--primary);
     }
@@ -204,6 +255,33 @@ class HTMLRenderer {
       margin-top: 2px;
     }
 
+    /* Sidebar Tabs Header */
+    .sidebar-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      justify-content: center;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: rgba(137, 180, 250, 0.05);
+    }
+
+    /* Table List View */
     .table-list {
       padding: 12px;
       display: flex;
@@ -215,7 +293,7 @@ class HTMLRenderer {
       padding: 10px 12px;
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -223,22 +301,160 @@ class HTMLRenderer {
       transition: all 0.15s;
     }
 
-    .table-item:hover {
+    .table-item:hover, .table-item.selected {
       border-color: var(--primary);
-      transform: translateX(2px);
+      background: var(--card-hover);
+      transform: translateX(3px);
     }
 
     .table-item-name {
       font-size: 13px;
       font-weight: 600;
+      color: var(--text);
     }
 
     .table-item-count {
       font-size: 11px;
       color: var(--text-muted);
       background: var(--surface);
-      padding: 2px 6px;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    /* Inspector View */
+    #inspector-view {
+      padding: 16px;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .inspector-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .inspector-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .badge-pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
       border-radius: 4px;
+      background: rgba(137, 180, 250, 0.2);
+      color: var(--primary);
+    }
+
+    .inspector-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rel-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+
+    .rel-card:hover {
+      border-color: var(--accent);
+      background: var(--card-hover);
+    }
+
+    .rel-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rel-target-btn {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .rel-target-btn:hover {
+      color: #fff;
+    }
+
+    .rel-card-detail {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .cols-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .col-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      background: var(--card);
+      border-radius: 4px;
+      font-size: 11.5px;
+    }
+
+    .col-row-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    .pk-tag {
+      font-size: 9px;
+      font-weight: bold;
+      background: var(--yellow);
+      color: #11111b;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    .fk-tag {
+      font-size: 9px;
+      font-weight: bold;
+      background: var(--purple);
+      color: #11111b;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    .col-row-type {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text-muted);
     }
 
     /* Canvas Stage */
@@ -246,12 +462,7 @@ class HTMLRenderer {
       flex: 1;
       position: relative;
       overflow: hidden;
-      cursor: grab;
       background: #181825;
-    }
-
-    #viewport:active {
-      cursor: grabbing;
     }
 
     #canvas-container {
@@ -261,6 +472,48 @@ class HTMLRenderer {
       left: 0;
       width: 100%;
       height: 100%;
+    }
+
+    /* SVG Card Drag & Hover Styles */
+    .table-card {
+      transition: filter 0.15s, opacity 0.2s;
+    }
+
+    .table-card:hover rect.card-bg {
+      stroke: var(--primary) !important;
+      stroke-width: 2.5px !important;
+    }
+
+    .table-card.selected rect.card-bg {
+      stroke: #89b4fa !important;
+      stroke-width: 3px !important;
+    }
+
+    .table-card.dragging {
+      cursor: grabbing !important;
+      filter: url(#cardSelectedGlow) !important;
+    }
+
+    .dimmed {
+      opacity: 0.12 !important;
+      transition: opacity 0.2s;
+    }
+
+    .rel-edge {
+      transition: stroke 0.2s, stroke-width 0.2s, opacity 0.2s;
+    }
+
+    .rel-edge:hover, .rel-edge.highlighted {
+      stroke: #89b4fa !important;
+      stroke-width: 4px !important;
+      stroke-dasharray: none !important;
+      opacity: 1 !important;
+      marker-end: url(#arrowHeadHighlight) !important;
+    }
+
+    .rel-anchor.highlighted {
+      fill: #89b4fa !important;
+      r: 6 !important;
     }
 
     /* Floating Zoom HUD */
@@ -276,11 +529,28 @@ class HTMLRenderer {
       padding: 4px;
       gap: 4px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 15;
     }
 
     .zoom-hud button {
       padding: 6px 10px;
-      font-size: 14px;
+      font-size: 13px;
+    }
+
+    /* Floating Tooltip */
+    #rel-tooltip {
+      position: fixed;
+      display: none;
+      background: #1e1e2e;
+      border: 1px solid var(--primary);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: var(--mono);
+      pointer-events: none;
+      z-index: 99;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
     }
 
     .toast {
@@ -311,7 +581,7 @@ class HTMLRenderer {
       <div class="logo-badge">ERD</div>
       <div class="title-group">
         <h1>${title}</h1>
-        <p>Zero-Dependency Relational Schema Explorer</p>
+        <p>Interactive Draggable Relational Schema Visualizer</p>
       </div>
     </div>
 
@@ -321,9 +591,11 @@ class HTMLRenderer {
     </div>
 
     <div class="controls">
-      <button onclick="resetZoom()">⟲ Reset</button>
+      <button onclick="resetCanvas()">⟲ Reset View</button>
+      <button onclick="resetNodePositions()">⤢ Reset Layout</button>
       <button onclick="exportSVG()" class="btn-primary">⬇ Export SVG</button>
       <button onclick="exportPNG()">📷 PNG</button>
+      <button onclick="exportJSON()">📋 JSON</button>
     </div>
   </header>
 
@@ -344,13 +616,50 @@ class HTMLRenderer {
         </div>
       </div>
 
+      <div class="sidebar-tabs">
+        <button id="tab-models" class="tab-btn active" onclick="switchSidebarTab('models')">All Models (${tables.length})</button>
+        <button id="tab-inspector" class="tab-btn" onclick="switchSidebarTab('inspector')">Inspector</button>
+      </div>
+
+      <!-- Models List Tab -->
       <div class="table-list" id="table-list">
         ${tables.map(t => `
-          <div class="table-item" data-table="${t.toLowerCase()}">
+          <div class="table-item" id="sidebar-item-${t}" data-table="${t}" onclick="selectModel('${t}', true)">
             <span class="table-item-name">${t}</span>
-            <span class="table-item-count">${schemaMap[t].columns.length} cols</span>
+            <span class="table-item-count">${schemaMap[t].columns.length} cols • ${schemaMap[t].relations.length} rels</span>
           </div>
         `).join('')}
+      </div>
+
+      <!-- Inspector Tab -->
+      <div id="inspector-view">
+        <div class="inspector-header">
+          <div class="inspector-title" id="insp-name">Select a Model</div>
+          <div class="badge-pill" id="insp-type">TABLE</div>
+        </div>
+
+        <div>
+          <div class="inspector-section-title">
+            <span>🔗 Outgoing Relations (<span id="insp-out-count">0</span>)</span>
+          </div>
+          <div id="insp-outgoing-list"></div>
+        </div>
+
+        <div>
+          <div class="inspector-section-title">
+            <span>📥 Referenced By (Incoming: <span id="insp-in-count">0</span>)</span>
+          </div>
+          <div id="insp-incoming-list"></div>
+        </div>
+
+        <div>
+          <div class="inspector-section-title">
+            <span>📋 Column Definitions (<span id="insp-col-count">0</span>)</span>
+          </div>
+          <div class="cols-list" id="insp-cols-list"></div>
+        </div>
+
+        <button onclick="focusSelectedModel()" class="btn-primary" style="margin-top: 8px; justify-content: center;">🎯 Center on Canvas</button>
       </div>
     </aside>
 
@@ -362,43 +671,362 @@ class HTMLRenderer {
       <div class="zoom-hud">
         <button onclick="zoomBy(0.15)">＋</button>
         <button onclick="zoomBy(-0.15)">－</button>
-        <button onclick="resetZoom()">100%</button>
+        <button onclick="resetCanvas()">100%</button>
       </div>
     </main>
   </div>
 
+  <div id="rel-tooltip"></div>
   <div id="toast" class="toast">Downloaded successfully!</div>
 
   <script>
+    // Embedded Schema Graph Metadata
+    const SCHEMA_DATA = ${JSON.stringify(schemaMetadata)};
+    const INITIAL_POSITIONS = {};
+
     let scale = 1;
     let pointX = 0;
     let pointY = 0;
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
+    let isCanvasPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+
+    let draggingCard = null;
+    let dragStartMouseX = 0;
+    let dragStartMouseY = 0;
+    let cardInitX = 0;
+    let cardInitY = 0;
+
+    let selectedModel = null;
 
     const viewport = document.getElementById('viewport');
     const container = document.getElementById('canvas-container');
+    const tooltip = document.getElementById('rel-tooltip');
 
+    const BOX_WIDTH = 280;
+    const HEADER_HEIGHT = 46;
+    const ROW_HEIGHT = 28;
+
+    // 1. Initialize Positions & Interactive Card Listeners
+    function initInteractiveGraph() {
+      const cards = document.querySelectorAll('.table-card');
+      cards.forEach(card => {
+        const tableName = card.getAttribute('data-table');
+        const x = parseFloat(card.getAttribute('data-x') || 0);
+        const y = parseFloat(card.getAttribute('data-y') || 0);
+
+        INITIAL_POSITIONS[tableName] = { x, y };
+
+        // Card Drag Listeners
+        card.addEventListener('mousedown', (e) => {
+          e.stopPropagation(); // Stop canvas panning
+          startCardDrag(e, card, tableName);
+        });
+
+        // Card Click Selection
+        card.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectModel(tableName, false);
+        });
+
+        // Hover Highlighting
+        card.addEventListener('mouseenter', () => {
+          if (!selectedModel) highlightConnections(tableName);
+        });
+        card.addEventListener('mouseleave', () => {
+          if (!selectedModel) clearHighlights();
+        });
+      });
+
+      // Relationship Hover Tooltips
+      const edges = document.querySelectorAll('.rel-edge');
+      edges.forEach(edge => {
+        edge.addEventListener('mouseenter', (e) => {
+          const from = edge.getAttribute('data-from');
+          const to = edge.getAttribute('data-to');
+          const fromField = edge.getAttribute('data-from-field');
+          const toField = edge.getAttribute('data-to-field');
+          const card = edge.getAttribute('data-cardinality');
+          
+          tooltip.innerHTML = \`<strong>\${from}.\${fromField}</strong> ➔ <strong>\${to}.\${toField}</strong> [\${card}]\`;
+          tooltip.style.display = 'block';
+          tooltip.style.left = (e.clientX + 14) + 'px';
+          tooltip.style.top = (e.clientY + 14) + 'px';
+          edge.classList.add('highlighted');
+        });
+
+        edge.addEventListener('mousemove', (e) => {
+          tooltip.style.left = (e.clientX + 14) + 'px';
+          tooltip.style.top = (e.clientY + 14) + 'px';
+        });
+
+        edge.addEventListener('mouseleave', () => {
+          tooltip.style.display = 'none';
+          if (!selectedModel) edge.classList.remove('highlighted');
+        });
+      });
+
+      // Clicking empty canvas clears selection
+      viewport.addEventListener('click', () => {
+        clearModelSelection();
+      });
+    }
+
+    // 2. Drag & Drop Card Physics with Real-Time Bezier Path Recalculation
+    function startCardDrag(e, card, tableName) {
+      draggingCard = {
+        name: tableName,
+        el: card,
+        cardBg: card.querySelector('rect.card-bg')
+      };
+      dragStartMouseX = e.clientX;
+      dragStartMouseY = e.clientY;
+      cardInitX = parseFloat(card.getAttribute('data-x') || 0);
+      cardInitY = parseFloat(card.getAttribute('data-y') || 0);
+      card.classList.add('dragging');
+    }
+
+    window.addEventListener('mousemove', (e) => {
+      if (draggingCard) {
+        const dx = (e.clientX - dragStartMouseX) / scale;
+        const dy = (e.clientY - dragStartMouseY) / scale;
+        const newX = cardInitX + dx;
+        const newY = cardInitY + dy;
+
+        draggingCard.el.setAttribute('transform', \`translate(\${newX}, \${newY})\`);
+        draggingCard.el.setAttribute('data-x', newX);
+        draggingCard.el.setAttribute('data-y', newY);
+
+        updateConnectedEdges(draggingCard.name, newX, newY);
+      } else if (isCanvasPanning) {
+        pointX = e.clientX - panStartX;
+        pointY = e.clientY - panStartY;
+        updateTransform();
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (draggingCard) {
+        draggingCard.el.classList.remove('dragging');
+        draggingCard = null;
+      }
+      isCanvasPanning = false;
+    });
+
+    // 3. Dynamic Cubic Bezier Edge Re-routing
+    function updateConnectedEdges(movedTable, curX, curY) {
+      const edges = document.querySelectorAll('.rel-edge');
+
+      edges.forEach(edge => {
+        const from = edge.getAttribute('data-from');
+        const to = edge.getAttribute('data-to');
+
+        if (from === movedTable || to === movedTable) {
+          const fromCard = document.getElementById('card-' + from);
+          const toCard = document.getElementById('card-' + to);
+          if (!fromCard || !toCard) return;
+
+          const fX = parseFloat(fromCard.getAttribute('data-x'));
+          const fY = parseFloat(fromCard.getAttribute('data-y'));
+          const tX = parseFloat(toCard.getAttribute('data-x'));
+          const tY = parseFloat(toCard.getAttribute('data-y'));
+
+          const fromField = edge.getAttribute('data-from-field');
+          const toField = edge.getAttribute('data-to-field');
+
+          const fromModel = SCHEMA_DATA[from];
+          const toModel = SCHEMA_DATA[to];
+
+          const fromColIdx = fromModel ? fromModel.columns.findIndex(c => c.name === fromField) : 0;
+          const toColIdx = toModel ? toModel.columns.findIndex(c => c.name === toField) : 0;
+
+          const startY = fY + HEADER_HEIGHT + (fromColIdx >= 0 ? fromColIdx * ROW_HEIGHT + ROW_HEIGHT / 2 : 20);
+          const endY = tY + HEADER_HEIGHT + (toColIdx >= 0 ? toColIdx * ROW_HEIGHT + ROW_HEIGHT / 2 : 20);
+
+          let startX, endX;
+          if (fX < tX) {
+            startX = fX + BOX_WIDTH;
+            endX = tX;
+          } else if (fX > tX) {
+            startX = fX;
+            endX = tX + BOX_WIDTH;
+          } else {
+            startX = fX + BOX_WIDTH;
+            endX = tX + BOX_WIDTH;
+          }
+
+          const dx = Math.max(40, Math.abs(endX - startX) * 0.5);
+          const cp1x = startX < endX ? startX + dx : startX - dx;
+          const cp1y = startY;
+          const cp2x = startX < endX ? endX - dx : endX + dx;
+          const cp2y = endY;
+
+          const pathData = \`M \${startX} \${startY} C \${cp1x} \${cp1y}, \${cp2x} \${cp2y}, \${endX} \${endY}\`;
+          edge.setAttribute('d', pathData);
+
+          const anchor = document.getElementById('anchor-' + edge.id);
+          if (anchor) {
+            anchor.setAttribute('cx', startX);
+            anchor.setAttribute('cy', startY);
+          }
+        }
+      });
+    }
+
+    // 4. Model Selection & Left Sidebar Connection Inspector
+    function selectModel(tableName, autoCenter = false) {
+      selectedModel = tableName;
+
+      // Update sidebar items
+      document.querySelectorAll('.table-item').forEach(it => it.classList.remove('selected'));
+      const activeItem = document.getElementById('sidebar-item-' + tableName);
+      if (activeItem) activeItem.classList.add('selected');
+
+      // Update canvas cards
+      document.querySelectorAll('.table-card').forEach(c => c.classList.remove('selected'));
+      const activeCard = document.getElementById('card-' + tableName);
+      if (activeCard) activeCard.classList.add('selected');
+
+      // Switch to Inspector tab
+      switchSidebarTab('inspector');
+      renderInspector(tableName);
+
+      // Highlight connections
+      highlightConnections(tableName);
+
+      if (autoCenter && activeCard) {
+        focusSelectedModel();
+      }
+    }
+
+    function clearModelSelection() {
+      selectedModel = null;
+      document.querySelectorAll('.table-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('.table-item').forEach(it => it.classList.remove('selected'));
+      clearHighlights();
+    }
+
+    function renderInspector(tableName) {
+      const data = SCHEMA_DATA[tableName];
+      if (!data) return;
+
+      document.getElementById('insp-name').textContent = data.name;
+      document.getElementById('insp-type').textContent = data.sourceType.toUpperCase();
+      document.getElementById('insp-out-count').textContent = data.outgoing.length;
+      document.getElementById('insp-in-count').textContent = data.incoming.length;
+      document.getElementById('insp-col-count').textContent = data.columns.length;
+
+      // Render Outgoing
+      const outList = document.getElementById('insp-outgoing-list');
+      if (data.outgoing.length === 0) {
+        outList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 8px;">No outgoing foreign keys</div>';
+      } else {
+        outList.innerHTML = data.outgoing.map(o => \`
+          <div class="rel-card">
+            <div class="rel-card-header">
+              <span style="font-size: 11px; color: var(--text);">➔ References:</span>
+              <button class="rel-target-btn" onclick="selectModel('\${o.toTable}', true)">\${o.toTable}</button>
+            </div>
+            <div class="rel-card-detail">\${tableName}.\${o.fromField} ➔ \${o.toTable}.\${o.toField} [\${o.cardinality}]</div>
+          </div>
+        \`).join('');
+      }
+
+      // Render Incoming
+      const inList = document.getElementById('insp-incoming-list');
+      if (data.incoming.length === 0) {
+        inList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 8px;">No other tables reference this model</div>';
+      } else {
+        inList.innerHTML = data.incoming.map(i => \`
+          <div class="rel-card">
+            <div class="rel-card-header">
+              <span style="font-size: 11px; color: var(--text);">⬅ Referenced By:</span>
+              <button class="rel-target-btn" onclick="selectModel('\${i.fromTable}', true)">\${i.fromTable}</button>
+            </div>
+            <div class="rel-card-detail">\${i.fromTable}.\${i.fromField} ➔ \${tableName}.\${i.toField} [\${i.cardinality}]</div>
+          </div>
+        \`).join('');
+      }
+
+      // Render Columns
+      const colList = document.getElementById('insp-cols-list');
+      colList.innerHTML = data.columns.map(c => \`
+        <div class="col-row">
+          <div class="col-row-name">
+            \${c.isPrimary ? '<span class="pk-tag">PK</span>' : ''}
+            \${c.isForeign ? '<span class="fk-tag">FK</span>' : ''}
+            <span>\${c.name}</span>
+          </div>
+          <div class="col-row-type">\${c.type || 'any'}</div>
+        </div>
+      \`).join('');
+    }
+
+    function switchSidebarTab(tabName) {
+      document.getElementById('tab-models').classList.toggle('active', tabName === 'models');
+      document.getElementById('tab-inspector').classList.toggle('active', tabName === 'inspector');
+      document.getElementById('table-list').style.display = tabName === 'models' ? 'flex' : 'none';
+      document.getElementById('inspector-view').style.display = tabName === 'inspector' ? 'flex' : 'none';
+    }
+
+    // 5. Connection Highlighting & Dimming Non-Connected Nodes
+    function highlightConnections(tableName) {
+      const connectedTables = new Set([tableName]);
+      const activeEdges = new Set();
+
+      const edges = document.querySelectorAll('.rel-edge');
+      edges.forEach(edge => {
+        const from = edge.getAttribute('data-from');
+        const to = edge.getAttribute('data-to');
+
+        if (from === tableName || to === tableName) {
+          connectedTables.add(from);
+          connectedTables.add(to);
+          activeEdges.add(edge.id);
+          edge.classList.add('highlighted');
+        } else {
+          edge.classList.remove('highlighted');
+        }
+      });
+
+      // Dim unrelated nodes and edges
+      document.querySelectorAll('.table-card').forEach(card => {
+        const name = card.getAttribute('data-table');
+        if (connectedTables.has(name)) {
+          card.classList.remove('dimmed');
+        } else {
+          card.classList.add('dimmed');
+        }
+      });
+
+      document.querySelectorAll('.rel-edge').forEach(edge => {
+        if (activeEdges.has(edge.id)) {
+          edge.classList.remove('dimmed');
+        } else {
+          edge.classList.add('dimmed');
+        }
+      });
+    }
+
+    function clearHighlights() {
+      document.querySelectorAll('.table-card').forEach(c => c.classList.remove('dimmed'));
+      document.querySelectorAll('.rel-edge').forEach(e => {
+        e.classList.remove('dimmed');
+        e.classList.remove('highlighted');
+      });
+    }
+
+    // 6. Viewport Pan/Zoom & Focus Controls
     function updateTransform() {
       container.style.transform = \`translate(\${pointX}px, \${pointY}px) scale(\${scale})\`;
     }
 
     viewport.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.zoom-hud')) return;
-      isDragging = true;
-      startX = e.clientX - pointX;
-      startY = e.clientY - pointY;
+      if (e.target.closest('.zoom-hud') || e.target.closest('.table-card')) return;
+      isCanvasPanning = true;
+      panStartX = e.clientX - pointX;
+      panStartY = e.clientY - pointY;
     });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      pointX = e.clientX - startX;
-      pointY = e.clientY - startY;
-      updateTransform();
-    });
-
-    window.addEventListener('mouseup', () => { isDragging = false; });
 
     viewport.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -406,36 +1034,66 @@ class HTMLRenderer {
       const ys = (e.clientY - pointY) / scale;
       const delta = -e.deltaY;
       (delta > 0) ? (scale *= 1.1) : (scale /= 1.1);
-      scale = Math.min(Math.max(0.2, scale), 4);
+      scale = Math.min(Math.max(0.15, scale), 4);
       pointX = e.clientX - xs * scale;
       pointY = e.clientY - ys * scale;
       updateTransform();
     });
 
     function zoomBy(delta) {
-      scale = Math.min(Math.max(0.2, scale + delta), 4);
+      scale = Math.min(Math.max(0.15, scale + delta), 4);
       updateTransform();
     }
 
-    function resetZoom() {
+    function resetCanvas() {
       scale = 1;
       pointX = 0;
       pointY = 0;
       updateTransform();
     }
 
+    function focusSelectedModel() {
+      if (!selectedModel) return;
+      const card = document.getElementById('card-' + selectedModel);
+      if (!card) return;
+
+      const cardX = parseFloat(card.getAttribute('data-x'));
+      const cardY = parseFloat(card.getAttribute('data-y'));
+      const cardW = parseFloat(card.getAttribute('data-width') || BOX_WIDTH);
+      const cardH = parseFloat(card.getAttribute('data-height') || 200);
+
+      const vpRect = viewport.getBoundingClientRect();
+      scale = 1;
+      pointX = (vpRect.width / 2) - (cardX + cardW / 2);
+      pointY = (vpRect.height / 2) - (cardY + cardH / 2);
+      updateTransform();
+    }
+
+    function resetNodePositions() {
+      Object.keys(INITIAL_POSITIONS).forEach(tableName => {
+        const card = document.getElementById('card-' + tableName);
+        if (!card) return;
+        const init = INITIAL_POSITIONS[tableName];
+        card.setAttribute('transform', \`translate(\${init.x}, \${init.y})\`);
+        card.setAttribute('data-x', init.x);
+        card.setAttribute('data-y', init.y);
+        updateConnectedEdges(tableName, init.x, init.y);
+      });
+      showToast('⤢ Layout restored to initial positions!');
+    }
+
     function filterTables() {
       const q = document.getElementById('search-input').value.toLowerCase();
       const items = document.querySelectorAll('.table-item');
       items.forEach(item => {
-        const name = item.getAttribute('data-table');
+        const name = item.getAttribute('data-table').toLowerCase();
         item.style.display = name.includes(q) ? 'flex' : 'none';
       });
 
       const cards = document.querySelectorAll('.table-card');
       cards.forEach(card => {
         const text = card.textContent.toLowerCase();
-        card.style.opacity = !q || text.includes(q) ? '1' : '0.15';
+        card.style.opacity = !q || text.includes(q) ? '1' : '0.12';
       });
     }
 
@@ -446,8 +1104,9 @@ class HTMLRenderer {
       setTimeout(() => t.classList.remove('show'), 2200);
     }
 
+    // 7. Exports
     function exportSVG() {
-      const svg = document.querySelector('svg').outerHTML;
+      const svg = document.getElementById('schemagraph-svg').outerHTML;
       const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -458,7 +1117,7 @@ class HTMLRenderer {
     }
 
     function exportPNG() {
-      const svgElement = document.querySelector('svg');
+      const svgElement = document.getElementById('schemagraph-svg');
       const svgString = new XMLSerializer().serializeToString(svgElement);
       const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
       const URLObj = window.URL || window.webkitURL || window;
@@ -466,8 +1125,8 @@ class HTMLRenderer {
       const image = new Image();
       image.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = svgElement.viewBox.baseVal.width || 1200;
-        canvas.height = svgElement.viewBox.baseVal.height || 900;
+        canvas.width = svgElement.viewBox.baseVal.width || 1400;
+        canvas.height = svgElement.viewBox.baseVal.height || 1000;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(image, 0, 0);
         const pngURL = canvas.toDataURL('image/png');
@@ -479,6 +1138,20 @@ class HTMLRenderer {
       };
       image.src = blobURL;
     }
+
+    function exportJSON() {
+      const jsonStr = JSON.stringify(SCHEMA_DATA, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'database-schema.json';
+      a.click();
+      showToast('✅ JSON AST downloaded!');
+    }
+
+    // Boot
+    initInteractiveGraph();
   </script>
 </body>
 </html>`;

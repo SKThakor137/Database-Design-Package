@@ -1,7 +1,7 @@
 {
-  "generator": "schemagraph-core",
+  "generator": "schemagraph",
   "version": "1.0.0",
-  "generatedAt": "2026-08-16T11:28:17.158Z",
+  "generatedAt": "2026-08-16T11:59:43.184Z",
   "metadata": {
     "title": "E-Commerce Architecture ERD",
     "totalTables": 6,
