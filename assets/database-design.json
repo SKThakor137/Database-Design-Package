@@ -1,0 +1,399 @@
+{
+  "generator": "schemagraph-core",
+  "version": "1.0.0",
+  "generatedAt": "2026-08-16T11:28:17.158Z",
+  "metadata": {
+    "title": "E-Commerce Architecture ERD",
+    "totalTables": 6,
+    "totalColumns": 38,
+    "totalRelations": 6
+  },
+  "tables": {
+    "users": {
+      "name": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR(255)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "password_hash",
+          "type": "VARCHAR(255)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "avatar_url",
+          "type": "VARCHAR(500)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "role",
+          "type": "VARCHAR(20)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [],
+      "sourceType": "sql"
+    },
+    "categories": {
+      "name": "categories",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "slug",
+          "type": "VARCHAR(120)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [],
+      "sourceType": "sql"
+    },
+    "products": {
+      "name": "products",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "category_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(200)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "slug",
+          "type": "VARCHAR(220)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "price",
+          "type": "DECIMAL(10, 2)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "stock",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "category_id",
+          "toTable": "categories",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sql"
+    },
+    "orders": {
+      "name": "orders",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "user_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "order_number",
+          "type": "VARCHAR(50)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "total_amount",
+          "type": "DECIMAL(10, 2)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(50)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "payment_status",
+          "type": "VARCHAR(50)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "shipping_address",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "user_id",
+          "toTable": "users",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sql"
+    },
+    "order_items": {
+      "name": "order_items",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "order_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "product_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "quantity",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "unit_price",
+          "type": "DECIMAL(10, 2)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "order_id",
+          "toTable": "orders",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "product_id",
+          "toTable": "products",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sql"
+    },
+    "reviews": {
+      "name": "reviews",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "user_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "product_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "rating",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "comment",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "user_id",
+          "toTable": "users",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "product_id",
+          "toTable": "products",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sql"
+    }
+  }
+}
