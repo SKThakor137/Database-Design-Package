@@ -1,7 +1,7 @@
-# ⚡ schemagraph-core
+# ⚡ schemagraph
 
 <p align="center">
-  <img src="./assets/database-design.svg" alt="schemagraph-core Relational ERD Preview" width="100%" />
+  <img src="./assets/database-design.svg" alt="schemagraph Relational ERD Preview" width="100%" />
 </p>
 
 <p align="center">
@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/schemagraph-core"><img src="https://img.shields.io/npm/v/schemagraph-core.svg?color=38bdf8&style=flat-square" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/schemagraph"><img src="https://img.shields.io/npm/v/schemagraph.svg?color=38bdf8&style=flat-square" alt="npm version" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D16.0.0-68a063.svg?style=flat-square" alt="node version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/dependencies-0%20(Zero)-success.svg?style=flat-square" alt="Zero Dependencies" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license" /></a>
@@ -42,7 +42,7 @@
 
 ## 📊 Live GitHub Mermaid ERD Demo
 
-This diagram is rendered natively on GitHub using the Mermaid export produced by `schemagraph-core`:
+This diagram is rendered natively on GitHub using the Mermaid export produced by `schemagraph`:
 
 ```mermaid
 erDiagram
@@ -113,21 +113,21 @@ erDiagram
 
 ```bash
 # Scan current project and export default SVG & Interactive HTML
-npx schemagraph-core
+npx schemagraph
 
 # Scan backend directory and generate ALL 7 formats to ./docs
-npx schemagraph-core ./backend --format=all --output=./docs
+npx schemagraph ./backend --format=all --output=./docs
 ```
 
 ### 2. Global Installation
 
 ```bash
-npm install -g schemagraph-core
+npm install -g schemagraph
 ```
 
 Then run anywhere:
 ```bash
-schemagraph-core
+schemagraph
 # or
 pure-erd
 ```
@@ -137,7 +137,7 @@ pure-erd
 ## 💻 CLI Options & Usage
 
 ```bash
-schemagraph-core [targetDir] [options]
+schemagraph [targetDir] [options]
 ```
 
 ### Options Reference
@@ -156,23 +156,23 @@ schemagraph-core [targetDir] [options]
 
 ```bash
 # 1. E-Commerce Backend (PostgreSQL / MySQL)
-schemagraph-core ./backend/src/models --format=all --theme=catppuccin --output=./docs
+schemagraph ./backend/src/models --format=all --theme=catppuccin --output=./docs
 
 # 2. Prisma Project
-schemagraph-core ./prisma --format=svg,html,md -t dark --title="SaaS Platform ERD"
+schemagraph ./prisma --format=svg,html,md -t dark --title="SaaS Platform ERD"
 
 # 3. Light Theme for Wiki Documentation
-schemagraph-core ./src/database -f svg,html -t light --output=./wiki/assets
+schemagraph ./src/database -f svg,html -t light --output=./wiki/assets
 
 # 4. Generate dbdiagram.io DBML and GitHub Mermaid ERD
-schemagraph-core ./backend -f dbml,md --output=./docs
+schemagraph ./backend -f dbml,md --output=./docs
 ```
 
 ---
 
 ## 🌐 Interactive HTML Single-Page Viewer Features
 
-When you export with `--format=html` (or `all`), `schemagraph-core` produces a standalone, self-contained HTML app ([preview here](./assets/database-design.html)):
+When you export with `--format=html` (or `all`), `schemagraph` produces a standalone, self-contained HTML app ([preview here](./assets/database-design.html)):
 
 - 🔍 **Live Model & Column Filter**: Instantly search by table name or property name.
 - 🖱️ **Pan & Zoom Canvas**: Smooth mouse dragging, scroll zooming, and one-click reset.
@@ -184,7 +184,7 @@ When you export with `--format=html` (or `all`), `schemagraph-core` produces a s
 
 ## 📦 Programmatic Node.js API
 
-Use `schemagraph-core` directly in your Node.js scripts, migration hooks, or build pipelines:
+Use `schemagraph` directly in your Node.js scripts, migration hooks, or build pipelines:
 
 ```javascript
 const {
@@ -196,7 +196,7 @@ const {
     generateDBML,
     generateDOT,
     generateSQL
-} = require('schemagraph-core');
+} = require('schemagraph');
 
 // 1. Scan and parse workspace schema models
 const schemaMap = parseProject('./backend');

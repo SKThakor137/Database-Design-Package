@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * schemagraph-core CLI Binary
+ * schemagraph CLI Binary
  * Zero-dependency database schema architecture & ERD generator.
  */
 

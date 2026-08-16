@@ -1,5 +1,5 @@
 /**
- * schemagraph-core
+ * schemagraph
  * Zero-dependency pure Node.js programmatic API
  */
 

@@ -30,7 +30,7 @@ function printHelp() {
     printBanner();
     console.log(`
 Usage:
-  schemagraph-core [targetDir] [options]
+  schemagraph [targetDir] [options]
   pure-erd [targetDir] [options]
 
 Arguments:
@@ -47,9 +47,9 @@ Options:
   -v, --version             Show version number and exit
 
 Examples:
-  $ schemagraph-core
-  $ schemagraph-core ./backend --format=all --output=./docs
-  $ schemagraph-core ./src/models -f svg,html,md -t dark --title="E-Commerce Schema"
+  $ schemagraph
+  $ schemagraph ./backend --format=all --output=./docs
+  $ schemagraph ./src/models -f svg,html,md -t dark --title="E-Commerce Schema"
 `);
 }
 
@@ -119,7 +119,7 @@ function runCLI() {
 
     if (options.version) {
         const pkg = require('../package.json');
-        console.log(`schemagraph-core v${pkg.version}`);
+        console.log(`schemagraph v${pkg.version}`);
         process.exit(0);
     }
 
@@ -151,9 +151,9 @@ function runCLI() {
         console.log('   • Frontend / TS Types: TypeScript interfaces (interface User), type aliases, Zod schemas (z.object)\n');
         console.log('   \x1b[1m💡 How to resolve:\x1b[0m');
         console.log('   1. If your backend is in another folder (e.g. ../backend), specify the path:');
-        console.log('      \x1b[36mschemagraph-core ../backend --format=all --output=./docs\x1b[0m');
+        console.log('      \x1b[36mschemagraph ../backend --format=all --output=./docs\x1b[0m');
         console.log('   2. If you have a standalone schema file, pass it directly:');
-        console.log('      \x1b[36mschemagraph-core ./schema.sql\x1b[0m');
+        console.log('      \x1b[36mschemagraph ./schema.sql\x1b[0m');
         console.log('   3. If you are in a frontend workspace, ensure your types/models use TypeScript interfaces or Zod.\n');
         return;
     }

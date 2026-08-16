@@ -157,7 +157,7 @@ describe('schemagraph-core Test Suite', () => {
         };
         const html = HTMLRenderer.generateHTML(schemaMap, { title: 'Test ERD' });
         assert.ok(html.includes('<!DOCTYPE html>'));
-        assert.ok(html.includes('<title>Test ERD - schemagraph-core</title>'));
+        assert.ok(html.includes('<title>Test ERD - schemagraph</title>'));
         assert.ok(html.includes('exportSVG()'));
         assert.ok(html.includes('exportPNG()'));
     });

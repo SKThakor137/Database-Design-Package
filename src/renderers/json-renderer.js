@@ -11,7 +11,7 @@ class JSONRenderer {
         const totalRelations = tables.reduce((sum, t) => sum + schemaMap[t].relations.length, 0);
 
         const output = {
-            generator: 'schemagraph-core',
+            generator: 'schemagraph',
             version: '1.0.0',
             generatedAt: new Date().toISOString(),
             metadata: {
