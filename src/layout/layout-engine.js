@@ -14,19 +14,21 @@ class LayoutEngine {
         const boxWidth = options.boxWidth || 280;
         const rowHeight = options.rowHeight || 28;
         const headerHeight = options.headerHeight || 46;
-        const paddingX = options.paddingX || 80;
-        const paddingY = options.paddingY || 80;
-        const margin = options.margin || 60;
+        const paddingX = options.paddingX || 90;
+        const paddingY = options.paddingY || 70;
+        const marginX = options.marginX || 80;
+        const marginTop = options.marginTop || 110; // Generous space for diagram title header
 
-        // Choose number of columns based on model count
+        // Choose number of columns dynamically based on model count
         let numCols = 3;
         if (tableNames.length <= 2) numCols = 2;
         else if (tableNames.length <= 4) numCols = 2;
         else if (tableNames.length <= 8) numCols = 3;
-        else numCols = Math.min(4, Math.ceil(Math.sqrt(tableNames.length)));
+        else if (tableNames.length <= 16) numCols = 4;
+        else numCols = Math.min(5, Math.ceil(Math.sqrt(tableNames.length)));
 
         // Column tracking for masonry-style vertical packing
-        const colHeights = new Array(numCols).fill(margin);
+        const colHeights = new Array(numCols).fill(marginTop);
         const positions = {};
 
         // 1. Assign (x, y) positions to tables
@@ -35,7 +37,7 @@ class LayoutEngine {
             const colCount = Math.max(1, table.columns.length);
             const boxHeight = headerHeight + (colCount * rowHeight) + 16;
 
-            // Pick the column with the minimum height
+            // Pick the column with the minimum height for balanced masonry packing
             let bestCol = 0;
             for (let c = 1; c < numCols; c++) {
                 if (colHeights[c] < colHeights[bestCol]) {
@@ -43,7 +45,7 @@ class LayoutEngine {
                 }
             }
 
-            const x = margin + bestCol * (boxWidth + paddingX);
+            const x = marginX + bestCol * (boxWidth + paddingX);
             const y = colHeights[bestCol];
 
             positions[tableName] = {
@@ -57,11 +59,11 @@ class LayoutEngine {
             colHeights[bestCol] += boxHeight + paddingY;
         });
 
-        const maxX = margin + numCols * (boxWidth + paddingX);
-        const maxY = Math.max(...colHeights) + margin;
+        const maxX = marginX + numCols * (boxWidth + paddingX);
+        const maxY = Math.max(...colHeights) + 80;
 
-        const width = Math.max(1000, maxX);
-        const height = Math.max(700, maxY);
+        const width = Math.max(1100, maxX);
+        const height = Math.max(750, maxY);
 
         // 2. Compute relationship connectors with exact column ports
         const connectors = [];

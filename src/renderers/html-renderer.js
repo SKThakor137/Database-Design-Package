@@ -2,6 +2,9 @@
  * Interactive Single-Page HTML Viewer
  * Fully interactive visual ERD explorer with:
  * - Real-time draggable table cards with dynamic Bézier connector re-routing
+ * - Compact Mode (Keys-only view for huge 50+ table databases) vs Detailed Full View
+ * - "Fit to Screen" auto-scaling and centering
+ * - Interactive Minimap radar navigator
  * - Left-sidebar Connection Inspector (Incoming & Outgoing relations with jump links)
  * - Sub-graph relationship highlighting & dimming
  * - Search filter, pan/zoom canvas, and instant PNG/SVG/JSON export tools.
@@ -124,7 +127,7 @@ class HTMLRenderer {
     }
 
     .title-group h1 {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       letter-spacing: -0.3px;
     }
@@ -137,7 +140,7 @@ class HTMLRenderer {
     /* Search Box */
     .search-box {
       position: relative;
-      width: 320px;
+      width: 280px;
     }
 
     .search-box input {
@@ -171,14 +174,14 @@ class HTMLRenderer {
     .controls {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     button {
       background: var(--card);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 7px 12px;
+      padding: 6px 11px;
       border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
@@ -205,6 +208,12 @@ class HTMLRenderer {
       color: #11111b;
     }
 
+    .btn-active {
+      background: rgba(137, 180, 250, 0.2);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
     /* Main Workspace Layout */
     .workspace {
       display: flex;
@@ -215,41 +224,40 @@ class HTMLRenderer {
 
     /* Left Sidebar */
     aside {
-      width: 340px;
+      width: 320px;
       background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       overflow-y: auto;
       z-index: 10;
-      transition: width 0.2s;
     }
 
     .stats-card {
-      padding: 14px 16px;
+      padding: 12px 14px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      gap: 6px;
       border-bottom: 1px solid var(--border);
-      background: rgba(0,0,0,0.1);
+      background: rgba(0,0,0,0.15);
     }
 
     .stat-item {
       background: var(--card);
-      padding: 8px 6px;
+      padding: 6px 4px;
       border-radius: 6px;
       text-align: center;
       border: 1px solid var(--border);
     }
 
     .stat-val {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--primary);
     }
 
     .stat-lbl {
-      font-size: 10px;
+      font-size: 9.5px;
       color: var(--text-muted);
       text-transform: uppercase;
       margin-top: 2px;
@@ -283,14 +291,14 @@ class HTMLRenderer {
 
     /* Table List View */
     .table-list {
-      padding: 12px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
     .table-item {
-      padding: 10px 12px;
+      padding: 9px 12px;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -314,31 +322,31 @@ class HTMLRenderer {
     }
 
     .table-item-count {
-      font-size: 11px;
+      font-size: 10.5px;
       color: var(--text-muted);
       background: var(--surface);
-      padding: 2px 7px;
+      padding: 2px 6px;
       border-radius: 10px;
     }
 
     /* Inspector View */
     #inspector-view {
-      padding: 16px;
+      padding: 14px;
       display: none;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
     .inspector-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding-bottom: 12px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--border);
     }
 
     .inspector-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--primary);
     }
@@ -353,26 +361,23 @@ class HTMLRenderer {
     }
 
     .inspector-section-title {
-      font-size: 11px;
+      font-size: 10.5px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       font-weight: 700;
       color: var(--text-muted);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      margin-bottom: 6px;
     }
 
     .rel-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      margin-bottom: 8px;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       transition: all 0.15s;
     }
 
@@ -388,7 +393,7 @@ class HTMLRenderer {
     }
 
     .rel-target-btn {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       color: var(--accent);
       background: transparent;
@@ -398,21 +403,17 @@ class HTMLRenderer {
       text-decoration: underline;
     }
 
-    .rel-target-btn:hover {
-      color: #fff;
-    }
-
     .rel-card-detail {
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 10.5px;
       color: var(--text-muted);
     }
 
     .cols-list {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      max-height: 260px;
+      gap: 3px;
+      max-height: 240px;
       overflow-y: auto;
     }
 
@@ -420,21 +421,21 @@ class HTMLRenderer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 6px 8px;
+      padding: 5px 8px;
       background: var(--card);
       border-radius: 4px;
-      font-size: 11.5px;
+      font-size: 11px;
     }
 
     .col-row-name {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       font-weight: 500;
     }
 
     .pk-tag {
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: bold;
       background: var(--yellow);
       color: #11111b;
@@ -443,7 +444,7 @@ class HTMLRenderer {
     }
 
     .fk-tag {
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: bold;
       background: var(--purple);
       color: #11111b;
@@ -453,7 +454,7 @@ class HTMLRenderer {
 
     .col-row-type {
       font-family: var(--mono);
-      font-size: 10.5px;
+      font-size: 10px;
       color: var(--text-muted);
     }
 
@@ -463,6 +464,11 @@ class HTMLRenderer {
       position: relative;
       overflow: hidden;
       background: #181825;
+      cursor: grab;
+    }
+
+    #viewport:active {
+      cursor: grabbing;
     }
 
     #canvas-container {
@@ -474,14 +480,14 @@ class HTMLRenderer {
       height: 100%;
     }
 
-    /* SVG Card Drag & Hover Styles */
+    /* SVG Table Cards & Connectors */
     .table-card {
       transition: filter 0.15s, opacity 0.2s;
     }
 
     .table-card:hover rect.card-bg {
       stroke: var(--primary) !important;
-      stroke-width: 2.5px !important;
+      stroke-width: 2px !important;
     }
 
     .table-card.selected rect.card-bg {
@@ -528,13 +534,41 @@ class HTMLRenderer {
       align-items: center;
       padding: 4px;
       gap: 4px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
       z-index: 15;
     }
 
     .zoom-hud button {
       padding: 6px 10px;
-      font-size: 13px;
+      font-size: 12px;
+    }
+
+    /* Interactive Minimap Radar */
+    #minimap {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      width: 180px;
+      height: 120px;
+      background: rgba(24, 24, 37, 0.9);
+      border: 1px solid var(--border-bright);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      z-index: 15;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    #minimap-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    #minimap-box {
+      position: absolute;
+      border: 1.5px solid var(--primary);
+      background: rgba(137, 180, 250, 0.15);
+      pointer-events: none;
     }
 
     /* Floating Tooltip */
@@ -560,10 +594,10 @@ class HTMLRenderer {
       transform: translateX(-50%) translateY(100px);
       background: #a6e3a1;
       color: #11111b;
-      padding: 10px 20px;
+      padding: 9px 18px;
       border-radius: 8px;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 12px;
       opacity: 0;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 99;
@@ -591,9 +625,10 @@ class HTMLRenderer {
     </div>
 
     <div class="controls">
-      <button onclick="resetCanvas()">⟲ Reset View</button>
+      <button id="btn-mode-toggle" onclick="toggleCompactMode()">🗂️ Compact Mode</button>
+      <button onclick="fitToScreen()">[ ] Fit to Screen</button>
       <button onclick="resetNodePositions()">⤢ Reset Layout</button>
-      <button onclick="exportSVG()" class="btn-primary">⬇ Export SVG</button>
+      <button onclick="exportSVG()" class="btn-primary">⬇ SVG</button>
       <button onclick="exportPNG()">📷 PNG</button>
       <button onclick="exportJSON()">📋 JSON</button>
     </div>
@@ -659,7 +694,7 @@ class HTMLRenderer {
           <div class="cols-list" id="insp-cols-list"></div>
         </div>
 
-        <button onclick="focusSelectedModel()" class="btn-primary" style="margin-top: 8px; justify-content: center;">🎯 Center on Canvas</button>
+        <button onclick="focusSelectedModel()" class="btn-primary" style="margin-top: 6px; justify-content: center;">🎯 Center on Canvas</button>
       </div>
     </aside>
 
@@ -668,9 +703,17 @@ class HTMLRenderer {
         ${rawSvg}
       </div>
 
+      <!-- Minimap Radar -->
+      <div id="minimap" onclick="onMinimapClick(event)">
+        <canvas id="minimap-canvas"></canvas>
+        <div id="minimap-box"></div>
+      </div>
+
+      <!-- Zoom HUD -->
       <div class="zoom-hud">
         <button onclick="zoomBy(0.15)">＋</button>
         <button onclick="zoomBy(-0.15)">－</button>
+        <button onclick="fitToScreen()">Fit</button>
         <button onclick="resetCanvas()">100%</button>
       </div>
     </main>
@@ -698,6 +741,7 @@ class HTMLRenderer {
     let cardInitY = 0;
 
     let selectedModel = null;
+    let isCompactMode = false;
 
     const viewport = document.getElementById('viewport');
     const container = document.getElementById('canvas-container');
@@ -707,7 +751,7 @@ class HTMLRenderer {
     const HEADER_HEIGHT = 46;
     const ROW_HEIGHT = 28;
 
-    // 1. Initialize Positions & Interactive Card Listeners
+    // 1. Initialize Graph & Event Listeners
     function initInteractiveGraph() {
       const cards = document.querySelectorAll('.table-card');
       cards.forEach(card => {
@@ -717,9 +761,9 @@ class HTMLRenderer {
 
         INITIAL_POSITIONS[tableName] = { x, y };
 
-        // Card Drag Listeners
+        // Card Drag Listener
         card.addEventListener('mousedown', (e) => {
-          e.stopPropagation(); // Stop canvas panning
+          e.stopPropagation();
           startCardDrag(e, card, tableName);
         });
 
@@ -770,14 +814,20 @@ class HTMLRenderer {
       viewport.addEventListener('click', () => {
         clearModelSelection();
       });
+
+      // Fit to screen on startup
+      setTimeout(fitToScreen, 80);
     }
 
-    // 2. Drag & Drop Card Physics with Real-Time Bezier Path Recalculation
+    // 2. Drag & Drop Card with Dynamic Bezier Path Recalculation
     function startCardDrag(e, card, tableName) {
+      // Bring dragged card to front of SVG
+      const parent = card.parentNode;
+      parent.appendChild(card);
+
       draggingCard = {
         name: tableName,
-        el: card,
-        cardBg: card.querySelector('rect.card-bg')
+        el: card
       };
       dragStartMouseX = e.clientX;
       dragStartMouseY = e.clientY;
@@ -797,7 +847,8 @@ class HTMLRenderer {
         draggingCard.el.setAttribute('data-x', newX);
         draggingCard.el.setAttribute('data-y', newY);
 
-        updateConnectedEdges(draggingCard.name, newX, newY);
+        updateConnectedEdges(draggingCard.name);
+        drawMinimap();
       } else if (isCanvasPanning) {
         pointX = e.clientX - panStartX;
         pointY = e.clientY - panStartY;
@@ -814,7 +865,7 @@ class HTMLRenderer {
     });
 
     // 3. Dynamic Cubic Bezier Edge Re-routing
-    function updateConnectedEdges(movedTable, curX, curY) {
+    function updateConnectedEdges(movedTable) {
       const edges = document.querySelectorAll('.rel-edge');
 
       edges.forEach(edge => {
@@ -877,21 +928,16 @@ class HTMLRenderer {
     function selectModel(tableName, autoCenter = false) {
       selectedModel = tableName;
 
-      // Update sidebar items
       document.querySelectorAll('.table-item').forEach(it => it.classList.remove('selected'));
       const activeItem = document.getElementById('sidebar-item-' + tableName);
       if (activeItem) activeItem.classList.add('selected');
 
-      // Update canvas cards
       document.querySelectorAll('.table-card').forEach(c => c.classList.remove('selected'));
       const activeCard = document.getElementById('card-' + tableName);
       if (activeCard) activeCard.classList.add('selected');
 
-      // Switch to Inspector tab
       switchSidebarTab('inspector');
       renderInspector(tableName);
-
-      // Highlight connections
       highlightConnections(tableName);
 
       if (autoCenter && activeCard) {
@@ -916,10 +962,10 @@ class HTMLRenderer {
       document.getElementById('insp-in-count').textContent = data.incoming.length;
       document.getElementById('insp-col-count').textContent = data.columns.length;
 
-      // Render Outgoing
+      // Outgoing
       const outList = document.getElementById('insp-outgoing-list');
       if (data.outgoing.length === 0) {
-        outList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 8px;">No outgoing foreign keys</div>';
+        outList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 6px;">No outgoing foreign keys</div>';
       } else {
         outList.innerHTML = data.outgoing.map(o => \`
           <div class="rel-card">
@@ -932,10 +978,10 @@ class HTMLRenderer {
         \`).join('');
       }
 
-      // Render Incoming
+      // Incoming
       const inList = document.getElementById('insp-incoming-list');
       if (data.incoming.length === 0) {
-        inList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 8px;">No other tables reference this model</div>';
+        inList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 6px;">No other tables reference this model</div>';
       } else {
         inList.innerHTML = data.incoming.map(i => \`
           <div class="rel-card">
@@ -948,7 +994,7 @@ class HTMLRenderer {
         \`).join('');
       }
 
-      // Render Columns
+      // Columns
       const colList = document.getElementById('insp-cols-list');
       colList.innerHTML = data.columns.map(c => \`
         <div class="col-row">
@@ -969,7 +1015,7 @@ class HTMLRenderer {
       document.getElementById('inspector-view').style.display = tabName === 'inspector' ? 'flex' : 'none';
     }
 
-    // 5. Connection Highlighting & Dimming Non-Connected Nodes
+    // 5. Connection Highlighting & Sub-Graph Isolation
     function highlightConnections(tableName) {
       const connectedTables = new Set([tableName]);
       const activeEdges = new Set();
@@ -989,7 +1035,6 @@ class HTMLRenderer {
         }
       });
 
-      // Dim unrelated nodes and edges
       document.querySelectorAll('.table-card').forEach(card => {
         const name = card.getAttribute('data-table');
         if (connectedTables.has(name)) {
@@ -1016,13 +1061,90 @@ class HTMLRenderer {
       });
     }
 
-    // 6. Viewport Pan/Zoom & Focus Controls
+    // 6. Compact Mode for Large Databases (Shrinks cards to PK/FK only)
+    function toggleCompactMode() {
+      isCompactMode = !isCompactMode;
+      const btn = document.getElementById('btn-mode-toggle');
+      btn.textContent = isCompactMode ? '📋 Detailed Mode' : '🗂️ Compact Mode';
+      btn.classList.toggle('btn-active', isCompactMode);
+
+      const cards = document.querySelectorAll('.table-card');
+      cards.forEach(card => {
+        const tableName = card.getAttribute('data-table');
+        const model = SCHEMA_DATA[tableName];
+        if (!model) return;
+
+        // Hide non-key rows in compact mode
+        const rows = card.querySelectorAll('text[font-size="12"], text[font-size="10.5"], line, rect[width="22"]');
+        // Simple display toggle
+        const bgRect = card.querySelector('rect.card-bg');
+        if (isCompactMode) {
+          const keyColsCount = model.columns.filter(c => c.isPrimary || c.isForeign).length;
+          const compactHeight = HEADER_HEIGHT + Math.max(1, keyColsCount) * ROW_HEIGHT + 14;
+          bgRect.setAttribute('height', compactHeight);
+          card.setAttribute('data-height', compactHeight);
+        } else {
+          const fullHeight = HEADER_HEIGHT + model.columns.length * ROW_HEIGHT + 14;
+          bgRect.setAttribute('height', fullHeight);
+          card.setAttribute('data-height', fullHeight);
+        }
+      });
+
+      // Update edges and minimap
+      Object.keys(SCHEMA_DATA).forEach(t => updateConnectedEdges(t));
+      drawMinimap();
+      showToast(isCompactMode ? '🗂️ Compact Mode Enabled (Keys only)' : '📋 Detailed Mode Enabled (All columns)');
+    }
+
+    // 7. Auto "Fit to Screen" Algorithm
+    function fitToScreen() {
+      const cards = document.querySelectorAll('.table-card');
+      if (cards.length === 0) return;
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+      cards.forEach(card => {
+        const x = parseFloat(card.getAttribute('data-x'));
+        const y = parseFloat(card.getAttribute('data-y'));
+        const w = parseFloat(card.getAttribute('data-width') || BOX_WIDTH);
+        const h = parseFloat(card.getAttribute('data-height') || 200);
+
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x + w > maxX) maxX = x + w;
+        if (y + h > maxY) maxY = y + h;
+      });
+
+      const padding = 60;
+      minX -= padding;
+      minY -= padding;
+      maxX += padding;
+      maxY += padding;
+
+      const graphW = maxX - minX;
+      const graphH = maxY - minY;
+
+      const vpRect = viewport.getBoundingClientRect();
+      const scaleX = vpRect.width / graphW;
+      const scaleY = vpRect.height / graphH;
+
+      scale = Math.min(Math.max(0.2, Math.min(scaleX, scaleY) * 0.92), 2.0);
+
+      pointX = (vpRect.width - graphW * scale) / 2 - (minX * scale);
+      pointY = (vpRect.height - graphH * scale) / 2 - (minY * scale);
+
+      updateTransform();
+      drawMinimap();
+    }
+
+    // 8. Viewport Pan/Zoom & Focus Controls
     function updateTransform() {
       container.style.transform = \`translate(\${pointX}px, \${pointY}px) scale(\${scale})\`;
+      updateMinimapBox();
     }
 
     viewport.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.zoom-hud') || e.target.closest('.table-card')) return;
+      if (e.target.closest('.zoom-hud') || e.target.closest('#minimap') || e.target.closest('.table-card')) return;
       isCanvasPanning = true;
       panStartX = e.clientX - pointX;
       panStartY = e.clientY - pointY;
@@ -1077,8 +1199,9 @@ class HTMLRenderer {
         card.setAttribute('transform', \`translate(\${init.x}, \${init.y})\`);
         card.setAttribute('data-x', init.x);
         card.setAttribute('data-y', init.y);
-        updateConnectedEdges(tableName, init.x, init.y);
+        updateConnectedEdges(tableName);
       });
+      fitToScreen();
       showToast('⤢ Layout restored to initial positions!');
     }
 
@@ -1097,6 +1220,79 @@ class HTMLRenderer {
       });
     }
 
+    // 9. Interactive Minimap Radar
+    function drawMinimap() {
+      const canvas = document.getElementById('minimap-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = 180;
+      const h = canvas.height = 120;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const cards = document.querySelectorAll('.table-card');
+      if (cards.length === 0) return;
+
+      let minX = 0, minY = 0, maxX = 1600, maxY = 1200;
+      cards.forEach(card => {
+        const x = parseFloat(card.getAttribute('data-x'));
+        const y = parseFloat(card.getAttribute('data-y'));
+        if (x + 300 > maxX) maxX = x + 300;
+        if (y + 300 > maxY) maxY = y + 300;
+      });
+
+      const mScaleX = w / maxX;
+      const mScaleY = h / maxY;
+
+      ctx.fillStyle = '#89b4fa';
+      cards.forEach(card => {
+        const x = parseFloat(card.getAttribute('data-x')) * mScaleX;
+        const y = parseFloat(card.getAttribute('data-y')) * mScaleY;
+        const cardW = (parseFloat(card.getAttribute('data-width')) || BOX_WIDTH) * mScaleX;
+        const cardH = (parseFloat(card.getAttribute('data-height')) || 120) * mScaleY;
+
+        ctx.fillRect(x, y, Math.max(3, cardW), Math.max(2, cardH));
+      });
+
+      updateMinimapBox();
+    }
+
+    function updateMinimapBox() {
+      const box = document.getElementById('minimap-box');
+      const vpRect = viewport.getBoundingClientRect();
+      const canvas = document.getElementById('minimap-canvas');
+      if (!canvas || !box) return;
+
+      const maxX = 1600, maxY = 1200;
+      const mScaleX = canvas.width / maxX;
+      const mScaleY = canvas.height / maxY;
+
+      const boxX = (-pointX / scale) * mScaleX;
+      const boxY = (-pointY / scale) * mScaleY;
+      const boxW = (vpRect.width / scale) * mScaleX;
+      const boxH = (vpRect.height / scale) * mScaleY;
+
+      box.style.left = Math.max(0, boxX) + 'px';
+      box.style.top = Math.max(0, boxY) + 'px';
+      box.style.width = Math.min(canvas.width, boxW) + 'px';
+      box.style.height = Math.min(canvas.height, boxH) + 'px';
+    }
+
+    function onMinimapClick(e) {
+      const rect = document.getElementById('minimap').getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      const maxX = 1600, maxY = 1200;
+      const targetWorldX = (clickX / rect.width) * maxX;
+      const targetWorldY = (clickY / rect.height) * maxY;
+
+      const vpRect = viewport.getBoundingClientRect();
+      pointX = (vpRect.width / 2) - targetWorldX * scale;
+      pointY = (vpRect.height / 2) - targetWorldY * scale;
+      updateTransform();
+    }
+
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -1104,7 +1300,7 @@ class HTMLRenderer {
       setTimeout(() => t.classList.remove('show'), 2200);
     }
 
-    // 7. Exports
+    // 10. Exports
     function exportSVG() {
       const svg = document.getElementById('schemagraph-svg').outerHTML;
       const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
