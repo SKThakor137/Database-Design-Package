@@ -1,0 +1,2229 @@
+{
+  "generator": "schemagraph-core",
+  "version": "1.0.0",
+  "generatedAt": "2026-08-16T10:46:57.481Z",
+  "metadata": {
+    "title": "Database Schema Topology",
+    "totalTables": 26,
+    "totalColumns": 217,
+    "totalRelations": 46
+  },
+  "tables": {
+    "Account": {
+      "name": "Account",
+      "columns": [
+        {
+          "name": "id",
+          "type": "ID!",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "email",
+          "type": "String!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "username",
+          "type": "String!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "isActive",
+          "type": "Boolean!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "posts",
+          "toTable": "Post",
+          "toField": "id",
+          "cardinality": "1:N"
+        }
+      ],
+      "sourceType": "graphql"
+    },
+    "Post": {
+      "name": "Post",
+      "columns": [
+        {
+          "name": "id",
+          "type": "ID!",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "title",
+          "type": "String!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "body",
+          "type": "String!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "publishedAt",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "ID!",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "title",
+          "type": "String!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "body",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "published",
+          "type": "Boolean!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "String",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "content",
+          "type": "String?",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "published",
+          "type": "Boolean",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "authorId",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "author",
+          "toTable": "Account",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "tags",
+          "toTable": "Tag",
+          "toField": "id",
+          "cardinality": "1:N"
+        },
+        {
+          "from": "author",
+          "toTable": "User",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "comments",
+          "toTable": "Comment",
+          "toField": "id",
+          "cardinality": "1:N"
+        },
+        {
+          "from": "authorId",
+          "toTable": "User",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "graphql"
+    },
+    "Tag": {
+      "name": "Tag",
+      "columns": [
+        {
+          "name": "id",
+          "type": "ID!",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "name",
+          "type": "String!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "String",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        }
+      ],
+      "relations": [
+        {
+          "from": "posts",
+          "toTable": "Post",
+          "toField": "id",
+          "cardinality": "1:N"
+        }
+      ],
+      "sourceType": "graphql"
+    },
+    "User": {
+      "name": "User",
+      "columns": [
+        {
+          "name": "_id",
+          "type": "ObjectId",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "username",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "passwordHash",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "bio",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "isActive",
+          "type": "Boolean",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "ID!",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "name",
+          "type": "String!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "email",
+          "type": "String!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "type": "String!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "String",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "name",
+          "type": "String?",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "role",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "posts",
+          "toTable": "Post",
+          "toField": "id",
+          "cardinality": "1:N"
+        },
+        {
+          "from": "comments",
+          "toTable": "Comment",
+          "toField": "id",
+          "cardinality": "1:N"
+        }
+      ],
+      "sourceType": "mongoose"
+    },
+    "Category": {
+      "name": "Category",
+      "columns": [
+        {
+          "name": "_id",
+          "type": "ObjectId",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "slug",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [],
+      "sourceType": "mongoose"
+    },
+    "Article": {
+      "name": "Article",
+      "columns": [
+        {
+          "name": "_id",
+          "type": "ObjectId",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "slug",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "content",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "author",
+          "type": "ObjectId",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "category",
+          "type": "ObjectId",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "tags",
+          "type": "[String]",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "viewCount",
+          "type": "Number",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "isPublished",
+          "type": "Boolean",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "publishedAt",
+          "type": "Date",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "author",
+          "toTable": "User",
+          "toField": "_id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "category",
+          "toTable": "Category",
+          "toField": "_id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "mongoose"
+    },
+    "Comment": {
+      "name": "Comment",
+      "columns": [
+        {
+          "name": "_id",
+          "type": "ObjectId",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "article",
+          "type": "ObjectId",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "author",
+          "type": "ObjectId",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "body",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "ID!",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "message",
+          "type": "String!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "type": "String!",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "String",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "taskId",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "authorId",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "content",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "article",
+          "toTable": "Article",
+          "toField": "_id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "author",
+          "toTable": "User",
+          "toField": "_id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "author",
+          "toTable": "User",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "post",
+          "toTable": "Post",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "taskId",
+          "toTable": "Task",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "mongoose"
+    },
+    "users": {
+      "name": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR(255)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "full_name",
+          "type": "VARCHAR(100)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "avatar_url",
+          "type": "VARCHAR(500)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "role",
+          "type": "VARCHAR(30)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR(255)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "password_hash",
+          "type": "VARCHAR(255)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "avatar_url",
+          "type": "VARCHAR(500)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "role",
+          "type": "VARCHAR(20)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [],
+      "sourceType": "sql"
+    },
+    "categories": {
+      "name": "categories",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "slug",
+          "type": "VARCHAR(100)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "parent_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "slug",
+          "type": "VARCHAR(120)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "parent_id",
+          "toTable": "categories",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sql"
+    },
+    "products": {
+      "name": "products",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "category_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "title",
+          "type": "VARCHAR(255)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "sku",
+          "type": "VARCHAR(64)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "price",
+          "type": "DECIMAL(10, 2)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "stock_quantity",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "is_published",
+          "type": "BOOLEAN",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "category_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(200)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "slug",
+          "type": "VARCHAR(220)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "price",
+          "type": "DECIMAL(10, 2)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "stock",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "category_id",
+          "toTable": "categories",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "category_id",
+          "toTable": "categories",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sql"
+    },
+    "orders": {
+      "name": "orders",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "user_id",
+          "type": "UUID",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "order_number",
+          "type": "VARCHAR(50)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(30)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "total_amount",
+          "type": "DECIMAL(12, 2)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "shipping_address",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "user_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "order_number",
+          "type": "VARCHAR(50)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "total_amount",
+          "type": "DECIMAL(10, 2)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(50)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "payment_status",
+          "type": "VARCHAR(50)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "shipping_address",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "user_id",
+          "toTable": "users",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "user_id",
+          "toTable": "users",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sql"
+    },
+    "order_items": {
+      "name": "order_items",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "order_id",
+          "type": "UUID",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "product_id",
+          "type": "UUID",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "unit_price",
+          "type": "DECIMAL(10, 2)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "quantity",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "order_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "product_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "quantity",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "unit_price",
+          "type": "DECIMAL(10, 2)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "order_id",
+          "toTable": "orders",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "product_id",
+          "toTable": "products",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "order_id",
+          "toTable": "orders",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "product_id",
+          "toTable": "products",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sql"
+    },
+    "reviews": {
+      "name": "reviews",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "product_id",
+          "type": "UUID",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "user_id",
+          "type": "UUID",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "rating",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "comment",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "SERIAL",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "user_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "product_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "rating",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "comment",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "product_id",
+          "toTable": "products",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "user_id",
+          "toTable": "users",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "user_id",
+          "toTable": "users",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "product_id",
+          "toTable": "products",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sql"
+    },
+    "payments": {
+      "name": "payments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "order_id",
+          "type": "UUID",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "provider",
+          "type": "VARCHAR(50)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "transaction_id",
+          "type": "VARCHAR(100)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "amount",
+          "type": "DECIMAL(12, 2)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(30)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "paid_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "order_id",
+          "toTable": "orders",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sql"
+    },
+    "Customer": {
+      "name": "Customer",
+      "columns": [
+        {
+          "name": "_id",
+          "type": "ObjectId",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "username",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "phone",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "isActive",
+          "type": "Boolean",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "type": "Date",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [],
+      "sourceType": "mongoose"
+    },
+    "Course": {
+      "name": "Course",
+      "columns": [
+        {
+          "name": "_id",
+          "type": "ObjectId",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "slug",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "price",
+          "type": "Number",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "instructorId",
+          "type": "ObjectId",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "isPublished",
+          "type": "Boolean",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "instructorId",
+          "toTable": "Customer",
+          "toField": "_id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "mongoose"
+    },
+    "Enrollment": {
+      "name": "Enrollment",
+      "columns": [
+        {
+          "name": "_id",
+          "type": "ObjectId",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "studentId",
+          "type": "ObjectId",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "courseId",
+          "type": "ObjectId",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "enrolledAt",
+          "type": "Date",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "progress",
+          "type": "Number",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "studentId",
+          "toTable": "Customer",
+          "toField": "_id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "courseId",
+          "toTable": "Course",
+          "toField": "_id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "mongoose"
+    },
+    "Profile": {
+      "name": "Profile",
+      "columns": [
+        {
+          "name": "id",
+          "type": "String",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "bio",
+          "type": "String?",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": true
+        }
+      ],
+      "relations": [
+        {
+          "from": "userId",
+          "toTable": "User",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "prisma"
+    },
+    "PostTag": {
+      "name": "PostTag",
+      "columns": [
+        {
+          "name": "postId",
+          "type": "String",
+          "isPrimary": true,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "tagId",
+          "type": "String",
+          "isPrimary": true,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "postId",
+          "toTable": "Post",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "tagId",
+          "toTable": "Tag",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "prisma"
+    },
+    "Organization": {
+      "name": "Organization",
+      "columns": [
+        {
+          "name": "id",
+          "type": "String",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "slug",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "plan",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "domain",
+          "type": "varchar",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        }
+      ],
+      "relations": [
+        {
+          "from": "teams",
+          "toTable": "Team",
+          "toField": "id",
+          "cardinality": "1:N"
+        }
+      ],
+      "sourceType": "prisma"
+    },
+    "Member": {
+      "name": "Member",
+      "columns": [
+        {
+          "name": "id",
+          "type": "String",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "organizationId",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "role",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "joinedAt",
+          "type": "DateTime",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "fullName",
+          "type": "varchar",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "email",
+          "type": "varchar",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "teamId",
+          "type": "UUID/Int",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "organizationId",
+          "toTable": "Organization",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "team",
+          "toTable": "Team",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "prisma"
+    },
+    "Project": {
+      "name": "Project",
+      "columns": [
+        {
+          "name": "id",
+          "type": "String",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "organizationId",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "description",
+          "type": "String?",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "isArchived",
+          "type": "Boolean",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "title",
+          "type": "STRING",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "leadEmployeeId",
+          "type": "INTEGER",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "organizationId",
+          "toTable": "Organization",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "leadEmployeeId",
+          "toTable": "Employee",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "prisma"
+    },
+    "Task": {
+      "name": "Task",
+      "columns": [
+        {
+          "name": "id",
+          "type": "String",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "projectId",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "status",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "priority",
+          "type": "String",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "dueDate",
+          "type": "DateTime?",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "projectId",
+          "toTable": "Project",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "prisma"
+    },
+    "Department": {
+      "name": "Department",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "type": "STRING",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "budget",
+          "type": "FLOAT",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [],
+      "sourceType": "sequelize"
+    },
+    "Employee": {
+      "name": "Employee",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "firstName",
+          "type": "STRING",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "lastName",
+          "type": "STRING",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "email",
+          "type": "STRING",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "departmentId",
+          "type": "INTEGER",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "salary",
+          "type": "INTEGER",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": true,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "departmentId",
+          "toTable": "Department",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "departmentId",
+          "toTable": "Department",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "departmentId",
+          "toTable": "Department",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sequelize"
+    },
+    "Team": {
+      "name": "Team",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "organizationId",
+          "type": "UUID/Int",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "organization",
+          "toTable": "Organization",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "typeorm"
+    }
+  }
+}

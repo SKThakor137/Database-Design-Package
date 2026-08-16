@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Schema Topology - schemagraph-core</title>
+  <style>
+    :root {
+      --bg: #11111b;
+      --surface: #181825;
+      --card: #1e1e2e;
+      --border: #313244;
+      --text: #cdd6f4;
+      --text-muted: #a6adc8;
+      --primary: #89b4fa;
+      --accent: #f38ba8;
+      --success: #a6e3a1;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation */
+    header {
+      height: 60px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #89b4fa, #cba6f7);
+      color: #11111b;
+      font-weight: 900;
+      font-size: 14px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: -0.5px;
+    }
+
+    .title-group h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .title-group p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Center Search Bar */
+    .search-box {
+      position: relative;
+      width: 320px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px 8px 34px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    /* Actions & Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    button:hover {
+      background: var(--border);
+      color: #fff;
+    }
+
+    .btn-primary {
+      background: #89b4fa;
+      color: #11111b;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: #b4befe;
+      color: #11111b;
+    }
+
+    /* Main Workspace */
+    .workspace {
+      display: flex;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Sidebar Drawer */
+    aside {
+      width: 280px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 5;
+    }
+
+    .stats-card {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-item {
+      background: var(--card);
+      padding: 10px 8px;
+      border-radius: 6px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .stat-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .stat-lbl {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .table-list {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .table-item {
+      padding: 10px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s;
+    }
+
+    .table-item:hover {
+      border-color: var(--primary);
+      transform: translateX(2px);
+    }
+
+    .table-item-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .table-item-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--surface);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Canvas Stage */
+    #viewport {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+      background: #181825;
+    }
+
+    #viewport:active {
+      cursor: grabbing;
+    }
+
+    #canvas-container {
+      transform-origin: 0 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Floating Zoom HUD */
+    .zoom-hud {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      gap: 4px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .zoom-hud button {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #a6e3a1;
+      color: #11111b;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 13px;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 99;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo-badge">ERD</div>
+      <div class="title-group">
+        <h1>Database Schema Topology</h1>
+        <p>Zero-Dependency Relational Schema Explorer</p>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search tables or columns..." onkeyup="filterTables()">
+    </div>
+
+    <div class="controls">
+      <button onclick="resetZoom()">⟲ Reset</button>
+      <button onclick="exportSVG()" class="btn-primary">⬇ Export SVG</button>
+      <button onclick="exportPNG()">📷 PNG</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside>
+      <div class="stats-card">
+        <div class="stat-item">
+          <div class="stat-val">26</div>
+          <div class="stat-lbl">Models</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">217</div>
+          <div class="stat-lbl">Columns</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">46</div>
+          <div class="stat-lbl">Relations</div>
+        </div>
+      </div>
+
+      <div class="table-list" id="table-list">
+        
+          <div class="table-item" data-table="account">
+            <span class="table-item-name">Account</span>
+            <span class="table-item-count">4 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="post">
+            <span class="table-item-name">Post</span>
+            <span class="table-item-count">14 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="tag">
+            <span class="table-item-name">Tag</span>
+            <span class="table-item-count">4 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="user">
+            <span class="table-item-name">User</span>
+            <span class="table-item-count">16 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="category">
+            <span class="table-item-name">Category</span>
+            <span class="table-item-count">4 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="article">
+            <span class="table-item-name">Article</span>
+            <span class="table-item-count">10 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="comment">
+            <span class="table-item-name">Comment</span>
+            <span class="table-item-count">13 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="users">
+            <span class="table-item-name">users</span>
+            <span class="table-item-count">14 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="categories">
+            <span class="table-item-name">categories</span>
+            <span class="table-item-count">10 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="products">
+            <span class="table-item-name">products</span>
+            <span class="table-item-count">16 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="orders">
+            <span class="table-item-name">orders</span>
+            <span class="table-item-count">15 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="order_items">
+            <span class="table-item-name">order_items</span>
+            <span class="table-item-count">10 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="reviews">
+            <span class="table-item-name">reviews</span>
+            <span class="table-item-count">12 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="payments">
+            <span class="table-item-name">payments</span>
+            <span class="table-item-count">7 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="customer">
+            <span class="table-item-name">Customer</span>
+            <span class="table-item-count">6 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="course">
+            <span class="table-item-name">Course</span>
+            <span class="table-item-count">7 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="enrollment">
+            <span class="table-item-name">Enrollment</span>
+            <span class="table-item-count">5 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="profile">
+            <span class="table-item-name">Profile</span>
+            <span class="table-item-count">3 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="posttag">
+            <span class="table-item-name">PostTag</span>
+            <span class="table-item-count">2 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="organization">
+            <span class="table-item-name">Organization</span>
+            <span class="table-item-count">9 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="member">
+            <span class="table-item-name">Member</span>
+            <span class="table-item-count">9 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="project">
+            <span class="table-item-name">Project</span>
+            <span class="table-item-count">9 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="task">
+            <span class="table-item-name">Task</span>
+            <span class="table-item-count">6 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="department">
+            <span class="table-item-name">Department</span>
+            <span class="table-item-count">3 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="employee">
+            <span class="table-item-name">Employee</span>
+            <span class="table-item-count">6 cols</span>
+          </div>
+        
+          <div class="table-item" data-table="team">
+            <span class="table-item-name">Team</span>
+            <span class="table-item-count">3 cols</span>
+          </div>
+        
+      </div>
+    </aside>
+
+    <main id="viewport">
+      <div id="canvas-container">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 2652" width="100%" height="100%" style="background:#181825; user-select:none;">
+
+    <defs>
+      <!-- Background Dot Grid Pattern -->
+      <pattern id="dotGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1.2" fill="#313244" />
+      </pattern>
+
+      <!-- Drop Shadow Filter -->
+      <filter id="cardShadow" x="-10%" y="-10%" width="125%" height="125%">
+        <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/>
+      </filter>
+
+      <!-- Arrow Marker -->
+      <marker id="arrowHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#f38ba8" />
+      </marker>
+
+      <!-- Header Gradient -->
+      <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#89b4fa"/>
+        <stop offset="100%" stop-color="#74c7ec"/>
+      </linearGradient>
+    </defs>
+  <!-- Grid Background -->
+  <rect width="100%" height="100%" fill="url(#dotGrid)" />
+
+    <!-- Diagram Title & Stats -->
+    <g transform="translate(80, 45)">
+      <text x="0" y="0" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="700" letter-spacing="-0.5">Database Schema Topology</text>
+      <text x="0" y="20" fill="#a6adc8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12">26 Models • 46 Relationships • Generated by schemagraph-core</text>
+    </g>
+    <!-- Relationship Connectors -->
+    <g class="relationships">
+      <path d="M 360 146 C 410 146, 400 140, 450 140" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="146" r="3.5" fill="#f38ba8"/>
+      <path d="M 450 146 C 400 146, 410 140, 360 140" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="450" cy="146" r="3.5" fill="#f38ba8"/>
+      <path d="M 730 146 C 780 146, 770 140, 820 140" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="730" cy="146" r="3.5" fill="#f38ba8"/>
+      <path d="M 730 146 C 960 146, 960 336, 1190 336" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="730" cy="146" r="3.5" fill="#f38ba8"/>
+      <path d="M 450 146 C 400 146, 410 768, 360 768" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="450" cy="146" r="3.5" fill="#f38ba8"/>
+      <path d="M 730 476 C 960 476, 960 336, 1190 336" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="730" cy="476" r="3.5" fill="#f38ba8"/>
+      <path d="M 820 146 C 770 146, 780 140, 730 140" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="820" cy="146" r="3.5" fill="#f38ba8"/>
+      <path d="M 1190 146 C 960 146, 960 140, 730 140" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1190" cy="146" r="3.5" fill="#f38ba8"/>
+      <path d="M 1190 146 C 775 146, 775 768, 360 768" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1190" cy="146" r="3.5" fill="#f38ba8"/>
+      <path d="M 1100 496 C 1150 496, 1140 140, 1190 140" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1100" cy="496" r="3.5" fill="#f38ba8"/>
+      <path d="M 820 524 C 590 524, 590 384, 360 384" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="820" cy="524" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 656 C 590 656, 590 384, 820 384" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="656" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 684 C 775 684, 775 140, 1190 140" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="684" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 684 C 775 684, 775 336, 1190 336" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="684" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 634 C 410 634, 400 140, 450 140" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="634" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 880 C 775 880, 775 2032, 1190 2032" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="880" r="3.5" fill="#f38ba8"/>
+      <path d="M 1470 832 C 1420 832, 1520 720, 1470 720" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1470" cy="832" r="3.5" fill="#f38ba8"/>
+      <path d="M 1100 824 C 1150 824, 1140 720, 1190 720" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1100" cy="824" r="3.5" fill="#f38ba8"/>
+      <path d="M 1100 824 C 1150 824, 1140 720, 1190 720" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1100" cy="824" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 1152 C 410 1152, 400 664, 450 664" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="1152" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 1152 C 410 1152, 400 664, 450 664" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="1152" r="3.5" fill="#f38ba8"/>
+      <path d="M 1190 1160 C 775 1160, 775 1124, 360 1124" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1190" cy="1160" r="3.5" fill="#f38ba8"/>
+      <path d="M 1190 1188 C 1140 1188, 1150 796, 1100 796" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1190" cy="1188" r="3.5" fill="#f38ba8"/>
+      <path d="M 1190 1160 C 775 1160, 775 1124, 360 1124" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1190" cy="1160" r="3.5" fill="#f38ba8"/>
+      <path d="M 1190 1188 C 1140 1188, 1150 796, 1100 796" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1190" cy="1188" r="3.5" fill="#f38ba8"/>
+      <path d="M 730 1216 C 780 1216, 770 796, 820 796" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="730" cy="1216" r="3.5" fill="#f38ba8"/>
+      <path d="M 730 1244 C 680 1244, 780 664, 730 664" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="730" cy="1244" r="3.5" fill="#f38ba8"/>
+      <path d="M 730 1244 C 680 1244, 780 664, 730 664" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="730" cy="1244" r="3.5" fill="#f38ba8"/>
+      <path d="M 730 1216 C 780 1216, 770 796, 820 796" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="730" cy="1216" r="3.5" fill="#f38ba8"/>
+      <path d="M 820 1404 C 590 1404, 590 1124, 360 1124" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="820" cy="1404" r="3.5" fill="#f38ba8"/>
+      <path d="M 730 1768 C 960 1768, 960 1544, 1190 1544" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="730" cy="1768" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 1704 C 775 1704, 775 1544, 1190 1544" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="1704" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 1732 C 410 1732, 400 1656, 450 1656" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="1732" r="3.5" fill="#f38ba8"/>
+      <path d="M 1100 1760 C 1150 1760, 1140 336, 1190 336" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1100" cy="1760" r="3.5" fill="#f38ba8"/>
+      <path d="M 1190 1844 C 960 1844, 960 140, 730 140" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1190" cy="1844" r="3.5" fill="#f38ba8"/>
+      <path d="M 1190 1872 C 1140 1872, 1150 140, 1100 140" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1190" cy="1872" r="3.5" fill="#f38ba8"/>
+      <path d="M 1100 1926 C 1150 1926, 1140 2332, 1190 2332" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1100" cy="1926" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 1976 C 590 1976, 590 1920, 820 1920" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="1976" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 1954 C 775 1954, 775 2332, 1190 2332" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="1954" r="3.5" fill="#f38ba8"/>
+      <path d="M 730 2012 C 780 2012, 770 1920, 820 1920" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="730" cy="2012" r="3.5" fill="#f38ba8"/>
+      <path d="M 450 2208 C 400 2208, 410 2332, 360 2332" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="450" cy="2208" r="3.5" fill="#f38ba8"/>
+      <path d="M 1190 2060 C 960 2060, 960 1984, 730 1984" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1190" cy="2060" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 2444 C 590 2444, 590 2304, 820 2304" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="2444" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 2444 C 590 2444, 590 2304, 820 2304" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="2444" r="3.5" fill="#f38ba8"/>
+      <path d="M 360 2444 C 590 2444, 590 2304, 820 2304" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="360" cy="2444" r="3.5" fill="#f38ba8"/>
+      <path d="M 1190 2338 C 1140 2338, 1150 1920, 1100 1920" fill="none" stroke="#f38ba8" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85"/>
+      <circle cx="1190" cy="2338" r="3.5" fill="#f38ba8"/>
+    </g>
+    <!-- Table Model Cards -->
+    <g class="tables">
+      <g class="table-card" transform="translate(80, 80)" filter="url(#cardShadow)">
+        <rect width="280" height="170" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Account</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">GRAPHQL</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ID!</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">email</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String!</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">username</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String!</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">isActive</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Boolean!</text>
+      </g>
+      <g class="table-card" transform="translate(450, 80)" filter="url(#cardShadow)">
+        <rect width="280" height="450" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Post</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">GRAPHQL</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ID!</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">title</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String!</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">body</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String!</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">publishedAt</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="164" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="175" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ID!</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">title</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String!</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">body</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">published</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Boolean!</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="276" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="287" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="298" x2="272" y2="298" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="316" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">title</text>
+        <text x="266" y="316" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="326" x2="272" y2="326" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="344" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">content</text>
+        <text x="266" y="344" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String?</text>
+        <line x1="8" y1="354" x2="272" y2="354" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="372" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">published</text>
+        <text x="266" y="372" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Boolean</text>
+        <line x1="8" y1="382" x2="272" y2="382" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="388" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="399" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="400" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">authorId</text>
+        <text x="266" y="400" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="410" x2="272" y2="410" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="428" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">createdAt</text>
+        <text x="266" y="428" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DateTime</text>
+      </g>
+      <g class="table-card" transform="translate(820, 80)" filter="url(#cardShadow)">
+        <rect width="280" height="170" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Tag</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">GRAPHQL</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ID!</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String!</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="108" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="119" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+      </g>
+      <g class="table-card" transform="translate(1190, 80)" filter="url(#cardShadow)">
+        <rect width="280" height="506" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">User</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">MONGOOSE</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">_id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">username</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">email</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">passwordHash</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">bio</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">isActive</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Boolean</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">createdAt</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Date</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="248" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="259" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ID!</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String!</text>
+        <line x1="8" y1="298" x2="272" y2="298" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="316" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">email</text>
+        <text x="266" y="316" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String!</text>
+        <line x1="8" y1="326" x2="272" y2="326" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="344" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">createdAt</text>
+        <text x="266" y="344" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String!</text>
+        <line x1="8" y1="354" x2="272" y2="354" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="360" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="371" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="372" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="372" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="382" x2="272" y2="382" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="400" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">email</text>
+        <text x="266" y="400" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="410" x2="272" y2="410" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="428" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="428" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String?</text>
+        <line x1="8" y1="438" x2="272" y2="438" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="456" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">role</text>
+        <text x="266" y="456" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="466" x2="272" y2="466" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="484" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">createdAt</text>
+        <text x="266" y="484" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DateTime</text>
+      </g>
+      <g class="table-card" transform="translate(80, 324)" filter="url(#cardShadow)">
+        <rect width="280" height="170" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Category</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">MONGOOSE</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">_id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">slug</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">description</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+      </g>
+      <g class="table-card" transform="translate(820, 324)" filter="url(#cardShadow)">
+        <rect width="280" height="338" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Article</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">MONGOOSE</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">_id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">title</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">slug</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">content</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="164" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="175" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">author</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="192" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="203" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">category</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">tags</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">[String]</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">viewCount</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Number</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">isPublished</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Boolean</text>
+        <line x1="8" y1="298" x2="272" y2="298" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="316" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">publishedAt</text>
+        <text x="266" y="316" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Date</text>
+      </g>
+      <g class="table-card" transform="translate(80, 568)" filter="url(#cardShadow)">
+        <rect width="280" height="422" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Comment</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">MONGOOSE</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">_id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="80" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="91" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">article</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="108" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="119" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">author</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">body</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">createdAt</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Date</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="192" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="203" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ID!</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">message</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String!</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">createdAt</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String!</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="276" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="287" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="298" x2="272" y2="298" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="304" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="315" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="316" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">taskId</text>
+        <text x="266" y="316" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="326" x2="272" y2="326" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="344" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">authorId</text>
+        <text x="266" y="344" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="354" x2="272" y2="354" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="372" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">content</text>
+        <text x="266" y="372" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="382" x2="272" y2="382" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="400" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">createdAt</text>
+        <text x="266" y="400" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DateTime</text>
+      </g>
+      <g class="table-card" transform="translate(450, 604)" filter="url(#cardShadow)">
+        <rect width="280" height="450" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">users</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">SQL</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">email</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(255)</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">full_name</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(100)</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">avatar_url</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(500)</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">role</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(30)</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">created_at</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TIMESTAMP</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">updated_at</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TIMESTAMP</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="248" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="259" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">SERIAL</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(100)</text>
+        <line x1="8" y1="298" x2="272" y2="298" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="316" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">email</text>
+        <text x="266" y="316" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(255)</text>
+        <line x1="8" y1="326" x2="272" y2="326" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="344" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">password_hash</text>
+        <text x="266" y="344" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(255)</text>
+        <line x1="8" y1="354" x2="272" y2="354" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="372" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">avatar_url</text>
+        <text x="266" y="372" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(500)</text>
+        <line x1="8" y1="382" x2="272" y2="382" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="400" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">role</text>
+        <text x="266" y="400" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(20)</text>
+        <line x1="8" y1="410" x2="272" y2="410" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="428" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">created_at</text>
+        <text x="266" y="428" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TIMESTAMP</text>
+      </g>
+      <g class="table-card" transform="translate(1190, 660)" filter="url(#cardShadow)">
+        <rect width="280" height="338" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">categories</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">SQL</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">SERIAL</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(100)</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">slug</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(100)</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">description</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TEXT</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="164" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="175" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">parent_id</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">created_at</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TIMESTAMP</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="220" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="231" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">SERIAL</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(100)</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">slug</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(120)</text>
+        <line x1="8" y1="298" x2="272" y2="298" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="316" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">description</text>
+        <text x="266" y="316" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TEXT</text>
+      </g>
+      <g class="table-card" transform="translate(820, 736)" filter="url(#cardShadow)">
+        <rect width="280" height="506" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">products</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">SQL</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="80" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="91" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">category_id</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">title</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(255)</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">sku</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(64)</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">price</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DECIMAL(10, 2)</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">stock_quantity</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">is_published</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">BOOLEAN</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">created_at</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TIMESTAMP</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="276" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="287" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">SERIAL</text>
+        <line x1="8" y1="298" x2="272" y2="298" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="304" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="315" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="316" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">category_id</text>
+        <text x="266" y="316" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="326" x2="272" y2="326" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="344" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="344" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(200)</text>
+        <line x1="8" y1="354" x2="272" y2="354" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="372" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">slug</text>
+        <text x="266" y="372" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(220)</text>
+        <line x1="8" y1="382" x2="272" y2="382" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="400" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">price</text>
+        <text x="266" y="400" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DECIMAL(10, 2)</text>
+        <line x1="8" y1="410" x2="272" y2="410" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="428" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">stock</text>
+        <text x="266" y="428" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="438" x2="272" y2="438" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="456" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">is_active</text>
+        <text x="266" y="456" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">BOOLEAN</text>
+        <line x1="8" y1="466" x2="272" y2="466" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="484" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">created_at</text>
+        <text x="266" y="484" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TIMESTAMP</text>
+      </g>
+      <g class="table-card" transform="translate(80, 1064)" filter="url(#cardShadow)">
+        <rect width="280" height="478" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">orders</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">SQL</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="80" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="91" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">user_id</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">order_number</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(50)</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">status</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(30)</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">total_amount</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DECIMAL(12, 2)</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">shipping_address</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TEXT</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">created_at</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TIMESTAMP</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="248" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="259" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">SERIAL</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="276" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="287" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">user_id</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="298" x2="272" y2="298" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="316" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">order_number</text>
+        <text x="266" y="316" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(50)</text>
+        <line x1="8" y1="326" x2="272" y2="326" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="344" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">total_amount</text>
+        <text x="266" y="344" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DECIMAL(10, 2)</text>
+        <line x1="8" y1="354" x2="272" y2="354" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="372" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">status</text>
+        <text x="266" y="372" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(50)</text>
+        <line x1="8" y1="382" x2="272" y2="382" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="400" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">payment_status</text>
+        <text x="266" y="400" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(50)</text>
+        <line x1="8" y1="410" x2="272" y2="410" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="428" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">shipping_address</text>
+        <text x="266" y="428" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TEXT</text>
+        <line x1="8" y1="438" x2="272" y2="438" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="456" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">created_at</text>
+        <text x="266" y="456" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TIMESTAMP</text>
+      </g>
+      <g class="table-card" transform="translate(1190, 1072)" filter="url(#cardShadow)">
+        <rect width="280" height="338" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">order_items</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">SQL</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">SERIAL</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="80" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="91" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">order_id</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="108" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="119" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">product_id</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">unit_price</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DECIMAL(10, 2)</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">quantity</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="192" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="203" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">SERIAL</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="220" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="231" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">order_id</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="248" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="259" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">product_id</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">quantity</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="298" x2="272" y2="298" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="316" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">unit_price</text>
+        <text x="266" y="316" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DECIMAL(10, 2)</text>
+      </g>
+      <g class="table-card" transform="translate(450, 1128)" filter="url(#cardShadow)">
+        <rect width="280" height="394" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">reviews</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">SQL</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">SERIAL</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="80" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="91" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">product_id</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="108" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="119" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">user_id</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">rating</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">comment</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TEXT</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">created_at</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TIMESTAMP</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="220" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="231" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">SERIAL</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="248" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="259" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">user_id</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="276" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="287" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">product_id</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="298" x2="272" y2="298" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="316" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">rating</text>
+        <text x="266" y="316" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INT</text>
+        <line x1="8" y1="326" x2="272" y2="326" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="344" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">comment</text>
+        <text x="266" y="344" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TEXT</text>
+        <line x1="8" y1="354" x2="272" y2="354" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="372" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">created_at</text>
+        <text x="266" y="372" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TIMESTAMP</text>
+      </g>
+      <g class="table-card" transform="translate(820, 1316)" filter="url(#cardShadow)">
+        <rect width="280" height="254" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">payments</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">SQL</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="80" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="91" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">order_id</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">provider</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(50)</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">transaction_id</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(100)</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">amount</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DECIMAL(12, 2)</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">status</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">VARCHAR(30)</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">paid_at</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">TIMESTAMP</text>
+      </g>
+      <g class="table-card" transform="translate(1190, 1484)" filter="url(#cardShadow)">
+        <rect width="280" height="226" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Customer</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">MONGOOSE</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">_id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">username</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">email</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">phone</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">isActive</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Boolean</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">createdAt</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Date</text>
+      </g>
+      <g class="table-card" transform="translate(450, 1596)" filter="url(#cardShadow)">
+        <rect width="280" height="254" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Course</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">MONGOOSE</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">_id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">title</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">slug</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">price</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Number</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="164" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="175" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">instructorId</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">description</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">isPublished</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Boolean</text>
+      </g>
+      <g class="table-card" transform="translate(80, 1616)" filter="url(#cardShadow)">
+        <rect width="280" height="198" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Enrollment</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">MONGOOSE</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">_id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="80" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="91" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">studentId</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="108" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="119" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">courseId</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">ObjectId</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">enrolledAt</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Date</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">progress</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Number</text>
+      </g>
+      <g class="table-card" transform="translate(820, 1644)" filter="url(#cardShadow)">
+        <rect width="280" height="142" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Profile</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">PRISMA</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">bio</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String?</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="108" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="119" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">userId</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+      </g>
+      <g class="table-card" transform="translate(1190, 1784)" filter="url(#cardShadow)">
+        <rect width="280" height="114" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">PostTag</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">PRISMA</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">postId</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="80" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="91" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">tagId</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+      </g>
+      <g class="table-card" transform="translate(820, 1860)" filter="url(#cardShadow)">
+        <rect width="280" height="310" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Organization</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">PRISMA</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">slug</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">plan</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">createdAt</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DateTime</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">updatedAt</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DateTime</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="220" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="231" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">string</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">varchar</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">domain</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">varchar</text>
+      </g>
+      <g class="table-card" transform="translate(80, 1888)" filter="url(#cardShadow)">
+        <rect width="280" height="310" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Member</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">PRISMA</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="80" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="91" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">organizationId</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">userId</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">role</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">joinedAt</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DateTime</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="192" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="203" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">string</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">fullName</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">varchar</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">email</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">varchar</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="276" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="287" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">teamId</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID/Int</text>
+      </g>
+      <g class="table-card" transform="translate(450, 1924)" filter="url(#cardShadow)">
+        <rect width="280" height="310" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Project</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">PRISMA</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="80" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="91" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">organizationId</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">title</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">description</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String?</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">isArchived</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">Boolean</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">createdAt</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DateTime</text>
+        <line x1="8" y1="214" x2="272" y2="214" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="220" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="231" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="232" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="232" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INTEGER</text>
+        <line x1="8" y1="242" x2="272" y2="242" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="260" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">title</text>
+        <text x="266" y="260" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">STRING</text>
+        <line x1="8" y1="270" x2="272" y2="270" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="276" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="287" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="288" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">leadEmployeeId</text>
+        <text x="266" y="288" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INTEGER</text>
+      </g>
+      <g class="table-card" transform="translate(1190, 1972)" filter="url(#cardShadow)">
+        <rect width="280" height="226" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Task</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">PRISMA</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="80" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="91" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">projectId</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">title</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">status</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">priority</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">String</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">dueDate</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">DateTime?</text>
+      </g>
+      <g class="table-card" transform="translate(820, 2244)" filter="url(#cardShadow)">
+        <rect width="280" height="142" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Department</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">SEQUELIZE</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INTEGER</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">name</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">STRING</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">budget</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">FLOAT</text>
+      </g>
+      <g class="table-card" transform="translate(80, 2272)" filter="url(#cardShadow)">
+        <rect width="280" height="226" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Employee</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">SEQUELIZE</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INTEGER</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">firstName</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">STRING</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">lastName</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">STRING</text>
+        <line x1="8" y1="130" x2="272" y2="130" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="148" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">email</text>
+        <text x="266" y="148" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">STRING</text>
+        <line x1="8" y1="158" x2="272" y2="158" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="164" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="175" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="176" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">departmentId</text>
+        <text x="266" y="176" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INTEGER</text>
+        <line x1="8" y1="186" x2="272" y2="186" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="204" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">salary</text>
+        <text x="266" y="204" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">INTEGER</text>
+      </g>
+      <g class="table-card" transform="translate(1190, 2272)" filter="url(#cardShadow)">
+        <rect width="280" height="142" rx="10" fill="#1e1e2e" stroke="#45475a" stroke-width="1.5"/>
+        <path d="M 0 10 A 10 10 0 0 1 10 0 L 270 0 A 10 10 0 0 1 280 10 L 280 46 L 0 46 Z" fill="url(#headerGrad)"/>
+        <text x="14" y="28" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2">Team</text>
+        <rect x="210" y="14" width="56" height="18" rx="4" fill="rgba(17, 17, 27, 0.2)"/>
+        <text x="238" y="27" fill="#11111b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">TYPEORM</text>
+        <rect x="14" y="52" width="22" height="15" rx="3" fill="#f9e2af"/>
+        <text x="25" y="63" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>
+        <text x="42" y="64" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">id</text>
+        <text x="266" y="64" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">string</text>
+        <line x1="8" y1="74" x2="272" y2="74" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <text x="14" y="92" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">title</text>
+        <text x="266" y="92" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">varchar</text>
+        <line x1="8" y1="102" x2="272" y2="102" stroke="#313244" stroke-width="1" opacity="0.6"/>
+        <rect x="14" y="108" width="22" height="15" rx="3" fill="#cba6f7"/>
+        <text x="25" y="119" fill="#1e1e2e" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>
+        <text x="42" y="120" fill="#cdd6f4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">organizationId</text>
+        <text x="266" y="120" fill="#9399b2" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">UUID/Int</text>
+      </g>
+    </g>
+</svg>
+      </div>
+
+      <div class="zoom-hud">
+        <button onclick="zoomBy(0.15)">＋</button>
+        <button onclick="zoomBy(-0.15)">－</button>
+        <button onclick="resetZoom()">100%</button>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast">Downloaded successfully!</div>
+
+  <script>
+    let scale = 1;
+    let pointX = 0;
+    let pointY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    const viewport = document.getElementById('viewport');
+    const container = document.getElementById('canvas-container');
+
+    function updateTransform() {
+      container.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+    }
+
+    viewport.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.zoom-hud')) return;
+      isDragging = true;
+      startX = e.clientX - pointX;
+      startY = e.clientY - pointY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      pointX = e.clientX - startX;
+      pointY = e.clientY - startY;
+      updateTransform();
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const xs = (e.clientX - pointX) / scale;
+      const ys = (e.clientY - pointY) / scale;
+      const delta = -e.deltaY;
+      (delta > 0) ? (scale *= 1.1) : (scale /= 1.1);
+      scale = Math.min(Math.max(0.2, scale), 4);
+      pointX = e.clientX - xs * scale;
+      pointY = e.clientY - ys * scale;
+      updateTransform();
+    });
+
+    function zoomBy(delta) {
+      scale = Math.min(Math.max(0.2, scale + delta), 4);
+      updateTransform();
+    }
+
+    function resetZoom() {
+      scale = 1;
+      pointX = 0;
+      pointY = 0;
+      updateTransform();
+    }
+
+    function filterTables() {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      const items = document.querySelectorAll('.table-item');
+      items.forEach(item => {
+        const name = item.getAttribute('data-table');
+        item.style.display = name.includes(q) ? 'flex' : 'none';
+      });
+
+      const cards = document.querySelectorAll('.table-card');
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.opacity = !q || text.includes(q) ? '1' : '0.15';
+      });
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    function exportSVG() {
+      const svg = document.querySelector('svg').outerHTML;
+      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'database-schema.svg';
+      a.click();
+      showToast('✅ SVG Diagram downloaded!');
+    }
+
+    function exportPNG() {
+      const svgElement = document.querySelector('svg');
+      const svgString = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const URLObj = window.URL || window.webkitURL || window;
+      const blobURL = URLObj.createObjectURL(svgBlob);
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = svgElement.viewBox.baseVal.width || 1200;
+        canvas.height = svgElement.viewBox.baseVal.height || 900;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0);
+        const pngURL = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = pngURL;
+        a.download = 'database-schema.png';
+        a.click();
+        showToast('✅ PNG Image downloaded!');
+      };
+      image.src = blobURL;
+    }
+  </script>
+</body>
+</html>

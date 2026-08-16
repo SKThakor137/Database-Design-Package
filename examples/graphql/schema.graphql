@@ -1,0 +1,27 @@
+# Sample GraphQL SDL Schema
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  posts: [Post!]!
+  comments: [Comment!]!
+  createdAt: String!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  body: String
+  published: Boolean!
+  author: User!
+  comments: [Comment!]!
+}
+
+type Comment {
+  id: ID!
+  message: String!
+  author: User!
+  post: Post!
+  createdAt: String!
+}

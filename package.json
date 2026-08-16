@@ -1,0 +1,35 @@
+{
+  "name": "schemagraph-core",
+  "version": "1.0.0",
+  "description": "Zero-dependency pure Node.js CLI tool & library to parse schemas (SQL, Prisma, Mongoose, Sequelize, TypeORM, GraphQL) and generate responsive SVG ERDs, interactive HTML viewers, Mermaid markdown, DBML, DOT, and JSON schema maps.",
+  "main": "src/index.js",
+  "bin": {
+    "schemagraph-core": "bin/schemagraph.js",
+    "pure-erd": "bin/schemagraph.js"
+  },
+  "scripts": {
+    "start": "node bin/schemagraph.js",
+    "demo": "node bin/schemagraph.js ./examples --format=all --output=./demo-output",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "erd",
+    "database-diagram",
+    "schema-visualizer",
+    "sql",
+    "prisma",
+    "mongoose",
+    "sequelize",
+    "typeorm",
+    "graphql",
+    "svg",
+    "mermaid",
+    "dbml",
+    "zero-dependency"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

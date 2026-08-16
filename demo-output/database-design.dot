@@ -1,0 +1,425 @@
+digraph DatabaseSchema {
+  graph [rankdir=LR, pad="0.5", nodesep="0.6", ranksep="1.0", fontname="Helvetica", bgcolor="#181825"];
+  node [shape=none, fontname="Helvetica", fontsize=11, color="#313244"];
+  edge [color="#f38ba8", penwidth=1.5, arrowsize=0.8, style=dashed];
+
+  "Account" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Account</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ID!</font></td></tr>
+      <tr><td align="left" port="email"><font color="#cdd6f4">email</font></td><td align="right"><font color="#9399b2">String!</font></td></tr>
+      <tr><td align="left" port="username"><font color="#cdd6f4">username</font></td><td align="right"><font color="#9399b2">String!</font></td></tr>
+      <tr><td align="left" port="isActive"><font color="#cdd6f4">isActive</font></td><td align="right"><font color="#9399b2">Boolean!</font></td></tr>
+    </table>
+  >];
+
+  "Post" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Post</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ID!</font></td></tr>
+      <tr><td align="left" port="title"><font color="#cdd6f4">title</font></td><td align="right"><font color="#9399b2">String!</font></td></tr>
+      <tr><td align="left" port="body"><font color="#cdd6f4">body</font></td><td align="right"><font color="#9399b2">String!</font></td></tr>
+      <tr><td align="left" port="publishedAt"><font color="#cdd6f4">publishedAt</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ID!</font></td></tr>
+      <tr><td align="left" port="title"><font color="#cdd6f4">title</font></td><td align="right"><font color="#9399b2">String!</font></td></tr>
+      <tr><td align="left" port="body"><font color="#cdd6f4">body</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="published"><font color="#cdd6f4">published</font></td><td align="right"><font color="#9399b2">Boolean!</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="title"><font color="#cdd6f4">title</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="content"><font color="#cdd6f4">content</font></td><td align="right"><font color="#9399b2">String?</font></td></tr>
+      <tr><td align="left" port="published"><font color="#cdd6f4">published</font></td><td align="right"><font color="#9399b2">Boolean</font></td></tr>
+      <tr><td align="left" port="authorId"><font color="#cdd6f4">authorId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="createdAt"><font color="#cdd6f4">createdAt</font></td><td align="right"><font color="#9399b2">DateTime</font></td></tr>
+    </table>
+  >];
+
+  "Tag" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Tag</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ID!</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">String!</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+    </table>
+  >];
+
+  "User" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>User</b></font></td></tr>
+      <tr><td align="left" port="_id"><font color="#cdd6f4">_id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="username"><font color="#cdd6f4">username</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="email"><font color="#cdd6f4">email</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="passwordHash"><font color="#cdd6f4">passwordHash</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="bio"><font color="#cdd6f4">bio</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="isActive"><font color="#cdd6f4">isActive</font></td><td align="right"><font color="#9399b2">Boolean</font></td></tr>
+      <tr><td align="left" port="createdAt"><font color="#cdd6f4">createdAt</font></td><td align="right"><font color="#9399b2">Date</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ID!</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">String!</font></td></tr>
+      <tr><td align="left" port="email"><font color="#cdd6f4">email</font></td><td align="right"><font color="#9399b2">String!</font></td></tr>
+      <tr><td align="left" port="createdAt"><font color="#cdd6f4">createdAt</font></td><td align="right"><font color="#9399b2">String!</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="email"><font color="#cdd6f4">email</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">String?</font></td></tr>
+      <tr><td align="left" port="role"><font color="#cdd6f4">role</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="createdAt"><font color="#cdd6f4">createdAt</font></td><td align="right"><font color="#9399b2">DateTime</font></td></tr>
+    </table>
+  >];
+
+  "Category" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Category</b></font></td></tr>
+      <tr><td align="left" port="_id"><font color="#cdd6f4">_id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="slug"><font color="#cdd6f4">slug</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="description"><font color="#cdd6f4">description</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+    </table>
+  >];
+
+  "Article" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Article</b></font></td></tr>
+      <tr><td align="left" port="_id"><font color="#cdd6f4">_id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="title"><font color="#cdd6f4">title</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="slug"><font color="#cdd6f4">slug</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="content"><font color="#cdd6f4">content</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="author"><font color="#cdd6f4">author <i>[FK]</i></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="category"><font color="#cdd6f4">category <i>[FK]</i></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="tags"><font color="#cdd6f4">tags</font></td><td align="right"><font color="#9399b2">[String]</font></td></tr>
+      <tr><td align="left" port="viewCount"><font color="#cdd6f4">viewCount</font></td><td align="right"><font color="#9399b2">Number</font></td></tr>
+      <tr><td align="left" port="isPublished"><font color="#cdd6f4">isPublished</font></td><td align="right"><font color="#9399b2">Boolean</font></td></tr>
+      <tr><td align="left" port="publishedAt"><font color="#cdd6f4">publishedAt</font></td><td align="right"><font color="#9399b2">Date</font></td></tr>
+    </table>
+  >];
+
+  "Comment" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Comment</b></font></td></tr>
+      <tr><td align="left" port="_id"><font color="#cdd6f4">_id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="article"><font color="#cdd6f4">article <i>[FK]</i></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="author"><font color="#cdd6f4">author <i>[FK]</i></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="body"><font color="#cdd6f4">body</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="createdAt"><font color="#cdd6f4">createdAt</font></td><td align="right"><font color="#9399b2">Date</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ID!</font></td></tr>
+      <tr><td align="left" port="message"><font color="#cdd6f4">message</font></td><td align="right"><font color="#9399b2">String!</font></td></tr>
+      <tr><td align="left" port="createdAt"><font color="#cdd6f4">createdAt</font></td><td align="right"><font color="#9399b2">String!</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="taskId"><font color="#cdd6f4">taskId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="authorId"><font color="#cdd6f4">authorId</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="content"><font color="#cdd6f4">content</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="createdAt"><font color="#cdd6f4">createdAt</font></td><td align="right"><font color="#9399b2">DateTime</font></td></tr>
+    </table>
+  >];
+
+  "users" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>users</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="email"><font color="#cdd6f4">email</font></td><td align="right"><font color="#9399b2">VARCHAR(255)</font></td></tr>
+      <tr><td align="left" port="full_name"><font color="#cdd6f4">full_name</font></td><td align="right"><font color="#9399b2">VARCHAR(100)</font></td></tr>
+      <tr><td align="left" port="avatar_url"><font color="#cdd6f4">avatar_url</font></td><td align="right"><font color="#9399b2">VARCHAR(500)</font></td></tr>
+      <tr><td align="left" port="role"><font color="#cdd6f4">role</font></td><td align="right"><font color="#9399b2">VARCHAR(30)</font></td></tr>
+      <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+      <tr><td align="left" port="updated_at"><font color="#cdd6f4">updated_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">VARCHAR(100)</font></td></tr>
+      <tr><td align="left" port="email"><font color="#cdd6f4">email</font></td><td align="right"><font color="#9399b2">VARCHAR(255)</font></td></tr>
+      <tr><td align="left" port="password_hash"><font color="#cdd6f4">password_hash</font></td><td align="right"><font color="#9399b2">VARCHAR(255)</font></td></tr>
+      <tr><td align="left" port="avatar_url"><font color="#cdd6f4">avatar_url</font></td><td align="right"><font color="#9399b2">VARCHAR(500)</font></td></tr>
+      <tr><td align="left" port="role"><font color="#cdd6f4">role</font></td><td align="right"><font color="#9399b2">VARCHAR(20)</font></td></tr>
+      <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+    </table>
+  >];
+
+  "categories" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>categories</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">VARCHAR(100)</font></td></tr>
+      <tr><td align="left" port="slug"><font color="#cdd6f4">slug</font></td><td align="right"><font color="#9399b2">VARCHAR(100)</font></td></tr>
+      <tr><td align="left" port="description"><font color="#cdd6f4">description</font></td><td align="right"><font color="#9399b2">TEXT</font></td></tr>
+      <tr><td align="left" port="parent_id"><font color="#cdd6f4">parent_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">VARCHAR(100)</font></td></tr>
+      <tr><td align="left" port="slug"><font color="#cdd6f4">slug</font></td><td align="right"><font color="#9399b2">VARCHAR(120)</font></td></tr>
+      <tr><td align="left" port="description"><font color="#cdd6f4">description</font></td><td align="right"><font color="#9399b2">TEXT</font></td></tr>
+    </table>
+  >];
+
+  "products" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>products</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="category_id"><font color="#cdd6f4">category_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="title"><font color="#cdd6f4">title</font></td><td align="right"><font color="#9399b2">VARCHAR(255)</font></td></tr>
+      <tr><td align="left" port="sku"><font color="#cdd6f4">sku</font></td><td align="right"><font color="#9399b2">VARCHAR(64)</font></td></tr>
+      <tr><td align="left" port="price"><font color="#cdd6f4">price</font></td><td align="right"><font color="#9399b2">DECIMAL(10, 2)</font></td></tr>
+      <tr><td align="left" port="stock_quantity"><font color="#cdd6f4">stock_quantity</font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="is_published"><font color="#cdd6f4">is_published</font></td><td align="right"><font color="#9399b2">BOOLEAN</font></td></tr>
+      <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
+      <tr><td align="left" port="category_id"><font color="#cdd6f4">category_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">VARCHAR(200)</font></td></tr>
+      <tr><td align="left" port="slug"><font color="#cdd6f4">slug</font></td><td align="right"><font color="#9399b2">VARCHAR(220)</font></td></tr>
+      <tr><td align="left" port="price"><font color="#cdd6f4">price</font></td><td align="right"><font color="#9399b2">DECIMAL(10, 2)</font></td></tr>
+      <tr><td align="left" port="stock"><font color="#cdd6f4">stock</font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="is_active"><font color="#cdd6f4">is_active</font></td><td align="right"><font color="#9399b2">BOOLEAN</font></td></tr>
+      <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+    </table>
+  >];
+
+  "orders" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>orders</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="user_id"><font color="#cdd6f4">user_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="order_number"><font color="#cdd6f4">order_number</font></td><td align="right"><font color="#9399b2">VARCHAR(50)</font></td></tr>
+      <tr><td align="left" port="status"><font color="#cdd6f4">status</font></td><td align="right"><font color="#9399b2">VARCHAR(30)</font></td></tr>
+      <tr><td align="left" port="total_amount"><font color="#cdd6f4">total_amount</font></td><td align="right"><font color="#9399b2">DECIMAL(12, 2)</font></td></tr>
+      <tr><td align="left" port="shipping_address"><font color="#cdd6f4">shipping_address</font></td><td align="right"><font color="#9399b2">TEXT</font></td></tr>
+      <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
+      <tr><td align="left" port="user_id"><font color="#cdd6f4">user_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="order_number"><font color="#cdd6f4">order_number</font></td><td align="right"><font color="#9399b2">VARCHAR(50)</font></td></tr>
+      <tr><td align="left" port="total_amount"><font color="#cdd6f4">total_amount</font></td><td align="right"><font color="#9399b2">DECIMAL(10, 2)</font></td></tr>
+      <tr><td align="left" port="status"><font color="#cdd6f4">status</font></td><td align="right"><font color="#9399b2">VARCHAR(50)</font></td></tr>
+      <tr><td align="left" port="payment_status"><font color="#cdd6f4">payment_status</font></td><td align="right"><font color="#9399b2">VARCHAR(50)</font></td></tr>
+      <tr><td align="left" port="shipping_address"><font color="#cdd6f4">shipping_address</font></td><td align="right"><font color="#9399b2">TEXT</font></td></tr>
+      <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+    </table>
+  >];
+
+  "order_items" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>order_items</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
+      <tr><td align="left" port="order_id"><font color="#cdd6f4">order_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="product_id"><font color="#cdd6f4">product_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="unit_price"><font color="#cdd6f4">unit_price</font></td><td align="right"><font color="#9399b2">DECIMAL(10, 2)</font></td></tr>
+      <tr><td align="left" port="quantity"><font color="#cdd6f4">quantity</font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
+      <tr><td align="left" port="order_id"><font color="#cdd6f4">order_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="product_id"><font color="#cdd6f4">product_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="quantity"><font color="#cdd6f4">quantity</font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="unit_price"><font color="#cdd6f4">unit_price</font></td><td align="right"><font color="#9399b2">DECIMAL(10, 2)</font></td></tr>
+    </table>
+  >];
+
+  "reviews" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>reviews</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
+      <tr><td align="left" port="product_id"><font color="#cdd6f4">product_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="user_id"><font color="#cdd6f4">user_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="rating"><font color="#cdd6f4">rating</font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="comment"><font color="#cdd6f4">comment</font></td><td align="right"><font color="#9399b2">TEXT</font></td></tr>
+      <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
+      <tr><td align="left" port="user_id"><font color="#cdd6f4">user_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="product_id"><font color="#cdd6f4">product_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="rating"><font color="#cdd6f4">rating</font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="comment"><font color="#cdd6f4">comment</font></td><td align="right"><font color="#9399b2">TEXT</font></td></tr>
+      <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+    </table>
+  >];
+
+  "payments" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>payments</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="order_id"><font color="#cdd6f4">order_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="provider"><font color="#cdd6f4">provider</font></td><td align="right"><font color="#9399b2">VARCHAR(50)</font></td></tr>
+      <tr><td align="left" port="transaction_id"><font color="#cdd6f4">transaction_id</font></td><td align="right"><font color="#9399b2">VARCHAR(100)</font></td></tr>
+      <tr><td align="left" port="amount"><font color="#cdd6f4">amount</font></td><td align="right"><font color="#9399b2">DECIMAL(12, 2)</font></td></tr>
+      <tr><td align="left" port="status"><font color="#cdd6f4">status</font></td><td align="right"><font color="#9399b2">VARCHAR(30)</font></td></tr>
+      <tr><td align="left" port="paid_at"><font color="#cdd6f4">paid_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+    </table>
+  >];
+
+  "Customer" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Customer</b></font></td></tr>
+      <tr><td align="left" port="_id"><font color="#cdd6f4">_id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="username"><font color="#cdd6f4">username</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="email"><font color="#cdd6f4">email</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="phone"><font color="#cdd6f4">phone</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="isActive"><font color="#cdd6f4">isActive</font></td><td align="right"><font color="#9399b2">Boolean</font></td></tr>
+      <tr><td align="left" port="createdAt"><font color="#cdd6f4">createdAt</font></td><td align="right"><font color="#9399b2">Date</font></td></tr>
+    </table>
+  >];
+
+  "Course" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Course</b></font></td></tr>
+      <tr><td align="left" port="_id"><font color="#cdd6f4">_id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="title"><font color="#cdd6f4">title</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="slug"><font color="#cdd6f4">slug</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="price"><font color="#cdd6f4">price</font></td><td align="right"><font color="#9399b2">Number</font></td></tr>
+      <tr><td align="left" port="instructorId"><font color="#cdd6f4">instructorId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="description"><font color="#cdd6f4">description</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="isPublished"><font color="#cdd6f4">isPublished</font></td><td align="right"><font color="#9399b2">Boolean</font></td></tr>
+    </table>
+  >];
+
+  "Enrollment" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Enrollment</b></font></td></tr>
+      <tr><td align="left" port="_id"><font color="#cdd6f4">_id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="studentId"><font color="#cdd6f4">studentId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="courseId"><font color="#cdd6f4">courseId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">ObjectId</font></td></tr>
+      <tr><td align="left" port="enrolledAt"><font color="#cdd6f4">enrolledAt</font></td><td align="right"><font color="#9399b2">Date</font></td></tr>
+      <tr><td align="left" port="progress"><font color="#cdd6f4">progress</font></td><td align="right"><font color="#9399b2">Number</font></td></tr>
+    </table>
+  >];
+
+  "Profile" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Profile</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="bio"><font color="#cdd6f4">bio</font></td><td align="right"><font color="#9399b2">String?</font></td></tr>
+      <tr><td align="left" port="userId"><font color="#cdd6f4">userId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+    </table>
+  >];
+
+  "PostTag" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>PostTag</b></font></td></tr>
+      <tr><td align="left" port="postId"><font color="#cdd6f4">postId <b>[PK]</b></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="tagId"><font color="#cdd6f4">tagId <b>[PK]</b></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+    </table>
+  >];
+
+  "Organization" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Organization</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="slug"><font color="#cdd6f4">slug</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="plan"><font color="#cdd6f4">plan</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="createdAt"><font color="#cdd6f4">createdAt</font></td><td align="right"><font color="#9399b2">DateTime</font></td></tr>
+      <tr><td align="left" port="updatedAt"><font color="#cdd6f4">updatedAt</font></td><td align="right"><font color="#9399b2">DateTime</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">string</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">varchar</font></td></tr>
+      <tr><td align="left" port="domain"><font color="#cdd6f4">domain</font></td><td align="right"><font color="#9399b2">varchar</font></td></tr>
+    </table>
+  >];
+
+  "Member" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Member</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="organizationId"><font color="#cdd6f4">organizationId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="userId"><font color="#cdd6f4">userId</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="role"><font color="#cdd6f4">role</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="joinedAt"><font color="#cdd6f4">joinedAt</font></td><td align="right"><font color="#9399b2">DateTime</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">string</font></td></tr>
+      <tr><td align="left" port="fullName"><font color="#cdd6f4">fullName</font></td><td align="right"><font color="#9399b2">varchar</font></td></tr>
+      <tr><td align="left" port="email"><font color="#cdd6f4">email</font></td><td align="right"><font color="#9399b2">varchar</font></td></tr>
+      <tr><td align="left" port="teamId"><font color="#cdd6f4">teamId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID/Int</font></td></tr>
+    </table>
+  >];
+
+  "Project" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Project</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="organizationId"><font color="#cdd6f4">organizationId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="title"><font color="#cdd6f4">title</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="description"><font color="#cdd6f4">description</font></td><td align="right"><font color="#9399b2">String?</font></td></tr>
+      <tr><td align="left" port="isArchived"><font color="#cdd6f4">isArchived</font></td><td align="right"><font color="#9399b2">Boolean</font></td></tr>
+      <tr><td align="left" port="createdAt"><font color="#cdd6f4">createdAt</font></td><td align="right"><font color="#9399b2">DateTime</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">INTEGER</font></td></tr>
+      <tr><td align="left" port="title"><font color="#cdd6f4">title</font></td><td align="right"><font color="#9399b2">STRING</font></td></tr>
+      <tr><td align="left" port="leadEmployeeId"><font color="#cdd6f4">leadEmployeeId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INTEGER</font></td></tr>
+    </table>
+  >];
+
+  "Task" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Task</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="projectId"><font color="#cdd6f4">projectId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="title"><font color="#cdd6f4">title</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="status"><font color="#cdd6f4">status</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="priority"><font color="#cdd6f4">priority</font></td><td align="right"><font color="#9399b2">String</font></td></tr>
+      <tr><td align="left" port="dueDate"><font color="#cdd6f4">dueDate</font></td><td align="right"><font color="#9399b2">DateTime?</font></td></tr>
+    </table>
+  >];
+
+  "Department" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Department</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">INTEGER</font></td></tr>
+      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">STRING</font></td></tr>
+      <tr><td align="left" port="budget"><font color="#cdd6f4">budget</font></td><td align="right"><font color="#9399b2">FLOAT</font></td></tr>
+    </table>
+  >];
+
+  "Employee" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Employee</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">INTEGER</font></td></tr>
+      <tr><td align="left" port="firstName"><font color="#cdd6f4">firstName</font></td><td align="right"><font color="#9399b2">STRING</font></td></tr>
+      <tr><td align="left" port="lastName"><font color="#cdd6f4">lastName</font></td><td align="right"><font color="#9399b2">STRING</font></td></tr>
+      <tr><td align="left" port="email"><font color="#cdd6f4">email</font></td><td align="right"><font color="#9399b2">STRING</font></td></tr>
+      <tr><td align="left" port="departmentId"><font color="#cdd6f4">departmentId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INTEGER</font></td></tr>
+      <tr><td align="left" port="salary"><font color="#cdd6f4">salary</font></td><td align="right"><font color="#9399b2">INTEGER</font></td></tr>
+    </table>
+  >];
+
+  "Team" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>Team</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">string</font></td></tr>
+      <tr><td align="left" port="title"><font color="#cdd6f4">title</font></td><td align="right"><font color="#9399b2">varchar</font></td></tr>
+      <tr><td align="left" port="organizationId"><font color="#cdd6f4">organizationId <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID/Int</font></td></tr>
+    </table>
+  >];
+
+  "Account":"posts" -> "Post":"id";
+  "Post":"author" -> "Account":"id";
+  "Post":"tags" -> "Tag":"id";
+  "Post":"author" -> "User":"id";
+  "Post":"comments" -> "Comment":"id";
+  "Post":"authorId" -> "User":"id";
+  "Tag":"posts" -> "Post":"id";
+  "User":"posts" -> "Post":"id";
+  "User":"comments" -> "Comment":"id";
+  "Article":"author" -> "User":"_id";
+  "Article":"category" -> "Category":"_id";
+  "Comment":"article" -> "Article":"_id";
+  "Comment":"author" -> "User":"_id";
+  "Comment":"author" -> "User":"id";
+  "Comment":"post" -> "Post":"id";
+  "Comment":"taskId" -> "Task":"id";
+  "categories":"parent_id" -> "categories":"id";
+  "products":"category_id" -> "categories":"id";
+  "products":"category_id" -> "categories":"id";
+  "orders":"user_id" -> "users":"id";
+  "orders":"user_id" -> "users":"id";
+  "order_items":"order_id" -> "orders":"id";
+  "order_items":"product_id" -> "products":"id";
+  "order_items":"order_id" -> "orders":"id";
+  "order_items":"product_id" -> "products":"id";
+  "reviews":"product_id" -> "products":"id";
+  "reviews":"user_id" -> "users":"id";
+  "reviews":"user_id" -> "users":"id";
+  "reviews":"product_id" -> "products":"id";
+  "payments":"order_id" -> "orders":"id";
+  "Course":"instructorId" -> "Customer":"_id";
+  "Enrollment":"studentId" -> "Customer":"_id";
+  "Enrollment":"courseId" -> "Course":"_id";
+  "Profile":"userId" -> "User":"id";
+  "PostTag":"postId" -> "Post":"id";
+  "PostTag":"tagId" -> "Tag":"id";
+  "Organization":"teams" -> "Team":"id";
+  "Member":"organizationId" -> "Organization":"id";
+  "Member":"team" -> "Team":"id";
+  "Project":"organizationId" -> "Organization":"id";
+  "Project":"leadEmployeeId" -> "Employee":"id";
+  "Task":"projectId" -> "Project":"id";
+  "Employee":"departmentId" -> "Department":"id";
+  "Employee":"departmentId" -> "Department":"id";
+  "Employee":"departmentId" -> "Department":"id";
+  "Team":"organization" -> "Organization":"id";
+}
