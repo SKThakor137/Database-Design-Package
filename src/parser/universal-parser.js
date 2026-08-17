@@ -1,8 +1,13 @@
 /**
  * Universal Schema Parser
  * Recursively scans workspace directories and orchestrates schema parsing across:
- * - Backend: SQL, Prisma, Mongoose, Sequelize, TypeORM, GraphQL
- * - Frontend / Fullstack: TypeScript Interfaces, Types, and Zod Schemas
+ * - PHP / Laravel: Migration files and Eloquent models (.php)
+ * - Python: Django models & SQLAlchemy (.py)
+ * - Ruby: Ruby on Rails schema.rb & migrations (.rb)
+ * - Go: Go structs and GORM tags (.go)
+ * - Java / Kotlin: JPA / Hibernate / Spring Boot entities (.java, .kt)
+ * - Node.js: SQL, Prisma, Mongoose, Sequelize, TypeORM, GraphQL (.sql, .prisma, .graphql, .gql)
+ * - Frontend / Fullstack: TypeScript Interfaces, Types, and Zod Schemas (.ts, .tsx, .js)
  * Pure Node.js - Zero dependencies.
  */
 
@@ -15,11 +20,16 @@ const SequelizeParser = require('./sequelize-parser');
 const TypeORMParser = require('./typeorm-parser');
 const GraphQLParser = require('./graphql-parser');
 const TSTypeParser = require('./ts-type-parser');
+const LaravelParser = require('./laravel-parser');
+const PythonParser = require('./python-parser');
+const RailsParser = require('./rails-parser');
+const GoParser = require('./go-parser');
+const JPAParser = require('./jpa-parser');
 
 class UniversalSchemaParser {
     constructor(options = {}) {
         this.options = {
-            exclude: options.exclude || ['node_modules', '.git', 'dist', 'build', '.next', 'coverage', '.cache'],
+            exclude: options.exclude || ['node_modules', '.git', 'dist', 'build', '.next', 'coverage', '.cache', 'vendor', '__pycache__', '.venv', 'venv', 'target'],
             ...options
         };
         this.models = {};
@@ -55,7 +65,11 @@ class UniversalSchemaParser {
 
     parseFile(filePath) {
         const ext = path.extname(filePath).toLowerCase();
-        const supportedExts = ['.sql', '.prisma', '.js', '.ts', '.tsx', '.jsx', '.mjs', '.cjs', '.graphql', '.gql', '.json'];
+        const supportedExts = [
+            '.sql', '.prisma', '.graphql', '.gql', '.json',
+            '.js', '.ts', '.tsx', '.jsx', '.mjs', '.cjs',
+            '.php', '.py', '.rb', '.go', '.java', '.kt'
+        ];
 
         if (!supportedExts.includes(ext)) {
             return;
@@ -70,6 +84,21 @@ class UniversalSchemaParser {
                 PrismaParser.parse(content, this.models);
             } else if (ext === '.graphql' || ext === '.gql') {
                 GraphQLParser.parse(content, this.models);
+            } else if (ext === '.php') {
+                // PHP Laravel migrations & Eloquent models
+                LaravelParser.parse(content, this.models);
+            } else if (ext === '.py') {
+                // Python Django models & SQLAlchemy
+                PythonParser.parse(content, this.models);
+            } else if (ext === '.rb') {
+                // Ruby on Rails schema & ActiveRecord
+                RailsParser.parse(content, this.models);
+            } else if (ext === '.go') {
+                // Go structs and GORM
+                GoParser.parse(content, this.models);
+            } else if (ext === '.java' || ext === '.kt') {
+                // Java & Kotlin Spring Boot JPA / Hibernate
+                JPAParser.parse(content, this.models);
             } else if (['.js', '.ts', '.tsx', '.jsx', '.mjs', '.cjs'].includes(ext)) {
                 // Determine ORM / Framework by content signature
                 if (content.includes('@Entity') || content.includes('@Column')) {

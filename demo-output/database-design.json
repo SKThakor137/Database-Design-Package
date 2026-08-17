@@ -1,12 +1,12 @@
 {
-  "generator": "schemagraph-core",
+  "generator": "schemagraph",
   "version": "1.0.0",
-  "generatedAt": "2026-08-16T10:46:57.481Z",
+  "generatedAt": "2026-08-17T15:21:44.498Z",
   "metadata": {
     "title": "Database Schema Topology",
-    "totalTables": 26,
-    "totalColumns": 217,
-    "totalRelations": 46
+    "totalTables": 28,
+    "totalColumns": 259,
+    "totalRelations": 54
   },
   "tables": {
     "Account": {
@@ -685,6 +685,41 @@
       "columns": [
         {
           "name": "id",
+          "type": "BIGINT",
+          "isPrimary": true,
+          "isUnique": true,
+          "isNullable": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(150)",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR(254)",
+          "isPrimary": false,
+          "isUnique": true,
+          "isNullable": false
+        },
+        {
+          "name": "is_staff",
+          "type": "BOOLEAN",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "id",
           "type": "UUID",
           "isPrimary": true,
           "isForeign": false,
@@ -738,6 +773,27 @@
           "isForeign": false,
           "isNullable": false,
           "isUnique": false
+        },
+        {
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "password",
+          "type": "VARCHAR(255)",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "orders",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": true
         },
         {
           "name": "id",
@@ -796,12 +852,40 @@
           "isUnique": false
         }
       ],
-      "relations": [],
-      "sourceType": "sql"
+      "relations": [
+        {
+          "fromColumn": "user_id",
+          "toTable": "orders",
+          "toColumn": "id",
+          "relationType": "many-to-one"
+        }
+      ],
+      "sourceType": "django"
     },
     "categories": {
       "name": "categories",
       "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT",
+          "isPrimary": true,
+          "isUnique": true,
+          "isNullable": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(100)",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "slug",
+          "type": "SLUGFIELD",
+          "isPrimary": false,
+          "isUnique": true,
+          "isNullable": false
+        },
         {
           "name": "id",
           "type": "SERIAL",
@@ -851,6 +935,13 @@
           "isUnique": false
         },
         {
+          "name": "updated_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": true
+        },
+        {
           "name": "id",
           "type": "SERIAL",
           "isPrimary": true,
@@ -891,11 +982,47 @@
           "cardinality": "N:1"
         }
       ],
-      "sourceType": "sql"
+      "sourceType": "django"
     },
     "products": {
       "name": "products",
       "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT",
+          "isPrimary": true,
+          "isUnique": true,
+          "isNullable": false
+        },
+        {
+          "name": "category_id",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false,
+          "isForeign": true
+        },
+        {
+          "name": "title",
+          "type": "VARCHAR(200)",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "price",
+          "type": "DECIMAL(10,2)",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "stock",
+          "type": "INT",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
         {
           "name": "id",
           "type": "UUID",
@@ -959,6 +1086,13 @@
           "isForeign": false,
           "isNullable": false,
           "isUnique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": true
         },
         {
           "name": "id",
@@ -1027,6 +1161,12 @@
       ],
       "relations": [
         {
+          "fromColumn": "category_id",
+          "toTable": "categories",
+          "toColumn": "id",
+          "relationType": "many-to-one"
+        },
+        {
           "from": "category_id",
           "toTable": "categories",
           "toField": "id",
@@ -1039,11 +1179,47 @@
           "cardinality": "N:1"
         }
       ],
-      "sourceType": "sql"
+      "sourceType": "django"
     },
     "orders": {
       "name": "orders",
       "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT",
+          "isPrimary": true,
+          "isUnique": true,
+          "isNullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false,
+          "isForeign": true
+        },
+        {
+          "name": "order_number",
+          "type": "VARCHAR(64)",
+          "isPrimary": false,
+          "isUnique": true,
+          "isNullable": false
+        },
+        {
+          "name": "total_price",
+          "type": "DECIMAL(10,2)",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
         {
           "name": "id",
           "type": "UUID",
@@ -1099,6 +1275,34 @@
           "isForeign": false,
           "isNullable": false,
           "isUnique": false
+        },
+        {
+          "name": "amount",
+          "type": "FLOAT",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": true
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": true
+        },
+        {
+          "name": "order_code",
+          "type": "VARCHAR(50)",
+          "isPrimary": false,
+          "isUnique": true,
+          "isNullable": false
+        },
+        {
+          "name": "order_status",
+          "type": "VARCHAR(30)",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": true
         },
         {
           "name": "id",
@@ -1167,6 +1371,12 @@
       ],
       "relations": [
         {
+          "fromColumn": "user_id",
+          "toTable": "users",
+          "toColumn": "id",
+          "relationType": "many-to-one"
+        },
+        {
           "from": "user_id",
           "toTable": "users",
           "toField": "id",
@@ -1179,7 +1389,7 @@
           "cardinality": "N:1"
         }
       ],
-      "sourceType": "sql"
+      "sourceType": "django"
     },
     "order_items": {
       "name": "order_items",
@@ -1223,6 +1433,20 @@
           "isForeign": false,
           "isNullable": false,
           "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": true
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": true
         },
         {
           "name": "id",
@@ -1277,6 +1501,18 @@
           "toTable": "products",
           "toField": "id",
           "cardinality": "N:1"
+        },
+        {
+          "fromColumn": "order_id",
+          "toTable": "orders",
+          "toColumn": "id",
+          "relationType": "many-to-one"
+        },
+        {
+          "fromColumn": "product_id",
+          "toTable": "products",
+          "toColumn": "id",
+          "relationType": "many-to-one"
         },
         {
           "from": "order_id",
@@ -1749,6 +1985,131 @@
         }
       ],
       "sourceType": "prisma"
+    },
+    "posts": {
+      "name": "posts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT",
+          "isPrimary": true,
+          "isUnique": true,
+          "isNullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "title",
+          "type": "VARCHAR(255)",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "body",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": true
+        },
+        {
+          "name": "published",
+          "type": "BOOLEAN",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        }
+      ],
+      "relations": [
+        {
+          "fromColumn": "user_id",
+          "toTable": "users",
+          "toColumn": "id",
+          "relationType": "many-to-one"
+        }
+      ],
+      "sourceType": "rails"
+    },
+    "comments": {
+      "name": "comments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT",
+          "isPrimary": true,
+          "isUnique": true,
+          "isNullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "post_id",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "content",
+          "type": "TEXT",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isUnique": false,
+          "isNullable": false
+        }
+      ],
+      "relations": [
+        {
+          "fromColumn": "user_id",
+          "toTable": "users",
+          "toColumn": "id",
+          "relationType": "many-to-one"
+        },
+        {
+          "fromColumn": "post_id",
+          "toTable": "posts",
+          "toColumn": "id",
+          "relationType": "many-to-one"
+        }
+      ],
+      "sourceType": "rails"
     },
     "Organization": {
       "name": "Organization",

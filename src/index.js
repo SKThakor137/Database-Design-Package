@@ -11,6 +11,11 @@ const SequelizeParser = require('./parser/sequelize-parser');
 const TypeORMParser = require('./parser/typeorm-parser');
 const GraphQLParser = require('./parser/graphql-parser');
 const TSTypeParser = require('./parser/ts-type-parser');
+const LaravelParser = require('./parser/laravel-parser');
+const PythonParser = require('./parser/python-parser');
+const RailsParser = require('./parser/rails-parser');
+const GoParser = require('./parser/go-parser');
+const JPAParser = require('./parser/jpa-parser');
 const LayoutEngine = require('./layout/layout-engine');
 const SVGRenderer = require('./renderers/svg-renderer');
 const HTMLRenderer = require('./renderers/html-renderer');
@@ -98,6 +103,11 @@ module.exports = {
     TypeORMParser,
     GraphQLParser,
     TSTypeParser,
+    LaravelParser,
+    PythonParser,
+    RailsParser,
+    GoParser,
+    JPAParser,
     // Layout & Renderers
     LayoutEngine,
     SVGRenderer,

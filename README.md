@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-  <strong>Zero-Dependency Database Architecture & Relational ERD Generator for Node.js</strong><br>
-  <em>Instantly scan backend schemas & frontend models, map relational dependencies, and generate responsive vector SVGs, interactive single-page HTML explorers, Mermaid diagrams, DBML, and SQL DDL.</em>
+  <strong>Universal Zero-Dependency Database Architecture & Relational ERD Generator</strong><br>
+  <em>Instantly scan backend schemas & frontend models across any framework, map relational dependencies, and generate responsive vector SVGs, interactive single-page HTML explorers, Mermaid diagrams, DBML, and SQL DDL.</em>
 </p>
 
 <p align="center">
@@ -18,18 +18,63 @@
 
 ---
 
+## ⚡ Instant Run (Single Command - No Install Needed)
+
+Run `schemagraph` in your project folder right now with `npx`:
+
+```bash
+# 🚀 1. Scan current project and generate SVG & Interactive HTML
+npx schemagraph
+
+# 📦 2. Scan backend directory and generate ALL 7 formats into ./docs
+npx schemagraph ./backend --format=all --output=./docs
+```
+
+### 🎯 One-Line Commands by Framework
+
+```bash
+# 🐘 1. Laravel (PHP)
+npx schemagraph ./database/migrations --format=all --output=./docs
+
+# 🐍 2. Django & Python
+npx schemagraph ./models.py --format=all --output=./docs
+
+# 💎 3. Ruby on Rails
+npx schemagraph ./db --format=all --output=./docs
+
+# 🐹 4. Go / GORM
+npx schemagraph ./internal/models --format=all --output=./docs
+
+# ☕ 5. Java & Kotlin (Spring Boot JPA)
+npx schemagraph ./src/main/java --format=all --output=./docs
+
+# ⚡ 6. Prisma / Node.js
+npx schemagraph ./prisma --format=all --output=./docs
+
+# 🗄️ 7. Relational SQL Migrations (PostgreSQL, MySQL, SQLite)
+npx schemagraph ./migrations --format=all --output=./docs
+```
+
+> 💡 **Optional Global Install**:
+> ```bash
+> npm install -g schemagraph
+> schemagraph  # run anywhere
+> ```
+
+---
+
 ## 🌟 Why schemagraph?
 
 - 🚫 **Zero External Dependencies**: Built strictly using pure Node.js standard library (`fs`, `path`, `crypto`, `events`, `os`). Under **40 KB** install footprint. Zero supply-chain security risks.
 - ⚡ **Instant Performance**: Scans and parses 50+ models and generates all diagrams in under **50 milliseconds**.
-- 🎯 **Universal Multi-Dialect Support**: Automatically detects and parses:
-  - **SQL DDL** (`.sql` files with `CREATE TABLE`, `PRIMARY KEY`, `FOREIGN KEY ... REFERENCES`)
-  - **Prisma Schema** (`.prisma` models, `@id`, `@unique`, `@relation(fields, references)`)
-  - **Mongoose / MongoDB** (`new Schema({ ... })`, `ref: 'Model'`)
-  - **Sequelize ORM** (`sequelize.define`, `Model.init`, `hasMany`, `belongsTo`)
-  - **TypeORM** (`@Entity`, `@PrimaryGeneratedColumn`, `@ManyToOne`, `@JoinColumn`)
-  - **GraphQL SDL** (`.graphql`, `.gql` type definitions and object relations)
-  - **Frontend / TS Types** (`interface User`, `type Order`, `z.object` Zod schemas)
+- 🎯 **Universal Multi-Framework Auto-Discovery**: Automatically detects and parses:
+  - 🐘 **PHP / Laravel**: Migration files (`database/migrations/*.php` with `Schema::create`, `Blueprint`, `foreignId()`, `constrained()`) and Eloquent models (`belongsTo`, `hasMany`).
+  - 🐍 **Python / Django & SQLAlchemy**: Django models (`models.Model`, `ForeignKey`) and SQLAlchemy (`Base`, `Column`, `ForeignKey`).
+  - 💎 **Ruby on Rails**: Schema (`db/schema.rb`, `db/migrate/*.rb`), `create_table`, `add_foreign_key`, and ActiveRecord models (`belongs_to`, `has_many`).
+  - 🐹 **Go / GORM**: Structs with `gorm:"primaryKey"`, `gorm:"foreignKey"`, and relationship fields.
+  - ☕ **Java & Kotlin (Spring Boot)**: JPA / Hibernate `@Entity`, `@Table`, `@Id`, `@Column`, `@ManyToOne`, `@JoinColumn`.
+  - ⚡ **Node.js & TypeScript**: Prisma (`.prisma`), Mongoose, Sequelize, TypeORM, GraphQL SDL (`.graphql`), TypeScript interfaces (`interface User`), Zod (`z.object`).
+  - 🗄️ **Relational SQL DDL**: `.sql` files with `CREATE TABLE`, `PRIMARY KEY`, `FOREIGN KEY ... REFERENCES` for PostgreSQL, MySQL, SQLite, MariaDB.
 - 🎨 **7 Export Formats in a Single Command**:
   1. **Responsive XML SVG**: Modern dark & light developer themes (*Catppuccin Mocha*, *Tokyo Dark*, *Slate Light*), table cards, `[PK]` and `[FK]` badges, cubic bezier curves.
   2. **Interactive Single-Page HTML Explorer**: Standalone web app with draggable cards, live table/column search filter, connection inspector, minimap, and instant SVG/PNG/JSON downloads.
@@ -108,40 +153,11 @@ erDiagram
 
 ---
 
-## 🚀 Quick Start
-
-### 1. Instant Run (Zero Install via `npx`)
-
-```bash
-# Scan current project and export default SVG & Interactive HTML
-npx schemagraph
-
-# Scan backend directory and generate ALL 7 formats to ./docs
-npx schemagraph ./backend --format=all --output=./docs
-```
-
-### 2. Global Installation
-
-```bash
-npm install -g schemagraph
-```
-
-Then run anywhere:
-```bash
-schemagraph
-# or
-pure-erd
-```
-
----
-
-## 💻 CLI Options & Usage
+## 💻 CLI Options Reference
 
 ```bash
 schemagraph [targetDir] [options]
 ```
-
-### Options Reference
 
 | Option | Flag | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -152,22 +168,6 @@ schemagraph [targetDir] [options]
 | `--exclude`| `-e` | `node_modules,.git,...` | Comma-separated directories to ignore |
 | `--help` | `-h` | | Display help manual |
 | `--version`| `-v` | | Display version number |
-
-### Real-World CLI Examples
-
-```bash
-# 1. E-Commerce Backend (PostgreSQL / MySQL)
-schemagraph ./backend/src/models --format=all --theme=catppuccin --output=./docs
-
-# 2. Prisma Project
-schemagraph ./prisma --format=svg,html,md -t dark --title="SaaS Platform ERD"
-
-# 3. Light Theme for Wiki Documentation
-schemagraph ./src/database -f svg,html -t light --output=./wiki/assets
-
-# 4. Generate dbdiagram.io DBML and GitHub Mermaid ERD
-schemagraph ./backend -f dbml,md --output=./docs
-```
 
 ---
 
@@ -264,8 +264,9 @@ name: Generate Database ERD
 on:
   push:
     paths:
+      - 'database/migrations/**'
       - 'prisma/**'
-      - 'backend/models/**'
+      - 'models/**'
       - 'migrations/**'
 
 jobs:
@@ -276,7 +277,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npx schemagraph ./backend --format=all --output=./docs
+      - run: npx schemagraph ./ --format=all --output=./docs
       - name: Commit updated ERD
         run: |
           git config --global user.name "github-actions[bot]"
@@ -293,7 +294,7 @@ jobs:
 | Feature | `schemagraph` | prisma-erd-generator | dbdocs / dbml-cli | Graphviz (dot) |
 | :--- | :---: | :---: | :---: | :---: |
 | **External Dependencies** | **0 (Zero)** | 15+ npm packages | 20+ npm packages | Requires C++ Binary |
-| **Multi-Dialect Support** | **SQL, Prisma, Mongoose, TypeORM, Sequelize, GraphQL, TS, Zod** | Prisma Only | DBML Only | DOT only |
+| **Universal Multi-Framework Support** | **Laravel, Django, Rails, Go, Spring, Prisma, Mongoose, Sequelize, TypeORM, GraphQL, SQL** | Prisma Only | DBML Only | DOT only |
 | **Output Formats** | **7 Formats** (SVG, HTML, MD, JSON, DBML, DOT, SQL) | SVG / PNG | Web / DBML | SVG / PNG |
 | **Interactive HTML App** | **Yes** (Pan/Zoom, Drag, Search, Minimap) | No | Web Hosted | No |
 | **Execution Speed** | **< 50ms** | ~2000ms | ~1500ms | ~800ms |

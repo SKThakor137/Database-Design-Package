@@ -1,7 +1,7 @@
 {
   "name": "schemagraph",
   "version": "1.0.0",
-  "description": "Zero-dependency pure Node.js CLI & library to parse schemas (SQL, Prisma, Mongoose, Sequelize, TypeORM, GraphQL, TS Types) and generate responsive SVG ERDs, interactive HTML viewers, Mermaid markdown, DBML, DOT, and JSON schema maps.",
+  "description": "Zero-dependency pure Node.js CLI & library to parse schemas across any framework (Laravel, Django, Rails, Go, Spring JPA, Prisma, Mongoose, Sequelize, TypeORM, GraphQL, SQL) and generate responsive SVG ERDs, interactive HTML viewers, Mermaid markdown, DBML, DOT, and JSON schema maps.",
   "main": "src/index.js",
   "bin": {
     "schemagraph": "bin/schemagraph.js",
@@ -28,6 +28,12 @@
     "database-diagram",
     "schema-visualizer",
     "database-design",
+    "laravel",
+    "django",
+    "rails",
+    "gorm",
+    "spring-boot",
+    "jpa",
     "sql",
     "prisma",
     "mongoose",

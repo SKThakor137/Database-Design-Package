@@ -22,7 +22,7 @@ function printBanner() {
  ___/ / /__/ / / /  __/ / / / / / /_/ / /_/ / /  / /_/ / /_/ / / / /
 /____/\\___/_/ /_/\\___/_/ /_/ /_/\\__,_/\\____/_/   \\__,_/ .___/_/ /_/ 
                                                      /_/            
-  ⚡ Zero-Dependency Database Architecture & ERD Generator
+  ⚡ Universal Multi-Framework Database Architecture & ERD Generator
     `);
 }
 
@@ -46,9 +46,19 @@ Options:
   -h, --help                Show this help message and exit
   -v, --version             Show version number and exit
 
+Universal Multi-Framework Auto-Discovery:
+  • PHP / Laravel:          database/migrations/*.php (Schema::create), Eloquent models
+  • Python / Django & SQLA: models.py (models.Model), SQLAlchemy (Base, Column)
+  • Ruby on Rails:          db/schema.rb, db/migrate/*.rb, ActiveRecord models
+  • Go / GORM:              *.go structs with gorm tags and relationships
+  • Java & Kotlin (Spring): JPA @Entity, @Table, @Column, @ManyToOne, @JoinColumn
+  • Node.js & TypeScript:   Prisma (.prisma), Mongoose, Sequelize, TypeORM, GraphQL, Zod, TS Types
+  • Relational DDL:         PostgreSQL, MySQL, SQLite, MariaDB (.sql)
+
 Examples:
   $ schemagraph
   $ schemagraph ./backend --format=all --output=./docs
+  $ schemagraph ./database/migrations -f svg,html,md -t dark --title="Laravel Backend"
   $ schemagraph ./src/models -f svg,html,md -t dark --title="E-Commerce Schema"
 `);
 }
@@ -60,7 +70,7 @@ function parseArgs(args) {
         outputDir: '.',
         theme: 'catppuccin',
         title: 'Database Schema Topology',
-        exclude: ['node_modules', '.git', 'dist', 'build', '.next', 'coverage', '.cache'],
+        exclude: ['node_modules', '.git', 'dist', 'build', '.next', 'coverage', '.cache', 'vendor', '__pycache__', '.venv', 'venv', 'target'],
         help: false,
         version: false
     };
@@ -146,15 +156,19 @@ function runCLI() {
     const modelNames = Object.keys(schemaMap);
     if (modelNames.length === 0) {
         console.log('\x1b[33m⚠️  No supported database schemas or data models found in this directory.\x1b[0m\n');
-        console.log('   \x1b[1mWhat was checked:\x1b[0m');
-        console.log('   • Backend Schemas: SQL DDL (.sql), Prisma (.prisma), Mongoose, Sequelize, TypeORM, GraphQL');
-        console.log('   • Frontend / TS Types: TypeScript interfaces (interface User), type aliases, Zod schemas (z.object)\n');
+        console.log('   \x1b[1mWhat was checked across all ecosystems:\x1b[0m');
+        console.log('   • PHP / Laravel:          database/migrations/*.php, Eloquent Models');
+        console.log('   • Python / Django & SQLA: models.py, SQLAlchemy Base / Column');
+        console.log('   • Ruby on Rails:          db/schema.rb, db/migrate/*.rb, ActiveRecord');
+        console.log('   • Go / GORM:              *.go structs with gorm tags');
+        console.log('   • Java & Kotlin (Spring): JPA @Entity, @Table, @Column, @ManyToOne');
+        console.log('   • Node.js & TypeScript:   Prisma, Mongoose, Sequelize, TypeORM, GraphQL, Zod, TS Types');
+        console.log('   • Relational SQL:         SQL DDL (.sql) with CREATE TABLE / FOREIGN KEY\n');
         console.log('   \x1b[1m💡 How to resolve:\x1b[0m');
-        console.log('   1. If your backend is in another folder (e.g. ../backend), specify the path:');
-        console.log('      \x1b[36mschemagraph ../backend --format=all --output=./docs\x1b[0m');
+        console.log('   1. If your models/migrations are in a subdirectory (e.g. database/migrations or app/models), pass the path:');
+        console.log('      \x1b[36mschemagraph ./database/migrations --format=all --output=./docs\x1b[0m');
         console.log('   2. If you have a standalone schema file, pass it directly:');
-        console.log('      \x1b[36mschemagraph ./schema.sql\x1b[0m');
-        console.log('   3. If you are in a frontend workspace, ensure your types/models use TypeScript interfaces or Zod.\n');
+        console.log('      \x1b[36mschemagraph ./schema.sql\x1b[0m\n');
         return;
     }
 

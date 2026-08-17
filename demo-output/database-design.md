@@ -18,13 +18,18 @@ erDiagram
     Comment ||--o{ User : "author -> id"
     Comment ||--o{ Post : "post -> id"
     Comment ||--o{ Task : "taskId -> id"
+    users ||--o{ orders : "undefined -> undefined"
     categories ||--o{ categories : "parent_id -> id"
+    products ||--o{ categories : "undefined -> undefined"
     products ||--o{ categories : "category_id -> id"
     products ||--o{ categories : "category_id -> id"
+    orders ||--o{ users : "undefined -> undefined"
     orders ||--o{ users : "user_id -> id"
     orders ||--o{ users : "user_id -> id"
     order_items ||--o{ orders : "order_id -> id"
     order_items ||--o{ products : "product_id -> id"
+    order_items ||--o{ orders : "undefined -> undefined"
+    order_items ||--o{ products : "undefined -> undefined"
     order_items ||--o{ orders : "order_id -> id"
     order_items ||--o{ products : "product_id -> id"
     reviews ||--o{ products : "product_id -> id"
@@ -38,6 +43,9 @@ erDiagram
     Profile ||--o{ User : "userId -> id"
     PostTag ||--o{ Post : "postId -> id"
     PostTag ||--o{ Tag : "tagId -> id"
+    posts ||--o{ users : "undefined -> undefined"
+    comments ||--o{ users : "undefined -> undefined"
+    comments ||--o{ posts : "undefined -> undefined"
     Organization ||--o{ Team : "teams -> id"
     Member ||--o{ Organization : "organizationId -> id"
     Member ||--o{ Team : "team -> id"
@@ -129,6 +137,11 @@ erDiagram
         DateTime createdAt
     }
     users {
+        BIGINT id PK
+        VARCHAR_150_ name
+        VARCHAR_254_ email
+        BOOLEAN is_staff
+        DATETIME created_at
         UUID id PK
         VARCHAR_255_ email
         VARCHAR_100_ full_name
@@ -136,6 +149,9 @@ erDiagram
         VARCHAR_30_ role
         TIMESTAMP created_at
         TIMESTAMP updated_at
+        BOOLEAN is_active
+        VARCHAR_255_ password
+        TEXT orders
         SERIAL id PK
         VARCHAR_100_ name
         VARCHAR_255_ email
@@ -145,18 +161,27 @@ erDiagram
         TIMESTAMP created_at
     }
     categories {
+        BIGINT id PK
+        VARCHAR_100_ name
+        SLUGFIELD slug
         SERIAL id PK
         VARCHAR_100_ name
         VARCHAR_100_ slug
         TEXT description
         INT parent_id FK
         TIMESTAMP created_at
+        TIMESTAMP updated_at
         SERIAL id PK
         VARCHAR_100_ name
         VARCHAR_120_ slug
         TEXT description
     }
     products {
+        BIGINT id PK
+        BIGINT category_id FK
+        VARCHAR_200_ title
+        DECIMAL_10_2_ price
+        INT stock
         UUID id PK
         INT category_id FK
         VARCHAR_255_ title
@@ -165,6 +190,7 @@ erDiagram
         INT stock_quantity
         BOOLEAN is_published
         TIMESTAMP created_at
+        TIMESTAMP updated_at
         SERIAL id PK
         INT category_id FK
         VARCHAR_200_ name
@@ -175,6 +201,11 @@ erDiagram
         TIMESTAMP created_at
     }
     orders {
+        BIGINT id PK
+        BIGINT user_id FK
+        VARCHAR_64_ order_number
+        DECIMAL_10_2_ total_price
+        DATETIME created_at
         UUID id PK
         UUID user_id FK
         VARCHAR_50_ order_number
@@ -182,6 +213,10 @@ erDiagram
         DECIMAL_12__2_ total_amount
         TEXT shipping_address
         TIMESTAMP created_at
+        FLOAT amount
+        TIMESTAMP updated_at
+        VARCHAR_50_ order_code
+        VARCHAR_30_ order_status
         SERIAL id PK
         INT user_id FK
         VARCHAR_50_ order_number
@@ -197,6 +232,8 @@ erDiagram
         UUID product_id FK
         DECIMAL_10__2_ unit_price
         INT quantity
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
         SERIAL id PK
         INT order_id FK
         INT product_id FK
@@ -258,6 +295,23 @@ erDiagram
     PostTag {
         String postId PK
         String tagId PK
+    }
+    posts {
+        BIGINT id PK
+        BIGINT user_id
+        VARCHAR_255_ title
+        TEXT body
+        BOOLEAN published
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+    comments {
+        BIGINT id PK
+        BIGINT user_id
+        BIGINT post_id
+        TEXT content
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
     Organization {
         String id PK
@@ -426,6 +480,11 @@ erDiagram
 
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
+| `id` | `BIGINT` | `PRIMARY KEY`, `NOT NULL`, `UNIQUE` | | 
+| `name` | `VARCHAR(150)` | `NOT NULL` | | 
+| `email` | `VARCHAR(254)` | `NOT NULL`, `UNIQUE` | | 
+| `is_staff` | `BOOLEAN` | `NOT NULL` | | 
+| `created_at` | `DATETIME` | `NOT NULL` | | 
 | `id` | `UUID` | `PRIMARY KEY`, `NOT NULL` | | 
 | `email` | `VARCHAR(255)` | `NOT NULL`, `UNIQUE` | | 
 | `full_name` | `VARCHAR(100)` | `NOT NULL` | | 
@@ -433,6 +492,9 @@ erDiagram
 | `role` | `VARCHAR(30)` | — | | 
 | `created_at` | `TIMESTAMP` | `NOT NULL` | | 
 | `updated_at` | `TIMESTAMP` | `NOT NULL` | | 
+| `is_active` | `BOOLEAN` | `NOT NULL` | | 
+| `password` | `VARCHAR(255)` | `NOT NULL` | | 
+| `orders` | `TEXT` | — | | 
 | `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
 | `name` | `VARCHAR(100)` | `NOT NULL` | | 
 | `email` | `VARCHAR(255)` | `NOT NULL`, `UNIQUE` | | 
@@ -445,12 +507,16 @@ erDiagram
 
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
+| `id` | `BIGINT` | `PRIMARY KEY`, `NOT NULL`, `UNIQUE` | | 
+| `name` | `VARCHAR(100)` | `NOT NULL` | | 
+| `slug` | `SLUGFIELD` | `NOT NULL`, `UNIQUE` | | 
 | `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
 | `name` | `VARCHAR(100)` | `NOT NULL`, `UNIQUE` | | 
 | `slug` | `VARCHAR(100)` | `NOT NULL`, `UNIQUE` | | 
 | `description` | `TEXT` | — | | 
 | `parent_id` | `INT` | `FOREIGN KEY` | | 
 | `created_at` | `TIMESTAMP` | `NOT NULL` | | 
+| `updated_at` | `TIMESTAMP` | — | | 
 | `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
 | `name` | `VARCHAR(100)` | `NOT NULL` | | 
 | `slug` | `VARCHAR(120)` | `NOT NULL`, `UNIQUE` | | 
@@ -460,6 +526,11 @@ erDiagram
 
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
+| `id` | `BIGINT` | `PRIMARY KEY`, `NOT NULL`, `UNIQUE` | | 
+| `category_id` | `BIGINT` | `FOREIGN KEY`, `NOT NULL` | | 
+| `title` | `VARCHAR(200)` | `NOT NULL` | | 
+| `price` | `DECIMAL(10,2)` | `NOT NULL` | | 
+| `stock` | `INT` | `NOT NULL` | | 
 | `id` | `UUID` | `PRIMARY KEY`, `NOT NULL` | | 
 | `category_id` | `INT` | `FOREIGN KEY`, `NOT NULL` | | 
 | `title` | `VARCHAR(255)` | `NOT NULL` | | 
@@ -468,6 +539,7 @@ erDiagram
 | `stock_quantity` | `INT` | `NOT NULL` | | 
 | `is_published` | `BOOLEAN` | — | | 
 | `created_at` | `TIMESTAMP` | `NOT NULL` | | 
+| `updated_at` | `TIMESTAMP` | — | | 
 | `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
 | `category_id` | `INT` | `FOREIGN KEY`, `NOT NULL` | | 
 | `name` | `VARCHAR(200)` | `NOT NULL` | | 
@@ -481,6 +553,11 @@ erDiagram
 
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
+| `id` | `BIGINT` | `PRIMARY KEY`, `NOT NULL`, `UNIQUE` | | 
+| `user_id` | `BIGINT` | `FOREIGN KEY`, `NOT NULL` | | 
+| `order_number` | `VARCHAR(64)` | `NOT NULL`, `UNIQUE` | | 
+| `total_price` | `DECIMAL(10,2)` | `NOT NULL` | | 
+| `created_at` | `DATETIME` | `NOT NULL` | | 
 | `id` | `UUID` | `PRIMARY KEY`, `NOT NULL` | | 
 | `user_id` | `UUID` | `FOREIGN KEY`, `NOT NULL` | | 
 | `order_number` | `VARCHAR(50)` | `NOT NULL`, `UNIQUE` | | 
@@ -488,6 +565,10 @@ erDiagram
 | `total_amount` | `DECIMAL(12, 2)` | `NOT NULL` | | 
 | `shipping_address` | `TEXT` | `NOT NULL` | | 
 | `created_at` | `TIMESTAMP` | `NOT NULL` | | 
+| `amount` | `FLOAT` | — | | 
+| `updated_at` | `TIMESTAMP` | — | | 
+| `order_code` | `VARCHAR(50)` | `NOT NULL`, `UNIQUE` | | 
+| `order_status` | `VARCHAR(30)` | — | | 
 | `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
 | `user_id` | `INT` | `FOREIGN KEY`, `NOT NULL` | | 
 | `order_number` | `VARCHAR(50)` | `NOT NULL`, `UNIQUE` | | 
@@ -506,6 +587,8 @@ erDiagram
 | `product_id` | `UUID` | `FOREIGN KEY`, `NOT NULL` | | 
 | `unit_price` | `DECIMAL(10, 2)` | `NOT NULL` | | 
 | `quantity` | `INT` | `NOT NULL` | | 
+| `created_at` | `TIMESTAMP` | — | | 
+| `updated_at` | `TIMESTAMP` | — | | 
 | `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
 | `order_id` | `INT` | `FOREIGN KEY`, `NOT NULL` | | 
 | `product_id` | `INT` | `FOREIGN KEY`, `NOT NULL` | | 
@@ -588,6 +671,29 @@ erDiagram
 | :--- | :--- | :--- | :--- |
 | `postId` | `String` | `PRIMARY KEY`, `FOREIGN KEY`, `NOT NULL` | | 
 | `tagId` | `String` | `PRIMARY KEY`, `FOREIGN KEY`, `NOT NULL` | | 
+
+### Table: `posts`
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `BIGINT` | `PRIMARY KEY`, `NOT NULL`, `UNIQUE` | | 
+| `user_id` | `BIGINT` | `NOT NULL` | | 
+| `title` | `VARCHAR(255)` | `NOT NULL` | | 
+| `body` | `TEXT` | — | | 
+| `published` | `BOOLEAN` | — | | 
+| `created_at` | `TIMESTAMP` | `NOT NULL` | | 
+| `updated_at` | `TIMESTAMP` | `NOT NULL` | | 
+
+### Table: `comments`
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `BIGINT` | `PRIMARY KEY`, `NOT NULL`, `UNIQUE` | | 
+| `user_id` | `BIGINT` | `NOT NULL` | | 
+| `post_id` | `BIGINT` | `NOT NULL` | | 
+| `content` | `TEXT` | `NOT NULL` | | 
+| `created_at` | `TIMESTAMP` | `NOT NULL` | | 
+| `updated_at` | `TIMESTAMP` | `NOT NULL` | | 
 
 ### Table: `Organization`
 
