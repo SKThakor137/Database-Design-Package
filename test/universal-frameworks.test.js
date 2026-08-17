@@ -185,3 +185,16 @@ test('UniversalSchemaParser scans examples directory and auto-discovers all fram
     const modelKeys = Object.keys(models);
     assert.ok(modelKeys.length >= 6, `Should have discovered at least 6 models across frameworks, got ${modelKeys.length}`);
 });
+
+test('CLI parseArgs enables auto-open by default and handles --no-open flag', () => {
+    const { parseArgs } = require('../src/cli');
+    const defaultOpts = parseArgs([]);
+    assert.strictEqual(defaultOpts.open, true, 'open should be true by default');
+
+    const noOpenOpts = parseArgs(['--no-open']);
+    assert.strictEqual(noOpenOpts.open, false, 'open should be false when --no-open passed');
+
+    const openOpts = parseArgs(['--open']);
+    assert.strictEqual(openOpts.open, true, 'open should be true when --open passed');
+});
+

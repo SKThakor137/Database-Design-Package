@@ -5,6 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
 const UniversalSchemaParser = require('./parser/universal-parser');
 const SVGRenderer = require('./renderers/svg-renderer');
 const HTMLRenderer = require('./renderers/html-renderer');
@@ -42,6 +43,8 @@ Options:
   -o, --output <dir>        Output directory for generated files (default: current directory)
   -t, --theme <theme>       Visual theme for SVG/HTML: catppuccin, dark, light (default: "catppuccin")
       --title <title>       Custom title for the diagram (default: "Database Schema Topology")
+      --open                Automatically open the interactive HTML viewer in browser (default: true)
+      --no-open             Disable automatic browser opening
   -e, --exclude <dirs>      Comma-separated list of directories to exclude
   -h, --help                Show this help message and exit
   -v, --version             Show version number and exit
@@ -63,6 +66,25 @@ Examples:
 `);
 }
 
+function openInBrowser(filePath) {
+    const platform = process.platform;
+    let command;
+
+    if (platform === 'win32') {
+        command = `start "" "${filePath}"`;
+    } else if (platform === 'darwin') {
+        command = `open "${filePath}"`;
+    } else {
+        command = `xdg-open "${filePath}"`;
+    }
+
+    try {
+        exec(command, () => {});
+    } catch (_) {
+        // Silently ignore if headless environment
+    }
+}
+
 function parseArgs(args) {
     const options = {
         targetDir: '.',
@@ -71,6 +93,7 @@ function parseArgs(args) {
         theme: 'catppuccin',
         title: 'Database Schema Topology',
         exclude: ['node_modules', '.git', 'dist', 'build', '.next', 'coverage', '.cache', 'vendor', '__pycache__', '.venv', 'venv', 'target'],
+        open: true,
         help: false,
         version: false
     };
@@ -99,6 +122,10 @@ function parseArgs(args) {
             options.title = arg.substring(8);
         } else if (arg === '--title') {
             options.title = args[++i] || options.title;
+        } else if (arg === '--open') {
+            options.open = true;
+        } else if (arg === '--no-open') {
+            options.open = false;
         } else if (arg === '-e' || arg === '--exclude') {
             const ex = (args[++i] || '').split(',').map(s => s.trim());
             options.exclude.push(...ex);
@@ -184,6 +211,7 @@ function runCLI() {
     };
 
     const generatedFiles = [];
+    let htmlGeneratedPath = null;
 
     if (options.formats.includes('svg')) {
         const svg = SVGRenderer.generateSVG(schemaMap, renderOptions);
@@ -197,6 +225,7 @@ function runCLI() {
         const htmlFile = path.join(outPath, 'database-design.html');
         fs.writeFileSync(htmlFile, html, 'utf-8');
         generatedFiles.push({ format: 'Interactive HTML Viewer', path: htmlFile });
+        htmlGeneratedPath = htmlFile;
     }
 
     if (options.formats.includes('md')) {
@@ -239,7 +268,12 @@ function runCLI() {
     generatedFiles.forEach(file => {
         console.log(`   ✔ \x1b[36m${file.format.padEnd(25)}\x1b[0m -> \x1b[37m${file.path}\x1b[0m`);
     });
+
+    if (htmlGeneratedPath && options.open && !process.env.CI) {
+        console.log(`\n🚀 \x1b[35mOpening interactive ERD explorer in your default browser...\x1b[0m`);
+        openInBrowser(htmlGeneratedPath);
+    }
     console.log('');
 }
 
-module.exports = { runCLI, parseArgs };
+module.exports = { runCLI, parseArgs, openInBrowser };

@@ -1,6 +1,6 @@
 {
   "name": "schemagraph",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Zero-dependency pure Node.js CLI & library to parse schemas across any framework (Laravel, Django, Rails, Go, Spring JPA, Prisma, Mongoose, Sequelize, TypeORM, GraphQL, SQL) and generate responsive SVG ERDs, interactive HTML viewers, Mermaid markdown, DBML, DOT, and JSON schema maps.",
   "main": "src/index.js",
   "bin": {

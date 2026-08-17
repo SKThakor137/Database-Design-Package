@@ -23,43 +23,12 @@
 Run `schemagraph` in your project folder right now with `npx`:
 
 ```bash
-# 🚀 1. Scan current project and generate SVG & Interactive HTML
 npx schemagraph
-
-# 📦 2. Scan backend directory and generate ALL 7 formats into ./docs
-npx schemagraph ./backend --format=all --output=./docs
 ```
 
-### 🎯 One-Line Commands by Framework
+> 🌐 **Auto-Opens Browser**: Automatically scans your schemas, generates the ERD, and launches the interactive explorer in your default browser! (Pass `--no-open` to suppress in CI/CD).
 
-```bash
-# 🐘 1. Laravel (PHP)
-npx schemagraph ./database/migrations --format=all --output=./docs
-
-# 🐍 2. Django & Python
-npx schemagraph ./models.py --format=all --output=./docs
-
-# 💎 3. Ruby on Rails
-npx schemagraph ./db --format=all --output=./docs
-
-# 🐹 4. Go / GORM
-npx schemagraph ./internal/models --format=all --output=./docs
-
-# ☕ 5. Java & Kotlin (Spring Boot JPA)
-npx schemagraph ./src/main/java --format=all --output=./docs
-
-# ⚡ 6. Prisma / Node.js
-npx schemagraph ./prisma --format=all --output=./docs
-
-# 🗄️ 7. Relational SQL Migrations (PostgreSQL, MySQL, SQLite)
-npx schemagraph ./migrations --format=all --output=./docs
-```
-
-> 💡 **Optional Global Install**:
-> ```bash
-> npm install -g schemagraph
-> schemagraph  # run anywhere
-> ```
+> 💡 **Optional Global Install**: `npm install -g schemagraph` (then run `schemagraph` anywhere).
 
 ---
 
