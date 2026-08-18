@@ -1253,11 +1253,33 @@ class HTMLRenderer {
           const fromModel = SCHEMA_DATA[from];
           const toModel = SCHEMA_DATA[to];
 
-          const fromColIdx = fromModel ? fromModel.columns.findIndex(c => c.name === fromField) : 0;
-          const toColIdx = toModel ? toModel.columns.findIndex(c => c.name === toField) : 0;
+          let fromColY = HEADER_HEIGHT + ROW_HEIGHT / 2;
+          let toColY = HEADER_HEIGHT + ROW_HEIGHT / 2;
 
-          const startY = fY + HEADER_HEIGHT + (fromColIdx >= 0 ? fromColIdx * ROW_HEIGHT + ROW_HEIGHT / 2 : 20);
-          const endY = tY + HEADER_HEIGHT + (toColIdx >= 0 ? toColIdx * ROW_HEIGHT + ROW_HEIGHT / 2 : 20);
+          if (fromModel) {
+            if (isCompactMode) {
+              const keyCols = fromModel.columns.filter(c => c.isPrimary || c.isForeign);
+              const idx = keyCols.findIndex(c => c.name === fromField);
+              fromColY = HEADER_HEIGHT + (idx >= 0 ? idx * ROW_HEIGHT + ROW_HEIGHT / 2 : ROW_HEIGHT / 2);
+            } else {
+              const idx = fromModel.columns.findIndex(c => c.name === fromField);
+              fromColY = HEADER_HEIGHT + (idx >= 0 ? idx * ROW_HEIGHT + ROW_HEIGHT / 2 : ROW_HEIGHT / 2);
+            }
+          }
+
+          if (toModel) {
+            if (isCompactMode) {
+              const keyCols = toModel.columns.filter(c => c.isPrimary || c.isForeign);
+              const idx = keyCols.findIndex(c => c.name === toField);
+              toColY = HEADER_HEIGHT + (idx >= 0 ? idx * ROW_HEIGHT + ROW_HEIGHT / 2 : ROW_HEIGHT / 2);
+            } else {
+              const idx = toModel.columns.findIndex(c => c.name === toField);
+              toColY = HEADER_HEIGHT + (idx >= 0 ? idx * ROW_HEIGHT + ROW_HEIGHT / 2 : ROW_HEIGHT / 2);
+            }
+          }
+
+          const startY = fY + fromColY;
+          const endY = tY + toColY;
 
           let startX, endX;
           if (fX + BOX_WIDTH < tX) {
@@ -1717,12 +1739,41 @@ class HTMLRenderer {
         if (!model) return;
 
         const bgRect = card.querySelector('rect.card-bg');
+        const rows = card.querySelectorAll('.card-col-row');
+        const dividers = card.querySelectorAll('line.row-divider');
+
         if (isCompactMode) {
-          const keyColsCount = model.columns.filter(c => c.isPrimary || c.isForeign).length;
-          const compactHeight = HEADER_HEIGHT + Math.max(1, keyColsCount) * ROW_HEIGHT + 14;
+          // Hide non-key rows and reposition key rows sequentially
+          let keyIdx = 0;
+          rows.forEach(row => {
+            const isKey = row.getAttribute('data-is-key') === 'true';
+            if (isKey) {
+              row.style.display = '';
+              const origY = parseFloat(row.getAttribute('data-orig-y') || HEADER_HEIGHT);
+              const targetY = HEADER_HEIGHT + (keyIdx * ROW_HEIGHT);
+              const deltaY = targetY - origY;
+              row.setAttribute('transform', \`translate(0, \${deltaY})\`);
+              keyIdx++;
+            } else {
+              row.style.display = 'none';
+            }
+          });
+
+          // Hide all row dividers in compact mode
+          dividers.forEach(d => d.style.display = 'none');
+
+          const compactHeight = HEADER_HEIGHT + Math.max(1, keyIdx) * ROW_HEIGHT + 14;
           bgRect.setAttribute('height', compactHeight);
           card.setAttribute('data-height', compactHeight);
         } else {
+          // Restore all rows to original full layout
+          rows.forEach(row => {
+            row.style.display = '';
+            row.removeAttribute('transform');
+          });
+
+          dividers.forEach(d => d.style.display = '');
+
           const fullHeight = HEADER_HEIGHT + model.columns.length * ROW_HEIGHT + 14;
           bgRect.setAttribute('height', fullHeight);
           card.setAttribute('data-height', fullHeight);
@@ -1732,7 +1783,7 @@ class HTMLRenderer {
       // Update edges and minimap
       Object.keys(SCHEMA_DATA).forEach(t => updateConnectedEdges(t));
       drawMinimap();
-      showToast(isCompactMode ? '🗂️ Compact Mode (Keys only)' : '📋 Detailed Mode (All columns)');
+      showToast(isCompactMode ? '🗂️ Compact Mode: Showing PK/FK keys only' : '📋 Detailed Mode: Showing all columns');
     }
 
     // 8. Auto "Fit to Screen" Algorithm with Smooth Animation

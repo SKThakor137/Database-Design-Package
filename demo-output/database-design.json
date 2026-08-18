@@ -1,7 +1,7 @@
 {
   "generator": "schemagraph",
   "version": "1.0.0",
-  "generatedAt": "2026-08-18T17:05:58.572Z",
+  "generatedAt": "2026-08-18T17:24:26.157Z",
   "metadata": {
     "title": "Database Schema Topology",
     "totalTables": 28,

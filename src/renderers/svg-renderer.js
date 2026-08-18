@@ -208,11 +208,14 @@ ${markersXml}
 
                 // Subtle row divider line (except last row)
                 if (cIdx > 0) {
-                    nodesXml += `        <line x1="8" y1="${rowY}" x2="${boxWidth - 8}" y2="${rowY}" stroke="${theme.rowDivider}" stroke-width="1" opacity="0.6"/>\n`;
+                    nodesXml += `        <line class="row-divider" data-row-idx="${cIdx}" x1="8" y1="${rowY}" x2="${boxWidth - 8}" y2="${rowY}" stroke="${theme.rowDivider}" stroke-width="1" opacity="0.6"/>\n`;
                 }
 
+                const isKey = col.isPrimary || col.isForeign;
+                const keyAttr = ` data-is-key="${isKey ? 'true' : 'false'}" data-orig-y="${rowY}"`;
+
                 // Row hover hit area
-                nodesXml += `        <g class="card-col-row" data-col="${SVGRenderer.escapeXml(col.name)}"${fkTargetAttr}>\n`;
+                nodesXml += `        <g class="card-col-row" data-col="${SVGRenderer.escapeXml(col.name)}"${fkTargetAttr}${keyAttr}>\n`;
                 nodesXml += `          <rect class="col-row-bg" x="4" y="${rowY + 2}" width="${boxWidth - 8}" height="${rowHeight - 4}" rx="4" fill="transparent" style="cursor: pointer;"/>\n`;
 
                 let badgeOffset = 14;
