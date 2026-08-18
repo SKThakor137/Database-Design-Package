@@ -26,9 +26,38 @@ Run `schemagraph` in your project folder right now with `npx`:
 npx schemagraph
 ```
 
-> 🌐 **Auto-Opens Browser**: Automatically scans your schemas, generates the ERD, and launches the interactive explorer in your default browser! (Pass `--no-open` to suppress in CI/CD).
-
+> 🌐 **Auto-Opens Browser**: Automatically scans your schemas, generates the core visual formats (`database-design.html` & `database-design.svg`), and launches the interactive explorer in your default browser! (Pass `--no-open` to suppress in CI/CD).
+>
 > 💡 **Optional Global Install**: `npm install -g schemagraph` (then run `schemagraph` anywhere).
+
+---
+
+## 🎯 Individual Format Commands (Export Only What You Need)
+
+By default, `schemagraph` generates **HTML + SVG**. If you want specific formats, use `--format`:
+
+```bash
+# 📊 1. Generate DBML Schema (Ready for dbdiagram.io)
+npx schemagraph --format=dbml
+
+# 🐬 2. Generate Standard SQL DDL (CREATE TABLE & FOREIGN KEYs)
+npx schemagraph --format=sql
+
+# 🧜‍♂️ 3. Generate Mermaid Markdown (for GitHub README)
+npx schemagraph --format=md
+
+# 📋 4. Generate Machine-Readable JSON AST
+npx schemagraph --format=json
+
+# 🕸 5. Generate Graphviz DOT Digraph
+npx schemagraph --format=dot
+
+# 📦 6. Generate Multiple Specific Formats (Comma-separated)
+npx schemagraph --format=dbml,sql,md --output=./docs
+
+# 🚀 7. Generate ALL 7 Formats Simultaneously
+npx schemagraph --format=all --output=./docs
+```
 
 ---
 
@@ -44,14 +73,14 @@ npx schemagraph
   - ☕ **Java & Kotlin (Spring Boot)**: JPA / Hibernate `@Entity`, `@Table`, `@Id`, `@Column`, `@ManyToOne`, `@JoinColumn`.
   - ⚡ **Node.js & TypeScript**: Prisma (`.prisma`), Mongoose, Sequelize, TypeORM, GraphQL SDL (`.graphql`), TypeScript interfaces (`interface User`), Zod (`z.object`).
   - 🗄️ **Relational SQL DDL**: `.sql` files with `CREATE TABLE`, `PRIMARY KEY`, `FOREIGN KEY ... REFERENCES` for PostgreSQL, MySQL, SQLite, MariaDB.
-- 🎨 **7 Export Formats in a Single Command**:
+- 🎨 **7 Output Formats**:
   1. **Responsive XML SVG**: Modern dark & light developer themes (*Catppuccin Mocha*, *Tokyo Dark*, *Slate Light*), table cards, `[PK]` and `[FK]` badges, cubic bezier curves.
-  2. **Interactive Single-Page HTML Explorer**: Standalone web app with draggable cards, live table/column search filter, connection inspector, minimap, and instant SVG/PNG/JSON downloads.
-  3. **Mermaid Markdown (`.md`)**: GitHub/GitLab native `erDiagram` block + formatted data dictionary tables ready for `README.md`.
-  4. **JSON Schema Map (`.json`)**: Machine-readable AST for CI/CD pipelines, documentation generators, or scripts.
-  5. **DBML (`.dbml`)**: Standard Database Markup Language compatible with [dbdiagram.io](https://dbdiagram.io) and [dbdocs.io](https://dbdocs.io).
-  6. **Graphviz DOT (`.dot`)**: Compatible with Graphviz graph engines (`dot`, `neato`, `d3-graphviz`).
-  7. **Normalized SQL DDL (`.sql`)**: Clean, standard SQL `CREATE TABLE` and constraint statements.
+  2. **Interactive Single-Page HTML Explorer**: Standalone web app with draggable cards, smooth camera transitions, multi-color wire distinction, connection inspector, minimap, and in-browser exports.
+  3. **DBML (`.dbml`)**: Standard Database Markup Language compatible with [dbdiagram.io](https://dbdiagram.io) and [dbdocs.io](https://dbdocs.io).
+  4. **Normalized SQL DDL (`.sql`)**: Clean, standard SQL `CREATE TABLE` and constraint statements.
+  5. **Mermaid Markdown (`.md`)**: GitHub/GitLab native `erDiagram` block + formatted data dictionary tables ready for `README.md`.
+  6. **JSON Schema Map (`.json`)**: Machine-readable AST for CI/CD pipelines, documentation generators, or scripts.
+  7. **Graphviz DOT (`.dot`)**: Compatible with Graphviz graph engines (`dot`, `neato`, `d3-graphviz`).
 
 ---
 
@@ -122,6 +151,23 @@ erDiagram
 
 ---
 
+## 🌐 Interactive HTML Viewer Features
+
+When you export with `--format=html` (or `all`), `schemagraph` produces a standalone, self-contained single-page web app with **zero CDN dependencies** (100% offline).
+
+### Key Features:
+- 🚀 **Zero-Blur Pure Vector Engine**: Crisp, sharp text and cards at any zoom level from 2% eagle-eye to 1000% ultra-close inspection.
+- 🎯 **Smooth Animated Camera Navigation (`easeOutCubic`)**: Clicking **`🎯 Focus Link`** or **`Center Table`** smoothly glides and zooms the camera to frame connected tables at the exact center of your screen.
+- 🌈 **Multi-Color Wire Distinction**: Relationship connectors use an 11-color deterministic palette so overlapping foreign keys are instantly distinguishable.
+- 💡 **Single-Wire Persistent Spotlight**: Clicking a relation locks in a 5.5px neon glow spotlight while dimming unrelated tables and edges.
+- 🖱️ **Real-Time Draggable Table Cards**: Reposition any table node freely; cubic Bézier connectors dynamically recalculate at 60fps.
+- 🔍 **Docked Connection Inspector**: Click any table or press `[` to see all outgoing foreign keys and incoming referenced-by tables with cardinality badges.
+- 🗂️ **Compact Mode for Large Schemas**: Shrinks table cards to PK/FK keys only for high-density 50+ table architectures.
+- 🗺️ **Interactive Minimap Radar**: Eagle-eye minimap with click-to-jump radar view.
+- ⬇ **1-Click Multi-Format Export Dropdown**: Download **SVG, PNG, DBML, SQL, Mermaid Markdown, JSON, and DOT** directly from the browser header.
+
+---
+
 ## 💻 CLI Options Reference
 
 ```bash
@@ -130,32 +176,15 @@ schemagraph [targetDir] [options]
 
 | Option | Flag | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `--format` | `-f` | `svg,html` | Formats: `svg`, `html`, `md`, `json`, `dbml`, `dot`, `sql`, or `all` |
+| `--format` | `-f` | `svg,html` | Comma-separated: `svg`, `html`, `md`, `json`, `dbml`, `dot`, `sql`, or `all` |
 | `--output` | `-o` | `.` | Target output directory for generated assets |
 | `--theme` | `-t` | `catppuccin` | Visual theme: `catppuccin`, `dark`, or `light` |
 | `--title` | | `Database Schema Topology` | Custom diagram header title |
+| `--open` | | `true` | Automatically open HTML viewer in default browser |
+| `--no-open`| | `false` | Disable automatic browser launch (useful for CI/CD) |
 | `--exclude`| `-e` | `node_modules,.git,...` | Comma-separated directories to ignore |
 | `--help` | `-h` | | Display help manual |
 | `--version`| `-v` | | Display version number |
-
----
-
-## 🌐 Interactive HTML Viewer Features
-
-When you export with `--format=html` (or `all`), `schemagraph` produces a standalone, self-contained single-page web app.
-
-👉 [**🚀 Click Here to Open the Live Interactive HTML Explorer in your Browser**](https://htmlpreview.github.io/?https://github.com/SKThakor137/Database-Design-Package/blob/main/assets/database-design.html)
-
-> 💡 **Offline & Local Use**: When generated in your project, simply double-click `database-design.html` or open it with your browser (`open database-design.html` or `start database-design.html`). It has **zero CDN dependencies** and works 100% offline.
-
-### What's Inside the Interactive Viewer:
-- 🖱️ **Real-Time Draggable Table Cards**: Reposition any table node freely; connection lines dynamically recalculate and follow in 60fps.
-- 🔍 **Left-Sidebar Connection Inspector**: Click any table to see all **outgoing foreign keys** and **incoming referenced-by tables** with one-click navigation jump buttons.
-- 🗂️ **Compact Mode for Large Schemas**: Toggle between full columns view and compact keys-only view (70% smaller cards for 50+ table schemas).
-- 📐 **Fit to Screen**: One-click auto-centering and scaling to fit the entire database on your screen.
-- 🗺️ **Interactive Minimap**: Radar bird-eye navigator for instant panning across massive enterprise databases.
-- 💾 **Instant 1-Click Exports**: Download raw SVG vector, PNG raster image, or JSON AST directly from your browser.
-- 🎨 **Dark & Light Themes**: Pre-styled with modern developer palettes (*Catppuccin Mocha* and *Tokyo Dark*).
 
 ---
 
@@ -178,28 +207,28 @@ const {
 // 1. Scan and parse workspace schema models
 const schemaMap = parseProject('./backend');
 
-// 2. Generate SVG string
+// 2. Generate Interactive HTML Viewer
+const html = generateHTML(schemaMap, {
+    title: 'Database Explorer'
+});
+
+// 3. Generate SVG string
 const svg = generateSVG(schemaMap, {
     theme: 'catppuccin', // 'catppuccin' | 'dark' | 'light'
     title: 'Application Architecture'
 });
 
-// 3. Generate Interactive HTML Viewer
-const html = generateHTML(schemaMap, {
-    title: 'Database Explorer'
-});
-
-// 4. Generate Mermaid Markdown
-const markdown = generateMarkdown(schemaMap);
-
-// 5. Generate JSON AST
-const jsonAst = generateJSON(schemaMap);
-
-// 6. Generate DBML (dbdiagram.io)
+// 4. Generate DBML (for dbdiagram.io)
 const dbml = generateDBML(schemaMap);
 
-// 7. Generate SQL DDL
+// 5. Generate Standard SQL DDL
 const sql = generateSQL(schemaMap);
+
+// 6. Generate Mermaid Markdown
+const markdown = generateMarkdown(schemaMap);
+
+// 7. Generate JSON AST
+const jsonAst = generateJSON(schemaMap);
 ```
 
 ---
@@ -221,7 +250,7 @@ Add to your `package.json` scripts to keep docs in sync with your migrations aut
 ```json
 {
   "scripts": {
-    "docs:db": "schemagraph ./backend --format=all --output=./docs"
+    "docs:db": "schemagraph ./backend --format=all --output=./docs --no-open"
   }
 }
 ```
@@ -246,7 +275,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npx schemagraph ./ --format=all --output=./docs
+      - run: npx schemagraph ./ --format=all --output=./docs --no-open
       - name: Commit updated ERD
         run: |
           git config --global user.name "github-actions[bot]"
@@ -265,16 +294,10 @@ jobs:
 | **External Dependencies** | **0 (Zero)** | 15+ npm packages | 20+ npm packages | Requires C++ Binary |
 | **Universal Multi-Framework Support** | **Laravel, Django, Rails, Go, Spring, Prisma, Mongoose, Sequelize, TypeORM, GraphQL, SQL** | Prisma Only | DBML Only | DOT only |
 | **Output Formats** | **7 Formats** (SVG, HTML, MD, JSON, DBML, DOT, SQL) | SVG / PNG | Web / DBML | SVG / PNG |
-| **Interactive HTML App** | **Yes** (Pan/Zoom, Drag, Search, Minimap) | No | Web Hosted | No |
+| **Interactive HTML App** | **Yes** (Zero-blur, 60fps Animation, Minimap) | No | Web Hosted | No |
+| **In-Browser Multi-Format Download** | **Yes** (1-Click SVG/PNG/DBML/SQL/MD/JSON/DOT) | No | No | No |
 | **Execution Speed** | **< 50ms** | ~2000ms | ~1500ms | ~800ms |
 | **Offline / Air-gapped** | **100% Offline** | Partial | Needs Internet | Offline |
-
----
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome!  
-Feel free to check the [issues page](https://github.com/SKThakor137/Database-Design-Package/issues).
 
 ---
 
