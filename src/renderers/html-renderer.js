@@ -12,6 +12,11 @@
  */
 
 const SVGRenderer = require('./svg-renderer');
+const MermaidRenderer = require('./mermaid-renderer');
+const JSONRenderer = require('./json-renderer');
+const DBMLRenderer = require('./dbml-renderer');
+const DOTRenderer = require('./dot-renderer');
+const SQLRenderer = require('./sql-renderer');
 const LayoutEngine = require('../layout/layout-engine');
 
 class HTMLRenderer {
@@ -21,6 +26,12 @@ class HTMLRenderer {
         const tables = Object.keys(schemaMap);
         const totalCols = tables.reduce((acc, t) => acc + schemaMap[t].columns.length, 0);
         const totalRels = tables.reduce((acc, t) => acc + schemaMap[t].relations.length, 0);
+
+        // Pre-generate other schema formats for instant 1-click in-browser export
+        const dbmlContent = DBMLRenderer.generateDBML(schemaMap, options);
+        const sqlContent = SQLRenderer.generateSQL(schemaMap, options);
+        const mermaidContent = MermaidRenderer.generateMarkdown(schemaMap, options);
+        const dotContent = DOTRenderer.generateDOT(schemaMap, options);
 
         // Precompute relations map for each table for instant client-side lookup
         const schemaMetadata = {};
@@ -247,6 +258,36 @@ class HTMLRenderer {
       background: rgba(137, 180, 250, 0.2);
       border-color: var(--primary);
       color: var(--primary);
+    }
+
+    .export-menu-item {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+    }
+
+    .export-menu-item:hover {
+      background: var(--card);
+      color: var(--primary);
+    }
+
+    .ext-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      background: rgba(255,255,255,0.08);
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: var(--text-muted);
     }
 
     .shortcut-badge {
@@ -842,9 +883,30 @@ class HTMLRenderer {
       <button onclick="fitToScreen()" title="Fit entire schema into viewport">[ ] Fit to Screen</button>
       <button onclick="resetNodePositions()" title="Restore original auto-layout">⤢ Reset Layout</button>
       <button onclick="toggleFullscreen()" title="Toggle Fullscreen Canvas">⛶ Fullscreen</button>
-      <button onclick="exportSVG()" class="btn-primary">⬇ SVG</button>
-      <button onclick="exportPNG()">📷 PNG</button>
-      <button onclick="exportJSON()">📋 JSON</button>
+      
+      <!-- Quick Export Buttons -->
+      <button onclick="exportSVG()" class="btn-primary" title="Export as Scalable SVG Vector">⬇ SVG</button>
+      <button onclick="exportPNG()" title="Export High-Res PNG Image">📷 PNG</button>
+
+      <!-- All Formats Dropdown -->
+      <div style="position: relative;">
+        <button id="btn-export-dropdown" onclick="toggleExportMenu(event)" style="background: linear-gradient(135deg, #89b4fa, #cba6f7); color: #11111b; font-weight: 700; border: none; padding: 6px 12px; gap: 6px;" title="Download schema in multiple formats">
+          <span>⬇ Export All</span>
+          <span style="font-size: 9px;">▼</span>
+        </button>
+        <div id="export-dropdown-menu" style="display: none; position: absolute; right: 0; top: 36px; background: var(--surface); border: 1px solid var(--border-bright); border-radius: 8px; min-width: 250px; box-shadow: 0 12px 36px rgba(0,0,0,0.7); z-index: 99; padding: 6px; flex-direction: column; gap: 3px;">
+          <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 4px 8px; letter-spacing: 0.5px;">Visual Diagram Exports</div>
+          <button class="export-menu-item" onclick="exportSVG()"><span>🎨 SVG Vector Diagram</span> <span class="ext-badge">.svg</span></button>
+          <button class="export-menu-item" onclick="exportPNG()"><span>📷 High-Res PNG Image</span> <span class="ext-badge">.png</span></button>
+          <div style="height: 1px; background: var(--border); margin: 3px 0;"></div>
+          <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 4px 8px; letter-spacing: 0.5px;">Schema Code Exports</div>
+          <button class="export-menu-item" onclick="exportDBML()"><span>📊 DBML (dbdiagram.io)</span> <span class="ext-badge">.dbml</span></button>
+          <button class="export-menu-item" onclick="exportSQL()"><span>🐬 Standard SQL DDL</span> <span class="ext-badge">.sql</span></button>
+          <button class="export-menu-item" onclick="exportMermaid()"><span>🧜‍♂️ Mermaid ERD Markdown</span> <span class="ext-badge">.md</span></button>
+          <button class="export-menu-item" onclick="exportJSON()"><span>📋 JSON AST Schema</span> <span class="ext-badge">.json</span></button>
+          <button class="export-menu-item" onclick="exportDOT()"><span>🕸 Graphviz DOT Graph</span> <span class="ext-badge">.dot</span></button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -966,8 +1028,12 @@ class HTMLRenderer {
   <div id="toast" class="toast">Downloaded successfully!</div>
 
   <script>
-    // Embedded Schema Graph Metadata
+    // Embedded Schema Graph Metadata & Payloads for 1-Click Multi-Format Export
     const SCHEMA_DATA = ${JSON.stringify(schemaMetadata)};
+    const DBML_DATA = ${JSON.stringify(dbmlContent)};
+    const SQL_DATA = ${JSON.stringify(sqlContent)};
+    const MERMAID_DATA = ${JSON.stringify(mermaidContent)};
+    const DOT_DATA = ${JSON.stringify(dotContent)};
     const INITIAL_POSITIONS = {};
 
     let scale = 1;
@@ -1956,16 +2022,37 @@ class HTMLRenderer {
       setTimeout(() => t.classList.remove('show'), 2200);
     }
 
-    // 11. Exports
-    function exportSVG() {
-      const svg = document.getElementById('schemagraph-svg').outerHTML;
-      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    // 11. Exports & Downloads for All Supported Formats
+    function toggleExportMenu(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('export-dropdown-menu');
+      if (!menu) return;
+      menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('export-dropdown-menu');
+      if (menu && !e.target.closest('#btn-export-dropdown') && !e.target.closest('#export-dropdown-menu')) {
+        menu.style.display = 'none';
+      }
+    });
+
+    function downloadFile(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'database-schema.svg';
+      a.download = filename;
       a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function exportSVG() {
+      const svg = document.getElementById('schemagraph-svg').outerHTML;
+      downloadFile(svg, 'database-schema.svg', 'image/svg+xml;charset=utf-8');
       showToast('✅ SVG Diagram downloaded!');
+      const menu = document.getElementById('export-dropdown-menu');
+      if (menu) menu.style.display = 'none';
     }
 
     function exportPNG() {
@@ -1977,29 +2064,58 @@ class HTMLRenderer {
       const image = new Image();
       image.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = svgElement.viewBox.baseVal.width || 1400;
-        canvas.height = svgElement.viewBox.baseVal.height || 1000;
+        canvas.width = 2400;
+        canvas.height = 1800;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(image, 0, 0);
+        ctx.fillStyle = '#181825';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
         const pngURL = canvas.toDataURL('image/png');
         const a = document.createElement('a');
         a.href = pngURL;
         a.download = 'database-schema.png';
         a.click();
         showToast('✅ PNG Image downloaded!');
+        const menu = document.getElementById('export-dropdown-menu');
+        if (menu) menu.style.display = 'none';
       };
       image.src = blobURL;
     }
 
+    function exportDBML() {
+      downloadFile(DBML_DATA, 'database-schema.dbml', 'text/plain;charset=utf-8');
+      showToast('✅ DBML code downloaded (ready for dbdiagram.io)!');
+      const menu = document.getElementById('export-dropdown-menu');
+      if (menu) menu.style.display = 'none';
+    }
+
+    function exportSQL() {
+      downloadFile(SQL_DATA, 'database-schema.sql', 'application/sql;charset=utf-8');
+      showToast('✅ Standard SQL DDL downloaded!');
+      const menu = document.getElementById('export-dropdown-menu');
+      if (menu) menu.style.display = 'none';
+    }
+
+    function exportMermaid() {
+      downloadFile(MERMAID_DATA, 'database-schema.md', 'text/markdown;charset=utf-8');
+      showToast('✅ Mermaid Markdown ERD downloaded!');
+      const menu = document.getElementById('export-dropdown-menu');
+      if (menu) menu.style.display = 'none';
+    }
+
     function exportJSON() {
       const jsonStr = JSON.stringify(SCHEMA_DATA, null, 2);
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'database-schema.json';
-      a.click();
-      showToast('✅ JSON AST downloaded!');
+      downloadFile(jsonStr, 'database-schema.json', 'application/json;charset=utf-8');
+      showToast('✅ JSON Schema Map downloaded!');
+      const menu = document.getElementById('export-dropdown-menu');
+      if (menu) menu.style.display = 'none';
+    }
+
+    function exportDOT() {
+      downloadFile(DOT_DATA, 'database-schema.dot', 'text/plain;charset=utf-8');
+      showToast('✅ Graphviz DOT file downloaded!');
+      const menu = document.getElementById('export-dropdown-menu');
+      if (menu) menu.style.display = 'none';
     }
 
     // Boot
