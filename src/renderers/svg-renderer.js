@@ -99,16 +99,6 @@ class SVGRenderer {
         <circle cx="2" cy="2" r="1.2" fill="${theme.dotGrid}" />
       </pattern>
 
-      <!-- Drop Shadow Filter -->
-      <filter id="cardShadow" x="-10%" y="-10%" width="125%" height="125%">
-        <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/>
-      </filter>
-
-      <!-- Selected Card Glow Filter -->
-      <filter id="cardSelectedGlow" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#89b4fa" flood-opacity="0.8"/>
-      </filter>
-
       <!-- Arrow Marker -->
       <marker id="arrowHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
         <path d="M 0 1 L 10 5 L 0 9 z" fill="${theme.edgeStroke}" />
@@ -139,8 +129,9 @@ class SVGRenderer {
         let edgesXml = '    <!-- Relationship Connectors -->\n    <g class="relationships" id="svg-relationships">\n';
         connectors.forEach((conn, idx) => {
             const edgeId = `edge-${conn.fromTable}-${conn.fromField}-${conn.toTable}-${conn.toField}`;
-            edgesXml += `      <path id="${edgeId}" class="rel-edge" data-from="${conn.fromTable}" data-to="${conn.toTable}" data-from-field="${conn.fromField}" data-to-field="${conn.toField}" data-cardinality="${conn.cardinality || 'N:1'}" d="${conn.pathData}" fill="none" stroke="${theme.edgeStroke}" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrowHead)" opacity="0.85" style="transition: stroke 0.2s, stroke-width 0.2s, opacity 0.2s; cursor: pointer;"/>\n`;
-            edgesXml += `      <circle id="anchor-${edgeId}" class="rel-anchor" data-edge="${edgeId}" cx="${conn.startX}" cy="${conn.startY}" r="3.5" fill="${theme.edgeStroke}" style="transition: fill 0.2s, opacity 0.2s;"/>\n`;
+            edgesXml += `      <path id="${edgeId}" class="rel-edge" data-from="${conn.fromTable}" data-to="${conn.toTable}" data-from-field="${conn.fromField}" data-to-field="${conn.toField}" data-cardinality="${conn.cardinality || 'N:1'}" d="${conn.pathData}" fill="none" stroke="${theme.edgeStroke}" stroke-width="2.2" stroke-dasharray="6 3" marker-end="url(#arrowHead)" opacity="0.85" style="transition: stroke 0.15s, stroke-width 0.15s, opacity 0.15s; cursor: pointer;"/>\n`;
+            edgesXml += `      <circle id="anchor-start-${edgeId}" class="rel-anchor rel-anchor-start" data-edge="${edgeId}" cx="${conn.startX}" cy="${conn.startY}" r="4" fill="${theme.edgeStroke}" style="transition: fill 0.15s, opacity 0.15s;"/>\n`;
+            edgesXml += `      <circle id="anchor-end-${edgeId}" class="rel-anchor rel-anchor-end" data-edge="${edgeId}" cx="${conn.endX}" cy="${conn.endY}" r="4" fill="${theme.edgeStroke}" style="transition: fill 0.15s, opacity 0.15s;"/>\n`;
         });
         edgesXml += '    </g>\n';
 
@@ -155,9 +146,9 @@ class SVGRenderer {
             const colCount = Math.max(1, table.columns.length);
             const cardHeight = headerHeight + (colCount * rowHeight) + 12;
 
-            nodesXml += `      <g id="card-${tableName}" class="table-card" data-table="${tableName}" data-x="${pos.x}" data-y="${pos.y}" data-width="${boxWidth}" data-height="${cardHeight}" transform="translate(${pos.x}, ${pos.y})" filter="url(#cardShadow)" style="cursor: grab;">\n`;
+            nodesXml += `      <g id="card-${tableName}" class="table-card" data-table="${tableName}" data-x="${pos.x}" data-y="${pos.y}" data-width="${boxWidth}" data-height="${cardHeight}" transform="translate(${pos.x}, ${pos.y})" style="cursor: grab;">\n`;
             // Card background
-            nodesXml += `        <rect class="card-bg" width="${boxWidth}" height="${cardHeight}" rx="10" fill="${theme.cardBg}" stroke="${theme.cardStroke}" stroke-width="1.5" style="transition: stroke 0.2s, stroke-width 0.2s;"/>\n`;
+            nodesXml += `        <rect class="card-bg" width="${boxWidth}" height="${cardHeight}" rx="10" fill="${theme.cardBg}" stroke="${theme.cardStroke}" stroke-width="1.5" style="transition: stroke 0.15s, stroke-width 0.15s;"/>\n`;
 
             // Card Header Bar (Rounded top)
             nodesXml += `        <path class="card-header" d="M 0 10 A 10 10 0 0 1 10 0 L ${boxWidth - 10} 0 A 10 10 0 0 1 ${boxWidth} 10 L ${boxWidth} ${headerHeight} L 0 ${headerHeight} Z" fill="url(#headerGrad)"/>\n`;
@@ -175,31 +166,40 @@ class SVGRenderer {
                 const rowY = headerHeight + (cIdx * rowHeight);
                 const textY = rowY + 18;
 
+                // Check if this column has an outgoing relation
+                const rel = table.relations.find(r => r.from === col.name);
+                const fkTargetAttr = rel ? ` data-fk-target="${rel.toTable}.${rel.toField}"` : '';
+
                 // Subtle row divider line (except last row)
                 if (cIdx > 0) {
                     nodesXml += `        <line x1="8" y1="${rowY}" x2="${boxWidth - 8}" y2="${rowY}" stroke="${theme.rowDivider}" stroke-width="1" opacity="0.6"/>\n`;
                 }
 
+                // Row hover hit area
+                nodesXml += `        <g class="card-col-row" data-col="${SVGRenderer.escapeXml(col.name)}"${fkTargetAttr}>\n`;
+                nodesXml += `          <rect class="col-row-bg" x="4" y="${rowY + 2}" width="${boxWidth - 8}" height="${rowHeight - 4}" rx="4" fill="transparent" style="cursor: pointer;"/>\n`;
+
                 let badgeOffset = 14;
 
                 // PK / FK Badge Pills
                 if (col.isPrimary) {
-                    nodesXml += `        <rect x="${badgeOffset}" y="${rowY + 6}" width="22" height="15" rx="3" fill="${theme.pkBg}"/>\n`;
-                    nodesXml += `        <text x="${badgeOffset + 11}" y="${rowY + 17}" fill="${theme.pkText}" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>\n`;
+                    nodesXml += `          <rect x="${badgeOffset}" y="${rowY + 6}" width="22" height="15" rx="3" fill="${theme.pkBg}"/>\n`;
+                    nodesXml += `          <text x="${badgeOffset + 11}" y="${rowY + 17}" fill="${theme.pkText}" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>\n`;
                     badgeOffset += 28;
                 } else if (col.isForeign) {
-                    nodesXml += `        <rect x="${badgeOffset}" y="${rowY + 6}" width="22" height="15" rx="3" fill="${theme.fkBg}"/>\n`;
-                    nodesXml += `        <text x="${badgeOffset + 11}" y="${rowY + 17}" fill="${theme.fkText}" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>\n`;
+                    nodesXml += `          <rect x="${badgeOffset}" y="${rowY + 6}" width="22" height="15" rx="3" fill="${theme.fkBg}"/>\n`;
+                    nodesXml += `          <text x="${badgeOffset + 11}" y="${rowY + 17}" fill="${theme.fkText}" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>\n`;
                     badgeOffset += 28;
                 }
 
                 // Column Name
                 const colNameEscaped = SVGRenderer.escapeXml(col.name);
-                nodesXml += `        <text x="${badgeOffset}" y="${textY}" fill="${theme.colText}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">${colNameEscaped}</text>\n`;
+                nodesXml += `          <text class="col-name-text" x="${badgeOffset}" y="${textY}" fill="${theme.colText}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500">${colNameEscaped}</text>\n`;
 
                 // Column Type (Right-aligned)
                 const colTypeEscaped = SVGRenderer.escapeXml(col.type || 'any');
-                nodesXml += `        <text x="${boxWidth - 14}" y="${textY}" fill="${theme.typeText}" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">${colTypeEscaped}</text>\n`;
+                nodesXml += `          <text class="col-type-text" x="${boxWidth - 14}" y="${textY}" fill="${theme.typeText}" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="10.5" text-anchor="end">${colTypeEscaped}</text>\n`;
+                nodesXml += `        </g>\n`;
             });
 
             nodesXml += `      </g>\n`;
@@ -207,12 +207,14 @@ class SVGRenderer {
 
         nodesXml += '    </g>\n';
 
-        return `<svg id="schemagraph-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="100%" height="100%" style="background:${theme.bg}; user-select:none;">\n` +
+        return `<svg id="schemagraph-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="100%" height="100%" style="background:${theme.bg}; user-select:none; shape-rendering:geometricPrecision; text-rendering:geometricPrecision;">\n` +
                defsXml + '\n' +
                `  <!-- Grid Background -->\n  <rect width="100%" height="100%" fill="url(#dotGrid)" />\n` +
+               `  <g id="canvas-stage">\n` +
                titleXml + '\n' +
                edgesXml +
                nodesXml +
+               `  </g>\n` +
                `</svg>`;
     }
 

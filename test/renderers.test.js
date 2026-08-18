@@ -48,6 +48,11 @@ test('HTMLRenderer generates full standalone HTML page', () => {
     assert.ok(html.includes('Test Explorer'));
     assert.ok(html.includes('<svg'));
     assert.ok(html.includes('canvas-container'));
+    assert.ok(html.includes('sidebar-drawer'));
+    assert.ok(html.includes('toggleSidebarDrawer'));
+    assert.ok(html.includes('zoom-presets-menu'));
+    assert.ok(html.includes('insp-outgoing-list'));
+    assert.ok(html.includes('insp-incoming-list'));
 });
 
 test('MermaidRenderer generates erDiagram markdown block and tables', () => {

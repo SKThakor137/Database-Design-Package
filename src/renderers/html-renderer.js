@@ -1,13 +1,13 @@
 /**
  * Interactive Single-Page HTML Viewer
  * Fully interactive visual ERD explorer with:
- * - Real-time draggable table cards with dynamic Bézier connector re-routing
- * - Compact Mode (Keys-only view for huge 50+ table databases) vs Detailed Full View
- * - "Fit to Screen" auto-scaling and centering
- * - Interactive Minimap radar navigator
- * - Left-sidebar Connection Inspector (Incoming & Outgoing relations with jump links)
- * - Sub-graph relationship highlighting & dimming
- * - Search filter, pan/zoom canvas, and instant PNG/SVG/JSON export tools.
+ * - Ultra-Crisp Pure Vector Rendering (Zero blur at any zoom level from 2% to 1000%)
+ * - Table Active State & Sub-graph Highlighting (vivid sharp active cards, edge illumination, column-level hover)
+ * - Collapsible Left Drawer (Sidebar) with toggle button, keyboard shortcut ([), and floating restore tab
+ * - Rich Relationship UI/UX (bidirectional port anchors, FK target badges, rich Inspector cards with cardinality pills and focus actions)
+ * - Max Canvas Zoom (0.02x to 10.0x / 1000%), mouse-centered zoom, Zoom HUD presets, Fit to Screen, Fullscreen mode
+ * - Draggable table cards with real-time cubic Bézier connector re-routing
+ * - Interactive Minimap radar navigator with drag-to-pan
  * Pure Node.js - Zero dependencies.
  */
 
@@ -79,10 +79,12 @@ class HTMLRenderer {
       --text: #cdd6f4;
       --text-muted: #a6adc8;
       --primary: #89b4fa;
+      --primary-glow: rgba(137, 180, 250, 0.4);
       --accent: #f38ba8;
       --success: #a6e3a1;
       --purple: #cba6f7;
       --yellow: #f9e2af;
+      --cyan: #89dceb;
       --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       --mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
     }
@@ -96,51 +98,79 @@ class HTMLRenderer {
       height: 100vh;
       display: flex;
       flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     /* Top Header */
     header {
-      height: 60px;
+      height: 56px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
+      padding: 0 16px;
       z-index: 20;
+      gap: 12px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .drawer-toggle-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .drawer-toggle-btn:hover {
+      background: var(--border-bright);
+      border-color: var(--primary);
+      color: #fff;
     }
 
     .logo-badge {
       background: linear-gradient(135deg, #89b4fa, #cba6f7);
       color: #11111b;
       font-weight: 900;
-      font-size: 14px;
-      padding: 4px 10px;
+      font-size: 13px;
+      padding: 3px 8px;
       border-radius: 6px;
       letter-spacing: -0.5px;
     }
 
     .title-group h1 {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       letter-spacing: -0.3px;
+      white-space: nowrap;
     }
 
     .title-group p {
-      font-size: 11px;
+      font-size: 10.5px;
       color: var(--text-muted);
+      white-space: nowrap;
     }
 
     /* Search Box */
     .search-box {
       position: relative;
-      width: 280px;
+      width: 260px;
+      flex-shrink: 1;
     }
 
     .search-box input {
@@ -148,9 +178,9 @@ class HTMLRenderer {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 8px 14px 8px 34px;
+      padding: 7px 12px 7px 32px;
       color: var(--text);
-      font-size: 13px;
+      font-size: 12.5px;
       outline: none;
       transition: all 0.2s;
     }
@@ -166,15 +196,16 @@ class HTMLRenderer {
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-muted);
-      font-size: 14px;
+      font-size: 13px;
       pointer-events: none;
     }
 
-    /* Action Buttons */
+    /* Action Controls */
     .controls {
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-shrink: 0;
     }
 
     button {
@@ -214,6 +245,14 @@ class HTMLRenderer {
       color: var(--primary);
     }
 
+    .shortcut-badge {
+      font-size: 9px;
+      background: rgba(255,255,255,0.1);
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: var(--text-muted);
+    }
+
     /* Main Workspace Layout */
     .workspace {
       display: flex;
@@ -222,24 +261,53 @@ class HTMLRenderer {
       overflow: hidden;
     }
 
-    /* Left Sidebar */
+    /* Collapsible Left Sidebar */
     aside {
-      width: 320px;
+      width: 330px;
+      min-width: 330px;
       background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       overflow-y: auto;
       z-index: 10;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    aside.collapsed {
+      width: 0 !important;
+      min-width: 0 !important;
+      padding: 0 !important;
+      border-right: none !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .drawer-header {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.15);
+    }
+
+    .drawer-header-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
     }
 
     .stats-card {
-      padding: 12px 14px;
+      padding: 10px 14px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 6px;
       border-bottom: 1px solid var(--border);
-      background: rgba(0,0,0,0.15);
+      background: rgba(0,0,0,0.1);
     }
 
     .stat-item {
@@ -251,16 +319,16 @@ class HTMLRenderer {
     }
 
     .stat-val {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--primary);
     }
 
     .stat-lbl {
-      font-size: 9.5px;
+      font-size: 9px;
       color: var(--text-muted);
       text-transform: uppercase;
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     /* Sidebar Tabs Header */
@@ -276,8 +344,8 @@ class HTMLRenderer {
       border: none;
       border-bottom: 2px solid transparent;
       border-radius: 0;
-      padding: 10px 12px;
-      font-size: 12px;
+      padding: 9px 10px;
+      font-size: 11.5px;
       font-weight: 600;
       color: var(--text-muted);
       justify-content: center;
@@ -286,7 +354,7 @@ class HTMLRenderer {
     .tab-btn.active {
       color: var(--primary);
       border-bottom-color: var(--primary);
-      background: rgba(137, 180, 250, 0.05);
+      background: rgba(137, 180, 250, 0.06);
     }
 
     /* Table List View */
@@ -294,14 +362,15 @@ class HTMLRenderer {
       padding: 10px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
+      overflow-y: auto;
     }
 
     .table-item {
-      padding: 9px 12px;
+      padding: 8px 11px;
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 7px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -309,20 +378,27 @@ class HTMLRenderer {
       transition: all 0.15s;
     }
 
-    .table-item:hover, .table-item.selected {
+    .table-item:hover {
       border-color: var(--primary);
       background: var(--card-hover);
+      transform: translateX(2px);
+    }
+
+    .table-item.selected {
+      border-color: var(--primary);
+      background: rgba(137, 180, 250, 0.15);
+      box-shadow: 0 0 0 1px var(--primary);
       transform: translateX(3px);
     }
 
     .table-item-name {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       color: var(--text);
     }
 
     .table-item-count {
-      font-size: 10.5px;
+      font-size: 10px;
       color: var(--text-muted);
       background: var(--surface);
       padding: 2px 6px;
@@ -331,10 +407,11 @@ class HTMLRenderer {
 
     /* Inspector View */
     #inspector-view {
-      padding: 14px;
+      padding: 12px;
       display: none;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
+      overflow-y: auto;
     }
 
     .inspector-header {
@@ -343,21 +420,25 @@ class HTMLRenderer {
       justify-content: space-between;
       padding-bottom: 10px;
       border-bottom: 1px solid var(--border);
+      gap: 8px;
     }
 
     .inspector-title {
       font-size: 15px;
       font-weight: 700;
       color: var(--primary);
+      word-break: break-all;
     }
 
     .badge-pill {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
-      padding: 3px 8px;
+      padding: 2px 7px;
       border-radius: 4px;
       background: rgba(137, 180, 250, 0.2);
       color: var(--primary);
+      text-transform: uppercase;
+      flex-shrink: 0;
     }
 
     .inspector-section-title {
@@ -367,33 +448,38 @@ class HTMLRenderer {
       font-weight: 700;
       color: var(--text-muted);
       margin-bottom: 6px;
-    }
-
-    .rel-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 10px;
-      margin-bottom: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      transition: all 0.15s;
-    }
-
-    .rel-card:hover {
-      border-color: var(--accent);
-      background: var(--card-hover);
-    }
-
-    .rel-card-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
+    /* Rich Relationship Cards */
+    .rel-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+
+    .rel-card:hover {
+      border-color: var(--primary);
+      background: var(--card-hover);
+    }
+
+    .rel-card-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
     .rel-target-btn {
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--accent);
       background: transparent;
@@ -403,17 +489,61 @@ class HTMLRenderer {
       text-decoration: underline;
     }
 
-    .rel-card-detail {
-      font-family: var(--mono);
-      font-size: 10.5px;
-      color: var(--text-muted);
+    .rel-target-btn:hover {
+      color: #fff;
     }
 
+    .rel-card-path {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text);
+      background: rgba(0,0,0,0.25);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.05);
+      overflow-x: auto;
+    }
+
+    .rel-cardinality-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: rgba(203, 166, 247, 0.2);
+      color: var(--purple);
+      font-family: var(--mono);
+      flex-shrink: 0;
+    }
+
+    .rel-actions {
+      display: flex;
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    .rel-act-btn {
+      flex: 1;
+      padding: 3px 6px;
+      font-size: 10px;
+      justify-content: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .rel-act-btn:hover {
+      background: var(--border-bright);
+      border-color: var(--primary);
+    }
+
+    /* Column Definitions in Inspector */
     .cols-list {
       display: flex;
       flex-direction: column;
       gap: 3px;
-      max-height: 240px;
+      max-height: 260px;
       overflow-y: auto;
     }
 
@@ -423,8 +553,15 @@ class HTMLRenderer {
       justify-content: space-between;
       padding: 5px 8px;
       background: var(--card);
-      border-radius: 4px;
+      border-radius: 5px;
       font-size: 11px;
+      border: 1px solid transparent;
+      transition: all 0.1s;
+    }
+
+    .col-row:hover {
+      border-color: var(--border-bright);
+      background: var(--card-hover);
     }
 
     .col-row-name {
@@ -435,7 +572,7 @@ class HTMLRenderer {
     }
 
     .pk-tag {
-      font-size: 8.5px;
+      font-size: 8px;
       font-weight: bold;
       background: var(--yellow);
       color: #11111b;
@@ -444,7 +581,7 @@ class HTMLRenderer {
     }
 
     .fk-tag {
-      font-size: 8.5px;
+      font-size: 8px;
       font-weight: bold;
       background: var(--purple);
       color: #11111b;
@@ -458,7 +595,7 @@ class HTMLRenderer {
       color: var(--text-muted);
     }
 
-    /* Canvas Stage */
+    /* Canvas Viewport */
     #viewport {
       flex: 1;
       position: relative;
@@ -472,7 +609,6 @@ class HTMLRenderer {
     }
 
     #canvas-container {
-      transform-origin: 0 0;
       position: absolute;
       top: 0;
       left: 0;
@@ -480,33 +616,50 @@ class HTMLRenderer {
       height: 100%;
     }
 
-    /* SVG Table Cards & Connectors */
+    #schemagraph-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      shape-rendering: geometricPrecision;
+      text-rendering: geometricPrecision;
+    }
+
+    /* SVG Table Cards & Active Styling */
     .table-card {
-      transition: filter 0.15s, opacity 0.2s;
+      transition: opacity 0.2s;
     }
 
     .table-card:hover rect.card-bg {
       stroke: var(--primary) !important;
-      stroke-width: 2px !important;
+      stroke-width: 2.2px !important;
     }
 
+    /* Prominent Razor-Sharp Active Selected Card */
     .table-card.selected rect.card-bg {
       stroke: #89b4fa !important;
-      stroke-width: 3px !important;
+      stroke-width: 3.5px !important;
+    }
+
+    .table-card.selected .card-header {
+      filter: brightness(1.2);
     }
 
     .table-card.dragging {
       cursor: grabbing !important;
-      filter: url(#cardSelectedGlow) !important;
+    }
+
+    .card-col-row:hover .col-row-bg {
+      fill: rgba(137, 180, 250, 0.15) !important;
     }
 
     .dimmed {
-      opacity: 0.12 !important;
+      opacity: 0.18 !important;
       transition: opacity 0.2s;
     }
 
+    /* Relationship Connector Edges */
     .rel-edge {
-      transition: stroke 0.2s, stroke-width 0.2s, opacity 0.2s;
+      transition: stroke 0.15s, stroke-width 0.15s, opacity 0.15s;
     }
 
     .rel-edge:hover, .rel-edge.highlighted {
@@ -522,19 +675,19 @@ class HTMLRenderer {
       r: 6 !important;
     }
 
-    /* Floating Zoom HUD */
+    /* Floating Zoom HUD Controls */
     .zoom-hud {
       position: absolute;
       bottom: 24px;
       right: 24px;
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      border: 1px solid var(--border-bright);
+      border-radius: 10px;
       display: flex;
       align-items: center;
-      padding: 4px;
-      gap: 4px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      padding: 5px;
+      gap: 5px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
       z-index: 15;
     }
 
@@ -543,20 +696,64 @@ class HTMLRenderer {
       font-size: 12px;
     }
 
+    .zoom-val-btn {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      min-width: 58px;
+      justify-content: center;
+      color: var(--primary);
+    }
+
+    /* Zoom presets dropdown menu */
+    #zoom-presets-menu {
+      position: absolute;
+      bottom: 48px;
+      right: 70px;
+      background: var(--card);
+      border: 1px solid var(--border-bright);
+      border-radius: 8px;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      padding: 6px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      z-index: 25;
+      min-width: 110px;
+    }
+
+    .zoom-preset-item {
+      padding: 6px 10px;
+      font-size: 11.5px;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .zoom-preset-item:hover {
+      background: var(--border-bright);
+      color: var(--primary);
+    }
+
     /* Interactive Minimap Radar */
     #minimap {
       position: absolute;
       bottom: 24px;
       left: 24px;
-      width: 180px;
-      height: 120px;
-      background: rgba(24, 24, 37, 0.9);
+      width: 190px;
+      height: 130px;
+      background: rgba(24, 24, 37, 0.92);
       border: 1px solid var(--border-bright);
       border-radius: 8px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.5);
       z-index: 15;
       overflow: hidden;
       cursor: pointer;
+      backdrop-filter: blur(4px);
     }
 
     #minimap-canvas {
@@ -567,24 +764,24 @@ class HTMLRenderer {
     #minimap-box {
       position: absolute;
       border: 1.5px solid var(--primary);
-      background: rgba(137, 180, 250, 0.15);
+      background: rgba(137, 180, 250, 0.18);
       pointer-events: none;
     }
 
-    /* Floating Tooltip */
+    /* Rich Floating Tooltip */
     #rel-tooltip {
       position: fixed;
       display: none;
       background: #1e1e2e;
       border: 1px solid var(--primary);
       color: var(--text);
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-family: var(--mono);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 11.5px;
       pointer-events: none;
       z-index: 99;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      line-height: 1.4;
     }
 
     .toast {
@@ -612,6 +809,11 @@ class HTMLRenderer {
 <body>
   <header>
     <div class="brand">
+      <button class="drawer-toggle-btn btn-active" id="btn-toggle-drawer" onclick="toggleSidebarDrawer()" title="Toggle Sidebar (Shortcut: [ )">
+        <span id="drawer-toggle-icon">☰</span>
+        <span>Sidebar</span>
+        <span class="shortcut-badge">[</span>
+      </button>
       <div class="logo-badge">ERD</div>
       <div class="title-group">
         <h1>${title}</h1>
@@ -626,8 +828,9 @@ class HTMLRenderer {
 
     <div class="controls">
       <button id="btn-mode-toggle" onclick="toggleCompactMode()">🗂️ Compact Mode</button>
-      <button onclick="fitToScreen()">[ ] Fit to Screen</button>
-      <button onclick="resetNodePositions()">⤢ Reset Layout</button>
+      <button onclick="fitToScreen()" title="Fit entire schema into viewport">[ ] Fit to Screen</button>
+      <button onclick="resetNodePositions()" title="Restore original auto-layout">⤢ Reset Layout</button>
+      <button onclick="toggleFullscreen()" title="Toggle Fullscreen Canvas">⛶ Fullscreen</button>
       <button onclick="exportSVG()" class="btn-primary">⬇ SVG</button>
       <button onclick="exportPNG()">📷 PNG</button>
       <button onclick="exportJSON()">📋 JSON</button>
@@ -635,7 +838,12 @@ class HTMLRenderer {
   </header>
 
   <div class="workspace">
-    <aside>
+    <!-- Left Sidebar -->
+    <aside id="sidebar-drawer">
+      <div class="drawer-header">
+        <span class="drawer-header-title">Database Overview</span>
+      </div>
+
       <div class="stats-card">
         <div class="stat-item">
           <div class="stat-val">${tables.length}</div>
@@ -669,7 +877,10 @@ class HTMLRenderer {
       <!-- Inspector Tab -->
       <div id="inspector-view">
         <div class="inspector-header">
-          <div class="inspector-title" id="insp-name">Select a Model</div>
+          <div>
+            <div class="inspector-title" id="insp-name">Select a Model</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Active Model Details</div>
+          </div>
           <div class="badge-pill" id="insp-type">TABLE</div>
         </div>
 
@@ -694,10 +905,14 @@ class HTMLRenderer {
           <div class="cols-list" id="insp-cols-list"></div>
         </div>
 
-        <button onclick="focusSelectedModel()" class="btn-primary" style="margin-top: 6px; justify-content: center;">🎯 Center on Canvas</button>
+        <div style="display: flex; gap: 6px; margin-top: 4px;">
+          <button onclick="focusSelectedModel()" class="btn-primary" style="flex: 1; justify-content: center;">🎯 Center Table</button>
+          <button onclick="clearModelSelection()" style="padding: 6px 10px;" title="Clear Active Selection">✕ Clear</button>
+        </div>
       </div>
     </aside>
 
+    <!-- Main Viewport Canvas -->
     <main id="viewport">
       <div id="canvas-container">
         ${rawSvg}
@@ -709,12 +924,29 @@ class HTMLRenderer {
         <div id="minimap-box"></div>
       </div>
 
-      <!-- Zoom HUD -->
+      <!-- Zoom Presets Dropdown Menu -->
+      <div id="zoom-presets-menu">
+        <button class="zoom-preset-item" onclick="setZoomScale(0.25)">25%</button>
+        <button class="zoom-preset-item" onclick="setZoomScale(0.5)">50%</button>
+        <button class="zoom-preset-item" onclick="setZoomScale(0.75)">75%</button>
+        <button class="zoom-preset-item" onclick="setZoomScale(1.0)">100% (Default)</button>
+        <button class="zoom-preset-item" onclick="setZoomScale(1.5)">150%</button>
+        <button class="zoom-preset-item" onclick="setZoomScale(2.0)">200%</button>
+        <button class="zoom-preset-item" onclick="setZoomScale(4.0)">400%</button>
+        <button class="zoom-preset-item" onclick="setZoomScale(8.0)">800%</button>
+        <button class="zoom-preset-item" onclick="setZoomScale(10.0)">1000% (Max)</button>
+        <div style="height: 1px; background: var(--border); margin: 3px 0;"></div>
+        <button class="zoom-preset-item" onclick="fitToScreen()">[ ] Fit to Screen</button>
+      </div>
+
+      <!-- Floating Zoom HUD -->
       <div class="zoom-hud">
-        <button onclick="zoomBy(0.15)">＋</button>
-        <button onclick="zoomBy(-0.15)">－</button>
-        <button onclick="fitToScreen()">Fit</button>
-        <button onclick="resetCanvas()">100%</button>
+        <button onclick="zoomBy(0.2)" title="Zoom In (Key: +)">＋</button>
+        <button onclick="zoomBy(-0.2)" title="Zoom Out (Key: -)">－</button>
+        <button class="zoom-val-btn" id="zoom-val-display" onclick="toggleZoomPresetsMenu()" title="Click to choose zoom preset">100%</button>
+        <button onclick="fitToScreen()" title="Auto-scale & Center all models">Fit</button>
+        <button onclick="resetCanvas()" title="Reset to 100% Zoom">100%</button>
+        <button onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
       </div>
     </main>
   </div>
@@ -739,17 +971,28 @@ class HTMLRenderer {
     let dragStartMouseY = 0;
     let cardInitX = 0;
     let cardInitY = 0;
+    let didCardMove = false;
 
     let selectedModel = null;
     let isCompactMode = false;
+    let isDrawerCollapsed = false;
 
     const viewport = document.getElementById('viewport');
     const container = document.getElementById('canvas-container');
+    const stage = document.getElementById('canvas-stage');
     const tooltip = document.getElementById('rel-tooltip');
+    const sidebarDrawer = document.getElementById('sidebar-drawer');
+    const drawerToggleIcon = document.getElementById('drawer-toggle-icon');
+    const zoomValDisplay = document.getElementById('zoom-val-display');
+    const zoomPresetsMenu = document.getElementById('zoom-presets-menu');
 
     const BOX_WIDTH = 280;
     const HEADER_HEIGHT = 46;
     const ROW_HEIGHT = 28;
+
+    // Minimum and Maximum Zoom Constraints (Deep Eagle-Eye to 1000% Ultra-Crisp Zoom)
+    const MIN_ZOOM = 0.02;
+    const MAX_ZOOM = 10.0;
 
     // 1. Initialize Graph & Event Listeners
     function initInteractiveGraph() {
@@ -767,12 +1010,6 @@ class HTMLRenderer {
           startCardDrag(e, card, tableName);
         });
 
-        // Card Click Selection
-        card.addEventListener('click', (e) => {
-          e.stopPropagation();
-          selectModel(tableName, false);
-        });
-
         // Hover Highlighting
         card.addEventListener('mouseenter', () => {
           if (!selectedModel) highlightConnections(tableName);
@@ -780,9 +1017,26 @@ class HTMLRenderer {
         card.addEventListener('mouseleave', () => {
           if (!selectedModel) clearHighlights();
         });
+
+        // Column row level hover
+        const colRows = card.querySelectorAll('.card-col-row');
+        colRows.forEach(row => {
+          const colName = row.getAttribute('data-col');
+          row.addEventListener('mouseenter', (e) => {
+            e.stopPropagation();
+            highlightColumnRelation(tableName, colName);
+          });
+          row.addEventListener('mouseleave', () => {
+            if (selectedModel) {
+              highlightConnections(selectedModel);
+            } else {
+              clearHighlights();
+            }
+          });
+        });
       });
 
-      // Relationship Hover Tooltips
+      // Relationship Hover Tooltips & Click
       const edges = document.querySelectorAll('.rel-edge');
       edges.forEach(edge => {
         edge.addEventListener('mouseenter', (e) => {
@@ -792,7 +1046,11 @@ class HTMLRenderer {
           const toField = edge.getAttribute('data-to-field');
           const card = edge.getAttribute('data-cardinality');
           
-          tooltip.innerHTML = \`<strong>\${from}.\${fromField}</strong> ➔ <strong>\${to}.\${toField}</strong> [\${card}]\`;
+          tooltip.innerHTML = \`
+            <div style="font-weight: 700; color: #89b4fa; margin-bottom: 3px;">🔗 Foreign Key Relationship</div>
+            <div><strong>\${from}.\${fromField}</strong> ➔ <strong>\${to}.\${toField}</strong></div>
+            <div style="font-size: 10px; color: #a6adc8; margin-top: 2px;">Cardinality: <span style="color: #cba6f7; font-weight: bold;">[\${card}]</span> (Click to inspect)</div>
+          \`;
           tooltip.style.display = 'block';
           tooltip.style.left = (e.clientX + 14) + 'px';
           tooltip.style.top = (e.clientY + 14) + 'px';
@@ -808,15 +1066,24 @@ class HTMLRenderer {
           tooltip.style.display = 'none';
           if (!selectedModel) edge.classList.remove('highlighted');
         });
+
+        edge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const from = edge.getAttribute('data-from');
+          selectModel(from, true);
+        });
       });
 
       // Clicking empty canvas clears selection
-      viewport.addEventListener('click', () => {
-        clearModelSelection();
+      viewport.addEventListener('click', (e) => {
+        if (!e.target.closest('.zoom-hud') && !e.target.closest('#minimap') && !e.target.closest('#zoom-presets-menu')) {
+          clearModelSelection();
+          if (zoomPresetsMenu) zoomPresetsMenu.style.display = 'none';
+        }
       });
 
       // Fit to screen on startup
-      setTimeout(fitToScreen, 80);
+      setTimeout(fitToScreen, 100);
     }
 
     // 2. Drag & Drop Card with Dynamic Bezier Path Recalculation
@@ -833,6 +1100,7 @@ class HTMLRenderer {
       dragStartMouseY = e.clientY;
       cardInitX = parseFloat(card.getAttribute('data-x') || 0);
       cardInitY = parseFloat(card.getAttribute('data-y') || 0);
+      didCardMove = false;
       card.classList.add('dragging');
     }
 
@@ -840,6 +1108,11 @@ class HTMLRenderer {
       if (draggingCard) {
         const dx = (e.clientX - dragStartMouseX) / scale;
         const dy = (e.clientY - dragStartMouseY) / scale;
+
+        if (Math.hypot(e.clientX - dragStartMouseX, e.clientY - dragStartMouseY) > 5) {
+          didCardMove = true;
+        }
+
         const newX = cardInitX + dx;
         const newY = cardInitY + dy;
 
@@ -856,10 +1129,16 @@ class HTMLRenderer {
       }
     });
 
-    window.addEventListener('mouseup', () => {
+    window.addEventListener('mouseup', (e) => {
       if (draggingCard) {
+        const tableName = draggingCard.name;
         draggingCard.el.classList.remove('dragging');
         draggingCard = null;
+
+        // If mouse didn't move significantly, treat as a direct table click selection!
+        if (!didCardMove) {
+          selectModel(tableName, false);
+        }
       }
       isCanvasPanning = false;
     });
@@ -895,18 +1174,21 @@ class HTMLRenderer {
           const endY = tY + HEADER_HEIGHT + (toColIdx >= 0 ? toColIdx * ROW_HEIGHT + ROW_HEIGHT / 2 : 20);
 
           let startX, endX;
-          if (fX < tX) {
+          if (fX + BOX_WIDTH < tX) {
             startX = fX + BOX_WIDTH;
             endX = tX;
-          } else if (fX > tX) {
+          } else if (fX > tX + BOX_WIDTH) {
             startX = fX;
             endX = tX + BOX_WIDTH;
-          } else {
+          } else if (fX <= tX) {
             startX = fX + BOX_WIDTH;
             endX = tX + BOX_WIDTH;
+          } else {
+            startX = fX;
+            endX = tX;
           }
 
-          const dx = Math.max(40, Math.abs(endX - startX) * 0.5);
+          const dx = Math.max(50, Math.abs(endX - startX) * 0.5);
           const cp1x = startX < endX ? startX + dx : startX - dx;
           const cp1y = startY;
           const cp2x = startX < endX ? endX - dx : endX + dx;
@@ -915,10 +1197,16 @@ class HTMLRenderer {
           const pathData = \`M \${startX} \${startY} C \${cp1x} \${cp1y}, \${cp2x} \${cp2y}, \${endX} \${endY}\`;
           edge.setAttribute('d', pathData);
 
-          const anchor = document.getElementById('anchor-' + edge.id);
-          if (anchor) {
-            anchor.setAttribute('cx', startX);
-            anchor.setAttribute('cy', startY);
+          const startAnchor = document.getElementById('anchor-start-' + edge.id);
+          if (startAnchor) {
+            startAnchor.setAttribute('cx', startX);
+            startAnchor.setAttribute('cy', startY);
+          }
+
+          const endAnchor = document.getElementById('anchor-end-' + edge.id);
+          if (endAnchor) {
+            endAnchor.setAttribute('cx', endX);
+            endAnchor.setAttribute('cy', endY);
           }
         }
       });
@@ -928,16 +1216,26 @@ class HTMLRenderer {
     function selectModel(tableName, autoCenter = false) {
       selectedModel = tableName;
 
+      // Update sidebar model items
       document.querySelectorAll('.table-item').forEach(it => it.classList.remove('selected'));
       const activeItem = document.getElementById('sidebar-item-' + tableName);
-      if (activeItem) activeItem.classList.add('selected');
+      if (activeItem) {
+        activeItem.classList.add('selected');
+        activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
 
+      // Update SVG table cards active states
       document.querySelectorAll('.table-card').forEach(c => c.classList.remove('selected'));
       const activeCard = document.getElementById('card-' + tableName);
-      if (activeCard) activeCard.classList.add('selected');
+      if (activeCard) {
+        activeCard.classList.add('selected');
+        // Bring to front
+        activeCard.parentNode.appendChild(activeCard);
+      }
 
-      switchSidebarTab('inspector');
+      // Update sidebar inspector content
       renderInspector(tableName);
+      switchSidebarTab('inspector');
       highlightConnections(tableName);
 
       if (autoCenter && activeCard) {
@@ -962,39 +1260,59 @@ class HTMLRenderer {
       document.getElementById('insp-in-count').textContent = data.incoming.length;
       document.getElementById('insp-col-count').textContent = data.columns.length;
 
-      // Outgoing
+      // Outgoing Foreign Keys
       const outList = document.getElementById('insp-outgoing-list');
       if (data.outgoing.length === 0) {
-        outList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 6px;">No outgoing foreign keys</div>';
+        outList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; padding: 4px 0;">No outgoing foreign keys</div>';
       } else {
         outList.innerHTML = data.outgoing.map(o => \`
           <div class="rel-card">
-            <div class="rel-card-header">
-              <span style="font-size: 11px; color: var(--text);">➔ References:</span>
+            <div class="rel-card-row">
+              <span style="font-size: 11px; color: var(--text-muted);">➔ Foreign Key Target:</span>
               <button class="rel-target-btn" onclick="selectModel('\${o.toTable}', true)">\${o.toTable}</button>
             </div>
-            <div class="rel-card-detail">\${tableName}.\${o.fromField} ➔ \${o.toTable}.\${o.toField} [\${o.cardinality}]</div>
+            <div class="rel-card-path">
+              <span style="color: var(--purple); font-weight: bold;">[FK]</span>
+              <span>\${tableName}.\${o.fromField}</span>
+              <span style="color: var(--primary);">➔</span>
+              <span>\${o.toTable}.\${o.toField}</span>
+              <span class="rel-cardinality-badge">\${o.cardinality}</span>
+            </div>
+            <div class="rel-actions">
+              <button class="rel-act-btn" onclick="focusRelationshipEdge('\${tableName}', '\${o.fromField}', '\${o.toTable}', '\${o.toField}')">🎯 Focus Link</button>
+              <button class="rel-act-btn" onclick="selectModel('\${o.toTable}', true)">➔ Open \${o.toTable}</button>
+            </div>
           </div>
         \`).join('');
       }
 
-      // Incoming
+      // Incoming References
       const inList = document.getElementById('insp-incoming-list');
       if (data.incoming.length === 0) {
-        inList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 6px;">No other tables reference this model</div>';
+        inList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; padding: 4px 0;">No other tables reference this model</div>';
       } else {
         inList.innerHTML = data.incoming.map(i => \`
           <div class="rel-card">
-            <div class="rel-card-header">
-              <span style="font-size: 11px; color: var(--text);">⬅ Referenced By:</span>
+            <div class="rel-card-row">
+              <span style="font-size: 11px; color: var(--text-muted);">⬅ Referenced By:</span>
               <button class="rel-target-btn" onclick="selectModel('\${i.fromTable}', true)">\${i.fromTable}</button>
             </div>
-            <div class="rel-card-detail">\${i.fromTable}.\${i.fromField} ➔ \${tableName}.\${i.toField} [\${i.cardinality}]</div>
+            <div class="rel-card-path">
+              <span style="color: var(--yellow); font-weight: bold;">[REF]</span>
+              <span>\${i.fromTable}.\${i.fromField}</span>
+              <span style="color: var(--primary);">➔</span>
+              <span>\${tableName}.\${i.toField}</span>
+              <span class="rel-cardinality-badge">\${i.cardinality}</span>
+            </div>
+            <div class="rel-actions">
+              <button class="rel-act-btn" onclick="focusRelationshipEdge('\${i.fromTable}', '\${i.fromField}', '\${tableName}', '\${i.toField}')">🎯 Focus Link</button>
+              <button class="rel-act-btn" onclick="selectModel('\${i.fromTable}', true)">➔ Open \${i.fromTable}</button>
+            </div>
           </div>
         \`).join('');
       }
 
-      // Columns
+      // Columns Definitions
       const colList = document.getElementById('insp-cols-list');
       colList.innerHTML = data.columns.map(c => \`
         <div class="col-row">
@@ -1015,7 +1333,22 @@ class HTMLRenderer {
       document.getElementById('inspector-view').style.display = tabName === 'inspector' ? 'flex' : 'none';
     }
 
-    // 5. Connection Highlighting & Sub-Graph Isolation
+    // 5. Collapsible Sidebar Toggle (Single Header Button / Shortcut [)
+    function toggleSidebarDrawer() {
+      isDrawerCollapsed = !isDrawerCollapsed;
+      sidebarDrawer.classList.toggle('collapsed', isDrawerCollapsed);
+      const btnToggle = document.getElementById('btn-toggle-drawer');
+      if (btnToggle) {
+        btnToggle.classList.toggle('btn-active', !isDrawerCollapsed);
+      }
+
+      // Update minimap and viewport transform
+      setTimeout(() => {
+        drawMinimap();
+      }, 260);
+    }
+
+    // 6. Connection Highlighting & Sub-Graph Isolation
     function highlightConnections(tableName) {
       const connectedTables = new Set([tableName]);
       const activeEdges = new Set();
@@ -1051,6 +1384,49 @@ class HTMLRenderer {
           edge.classList.add('dimmed');
         }
       });
+
+      document.querySelectorAll('.rel-anchor').forEach(anchor => {
+        const edgeId = anchor.getAttribute('data-edge');
+        if (activeEdges.has(edgeId)) {
+          anchor.classList.add('highlighted');
+          anchor.classList.remove('dimmed');
+        } else {
+          anchor.classList.remove('highlighted');
+          anchor.classList.add('dimmed');
+        }
+      });
+    }
+
+    function highlightColumnRelation(tableName, colName) {
+      const edges = document.querySelectorAll('.rel-edge');
+      let foundEdge = false;
+
+      edges.forEach(edge => {
+        const from = edge.getAttribute('data-from');
+        const to = edge.getAttribute('data-to');
+        const fromField = edge.getAttribute('data-from-field');
+        const toField = edge.getAttribute('data-to-field');
+
+        if ((from === tableName && fromField === colName) || (to === tableName && toField === colName)) {
+          edge.classList.add('highlighted');
+          edge.classList.remove('dimmed');
+          foundEdge = true;
+        } else {
+          edge.classList.remove('highlighted');
+          edge.classList.add('dimmed');
+        }
+      });
+
+      if (foundEdge) {
+        document.querySelectorAll('.table-card').forEach(card => {
+          const name = card.getAttribute('data-table');
+          const isRelated = Array.from(edges).some(e => 
+            e.classList.contains('highlighted') && 
+            (e.getAttribute('data-from') === name || e.getAttribute('data-to') === name)
+          );
+          card.classList.toggle('dimmed', !isRelated);
+        });
+      }
     }
 
     function clearHighlights() {
@@ -1059,9 +1435,44 @@ class HTMLRenderer {
         e.classList.remove('dimmed');
         e.classList.remove('highlighted');
       });
+      document.querySelectorAll('.rel-anchor').forEach(a => {
+        a.classList.remove('dimmed');
+        a.classList.remove('highlighted');
+      });
     }
 
-    // 6. Compact Mode for Large Databases (Shrinks cards to PK/FK only)
+    function focusRelationshipEdge(fromTable, fromField, toTable, toField) {
+      const edgeId = \`edge-\${fromTable}-\${fromField}-\${toTable}-\${toField}\`;
+      const edge = document.getElementById(edgeId);
+      if (!edge) return;
+
+      const fromCard = document.getElementById('card-' + fromTable);
+      const toCard = document.getElementById('card-' + toTable);
+      if (!fromCard || !toCard) return;
+
+      const fX = parseFloat(fromCard.getAttribute('data-x'));
+      const fY = parseFloat(fromCard.getAttribute('data-y'));
+      const tX = parseFloat(toCard.getAttribute('data-x'));
+      const tY = parseFloat(toCard.getAttribute('data-y'));
+
+      const midX = (fX + tX + BOX_WIDTH) / 2;
+      const midY = (fY + tY + 100) / 2;
+
+      const vpRect = viewport.getBoundingClientRect();
+      scale = 1.0;
+      pointX = (vpRect.width / 2) - midX;
+      pointY = (vpRect.height / 2) - midY;
+      updateTransform();
+
+      // Highlight this edge specifically
+      clearHighlights();
+      edge.classList.add('highlighted');
+      fromCard.classList.remove('dimmed');
+      toCard.classList.remove('dimmed');
+      showToast(\`🎯 Focused link: \${fromTable}.\${fromField} ➔ \${toTable}.\${toField}\`);
+    }
+
+    // 7. Compact Mode for Large Databases (Shrinks cards to PK/FK only)
     function toggleCompactMode() {
       isCompactMode = !isCompactMode;
       const btn = document.getElementById('btn-mode-toggle');
@@ -1074,9 +1485,6 @@ class HTMLRenderer {
         const model = SCHEMA_DATA[tableName];
         if (!model) return;
 
-        // Hide non-key rows in compact mode
-        const rows = card.querySelectorAll('text[font-size="12"], text[font-size="10.5"], line, rect[width="22"]');
-        // Simple display toggle
         const bgRect = card.querySelector('rect.card-bg');
         if (isCompactMode) {
           const keyColsCount = model.columns.filter(c => c.isPrimary || c.isForeign).length;
@@ -1093,10 +1501,10 @@ class HTMLRenderer {
       // Update edges and minimap
       Object.keys(SCHEMA_DATA).forEach(t => updateConnectedEdges(t));
       drawMinimap();
-      showToast(isCompactMode ? '🗂️ Compact Mode Enabled (Keys only)' : '📋 Detailed Mode Enabled (All columns)');
+      showToast(isCompactMode ? '🗂️ Compact Mode (Keys only)' : '📋 Detailed Mode (All columns)');
     }
 
-    // 7. Auto "Fit to Screen" Algorithm
+    // 8. Auto "Fit to Screen" Algorithm
     function fitToScreen() {
       const cards = document.querySelectorAll('.table-card');
       if (cards.length === 0) return;
@@ -1128,7 +1536,7 @@ class HTMLRenderer {
       const scaleX = vpRect.width / graphW;
       const scaleY = vpRect.height / graphH;
 
-      scale = Math.min(Math.max(0.2, Math.min(scaleX, scaleY) * 0.92), 2.0);
+      scale = Math.min(Math.max(MIN_ZOOM, Math.min(scaleX, scaleY) * 0.94), 3.0);
 
       pointX = (vpRect.width - graphW * scale) / 2 - (minX * scale);
       pointY = (vpRect.height - graphH * scale) / 2 - (minY * scale);
@@ -1137,33 +1545,76 @@ class HTMLRenderer {
       drawMinimap();
     }
 
-    // 8. Viewport Pan/Zoom & Focus Controls
+    // 9. Viewport Pan/Zoom & Pure Vector Crisp Transform
     function updateTransform() {
-      container.style.transform = \`translate(\${pointX}px, \${pointY}px) scale(\${scale})\`;
+      if (stage) {
+        stage.setAttribute('transform', \`translate(\${pointX}, \${pointY}) scale(\${scale})\`);
+      }
+      zoomValDisplay.textContent = Math.round(scale * 100) + '%';
       updateMinimapBox();
     }
 
+    function setZoomScale(targetScale) {
+      const vpRect = viewport.getBoundingClientRect();
+      const cx = vpRect.width / 2;
+      const cy = vpRect.height / 2;
+
+      const xs = (cx - pointX) / scale;
+      const ys = (cy - pointY) / scale;
+
+      scale = Math.min(Math.max(MIN_ZOOM, targetScale), MAX_ZOOM);
+      pointX = cx - xs * scale;
+      pointY = cy - ys * scale;
+
+      updateTransform();
+      if (zoomPresetsMenu) zoomPresetsMenu.style.display = 'none';
+    }
+
+    function toggleZoomPresetsMenu() {
+      if (!zoomPresetsMenu) return;
+      zoomPresetsMenu.style.display = zoomPresetsMenu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
     viewport.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.zoom-hud') || e.target.closest('#minimap') || e.target.closest('.table-card')) return;
+      if (e.target.closest('.zoom-hud') || e.target.closest('#minimap') || e.target.closest('.table-card') || e.target.closest('#drawer-restore-btn') || e.target.closest('#zoom-presets-menu')) return;
       isCanvasPanning = true;
       panStartX = e.clientX - pointX;
       panStartY = e.clientY - pointY;
     });
 
+    // Mouse-centered smooth wheel zoom with zero blur
     viewport.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const xs = (e.clientX - pointX) / scale;
-      const ys = (e.clientY - pointY) / scale;
-      const delta = -e.deltaY;
-      (delta > 0) ? (scale *= 1.1) : (scale /= 1.1);
-      scale = Math.min(Math.max(0.15, scale), 4);
-      pointX = e.clientX - xs * scale;
-      pointY = e.clientY - ys * scale;
+      const vpRect = viewport.getBoundingClientRect();
+      const mouseX = e.clientX - vpRect.left;
+      const mouseY = e.clientY - vpRect.top;
+
+      const xs = (mouseX - pointX) / scale;
+      const ys = (mouseY - pointY) / scale;
+
+      const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
+      const newScale = Math.min(Math.max(MIN_ZOOM, scale * zoomFactor), MAX_ZOOM);
+
+      pointX = mouseX - xs * newScale;
+      pointY = mouseY - ys * newScale;
+      scale = newScale;
+
       updateTransform();
-    });
+    }, { passive: false });
 
     function zoomBy(delta) {
-      scale = Math.min(Math.max(0.15, scale + delta), 4);
+      const vpRect = viewport.getBoundingClientRect();
+      const cx = vpRect.width / 2;
+      const cy = vpRect.height / 2;
+
+      const xs = (cx - pointX) / scale;
+      const ys = (cy - pointY) / scale;
+
+      const newScale = Math.min(Math.max(MIN_ZOOM, scale * (delta > 0 ? 1.25 : 0.8)), MAX_ZOOM);
+      pointX = cx - xs * newScale;
+      pointY = cy - ys * newScale;
+      scale = newScale;
+
       updateTransform();
     }
 
@@ -1185,7 +1636,7 @@ class HTMLRenderer {
       const cardH = parseFloat(card.getAttribute('data-height') || 200);
 
       const vpRect = viewport.getBoundingClientRect();
-      scale = 1;
+      scale = 1.0;
       pointX = (vpRect.width / 2) - (cardX + cardW / 2);
       pointY = (vpRect.height / 2) - (cardY + cardH / 2);
       updateTransform();
@@ -1205,6 +1656,36 @@ class HTMLRenderer {
       showToast('⤢ Layout restored to initial positions!');
     }
 
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+        showToast('⛶ Fullscreen mode enabled');
+      } else {
+        document.exitFullscreen().catch(() => {});
+        showToast('Exit Fullscreen mode');
+      }
+    }
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+
+      if (e.key === '[') {
+        toggleSidebarDrawer();
+      } else if (e.key === '+' || e.key === '=') {
+        zoomBy(0.2);
+      } else if (e.key === '-' || e.key === '_') {
+        zoomBy(-0.2);
+      } else if (e.key === '0') {
+        resetCanvas();
+      } else if (e.key.toLowerCase() === 'f') {
+        fitToScreen();
+      } else if (e.key === 'Escape') {
+        clearModelSelection();
+        if (zoomPresetsMenu) zoomPresetsMenu.style.display = 'none';
+      }
+    });
+
     function filterTables() {
       const q = document.getElementById('search-input').value.toLowerCase();
       const items = document.querySelectorAll('.table-item');
@@ -1216,40 +1697,46 @@ class HTMLRenderer {
       const cards = document.querySelectorAll('.table-card');
       cards.forEach(card => {
         const text = card.textContent.toLowerCase();
-        card.style.opacity = !q || text.includes(q) ? '1' : '0.12';
+        card.style.opacity = !q || text.includes(q) ? '1' : '0.18';
       });
     }
 
-    // 9. Interactive Minimap Radar
+    // 10. Interactive Minimap Radar
     function drawMinimap() {
       const canvas = document.getElementById('minimap-canvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      const w = canvas.width = 180;
-      const h = canvas.height = 120;
+      const w = canvas.width = 190;
+      const h = canvas.height = 130;
 
       ctx.clearRect(0, 0, w, h);
 
       const cards = document.querySelectorAll('.table-card');
       if (cards.length === 0) return;
 
-      let minX = 0, minY = 0, maxX = 1600, maxY = 1200;
+      let minX = 0, minY = 0, maxX = 1800, maxY = 1400;
       cards.forEach(card => {
         const x = parseFloat(card.getAttribute('data-x'));
         const y = parseFloat(card.getAttribute('data-y'));
-        if (x + 300 > maxX) maxX = x + 300;
-        if (y + 300 > maxY) maxY = y + 300;
+        if (x + 320 > maxX) maxX = x + 320;
+        if (y + 320 > maxY) maxY = y + 320;
       });
 
       const mScaleX = w / maxX;
       const mScaleY = h / maxY;
 
-      ctx.fillStyle = '#89b4fa';
       cards.forEach(card => {
+        const name = card.getAttribute('data-table');
         const x = parseFloat(card.getAttribute('data-x')) * mScaleX;
         const y = parseFloat(card.getAttribute('data-y')) * mScaleY;
         const cardW = (parseFloat(card.getAttribute('data-width')) || BOX_WIDTH) * mScaleX;
         const cardH = (parseFloat(card.getAttribute('data-height')) || 120) * mScaleY;
+
+        if (name === selectedModel) {
+          ctx.fillStyle = '#f38ba8';
+        } else {
+          ctx.fillStyle = '#89b4fa';
+        }
 
         ctx.fillRect(x, y, Math.max(3, cardW), Math.max(2, cardH));
       });
@@ -1263,7 +1750,7 @@ class HTMLRenderer {
       const canvas = document.getElementById('minimap-canvas');
       if (!canvas || !box) return;
 
-      const maxX = 1600, maxY = 1200;
+      const maxX = 1800, maxY = 1400;
       const mScaleX = canvas.width / maxX;
       const mScaleY = canvas.height / maxY;
 
@@ -1283,7 +1770,7 @@ class HTMLRenderer {
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
 
-      const maxX = 1600, maxY = 1200;
+      const maxX = 1800, maxY = 1400;
       const targetWorldX = (clickX / rect.width) * maxX;
       const targetWorldY = (clickY / rect.height) * maxY;
 
@@ -1300,7 +1787,7 @@ class HTMLRenderer {
       setTimeout(() => t.classList.remove('show'), 2200);
     }
 
-    // 10. Exports
+    // 11. Exports
     function exportSVG() {
       const svg = document.getElementById('schemagraph-svg').outerHTML;
       const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
