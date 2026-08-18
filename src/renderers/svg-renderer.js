@@ -241,9 +241,8 @@ ${markersXml}
             nodesXml += `      </g>\n`;
         });
 
-        nodesXml += '    </g>\n';
-
-        return `<svg id="schemagraph-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="100%" height="100%" style="background:${theme.bg}; user-select:none; shape-rendering:geometricPrecision; text-rendering:geometricPrecision;">\n` +
+        const viewBoxAttr = options.interactive ? '' : `viewBox="0 0 ${width} ${height}" `;
+        return `<svg id="schemagraph-svg" xmlns="http://www.w3.org/2000/svg" ${viewBoxAttr}width="100%" height="100%" style="background:${theme.bg}; user-select:none; shape-rendering:geometricPrecision; text-rendering:geometricPrecision;">\n` +
                defsXml + '\n' +
                `  <!-- Grid Background -->\n  <rect width="100%" height="100%" fill="url(#dotGrid)" />\n` +
                `  <g id="canvas-stage">\n` +
