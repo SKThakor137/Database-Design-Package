@@ -29,12 +29,14 @@ class HTMLRenderer {
             const outgoing = [];
             const incoming = [];
 
-            table.relations.forEach(r => {
+            table.relations.forEach((r, rIdx) => {
+                const color = SVGRenderer.getEdgeColor(tableName, r.from, r.toTable, r.toField);
                 outgoing.push({
                     fromField: r.from,
                     toTable: r.toTable,
                     toField: r.toField,
-                    cardinality: r.cardinality || 'N:1'
+                    cardinality: r.cardinality || 'N:1',
+                    color
                 });
             });
 
@@ -43,11 +45,13 @@ class HTMLRenderer {
                 const otherTable = schemaMap[otherName];
                 otherTable.relations.forEach(r => {
                     if (r.toTable === tableName) {
+                        const color = SVGRenderer.getEdgeColor(otherName, r.from, tableName, r.toField);
                         incoming.push({
                             fromTable: otherName,
                             fromField: r.from,
                             toField: r.toField,
-                            cardinality: r.cardinality || 'N:1'
+                            cardinality: r.cardinality || 'N:1',
+                            color
                         });
                     }
                 });
@@ -657,22 +661,29 @@ class HTMLRenderer {
       transition: opacity 0.2s;
     }
 
-    /* Relationship Connector Edges */
+    /* Relationship Connector Edges (Multi-Color Vector Wires) */
     .rel-edge {
-      transition: stroke 0.15s, stroke-width 0.15s, opacity 0.15s;
+      transition: stroke-width 0.15s, opacity 0.15s;
     }
 
     .rel-edge:hover, .rel-edge.highlighted {
-      stroke: #89b4fa !important;
       stroke-width: 4px !important;
       stroke-dasharray: none !important;
       opacity: 1 !important;
-      marker-end: url(#arrowHeadHighlight) !important;
+    }
+
+    .rel-edge.spotlight {
+      stroke-width: 5.5px !important;
+      stroke-dasharray: none !important;
+      opacity: 1 !important;
     }
 
     .rel-anchor.highlighted {
-      fill: #89b4fa !important;
       r: 6 !important;
+    }
+
+    .rel-anchor.spotlight {
+      r: 7.5 !important;
     }
 
     /* Floating Zoom HUD Controls */
@@ -1044,13 +1055,22 @@ class HTMLRenderer {
           const to = edge.getAttribute('data-to');
           const fromField = edge.getAttribute('data-from-field');
           const toField = edge.getAttribute('data-to-field');
-          const card = edge.getAttribute('data-cardinality');
+          const card = edge.getAttribute('data-cardinality') || 'N:1';
+          const color = edge.getAttribute('data-color') || '#89b4fa';
           
           tooltip.innerHTML = \`
-            <div style="font-weight: 700; color: #89b4fa; margin-bottom: 3px;">🔗 Foreign Key Relationship</div>
-            <div><strong>\${from}.\${fromField}</strong> ➔ <strong>\${to}.\${toField}</strong></div>
-            <div style="font-size: 10px; color: #a6adc8; margin-top: 2px;">Cardinality: <span style="color: #cba6f7; font-weight: bold;">[\${card}]</span> (Click to inspect)</div>
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: \${color}; flex-shrink: 0;"></span>
+              <strong style="color: \${color}; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px;">Foreign Key Connection</strong>
+            </div>
+            <div style="font-size: 12px; font-weight: 600; color: #fff;">
+              <span>\${from}.\${fromField}</span>
+              <span style="color: \${color}; margin: 0 4px;">➔</span>
+              <span>\${to}.\${toField}</span>
+            </div>
+            <div style="font-size: 10px; color: #a6adc8; margin-top: 3px;">Cardinality: <span style="color: \${color}; font-weight: bold;">[\${card}]</span> (Click to inspect model)</div>
           \`;
+          tooltip.style.borderLeft = \`4px solid \${color}\`;
           tooltip.style.display = 'block';
           tooltip.style.left = (e.clientX + 14) + 'px';
           tooltip.style.top = (e.clientY + 14) + 'px';
@@ -1266,17 +1286,20 @@ class HTMLRenderer {
         outList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; padding: 4px 0;">No outgoing foreign keys</div>';
       } else {
         outList.innerHTML = data.outgoing.map(o => \`
-          <div class="rel-card">
+          <div class="rel-card" style="border-left: 3.5px solid \${o.color}; cursor: pointer;" onmouseenter="spotlightEdge('\${tableName}', '\${o.fromField}', '\${o.toTable}', '\${o.toField}')" onmouseleave="unspotlightEdges()">
             <div class="rel-card-row">
-              <span style="font-size: 11px; color: var(--text-muted);">➔ Foreign Key Target:</span>
-              <button class="rel-target-btn" onclick="selectModel('\${o.toTable}', true)">\${o.toTable}</button>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: \${o.color}; flex-shrink: 0;"></span>
+                <span style="font-size: 11px; color: var(--text-muted);">➔ Foreign Key Target:</span>
+              </div>
+              <button class="rel-target-btn" style="color: \${o.color}; font-weight: 700;" onclick="selectModel('\${o.toTable}', true)">\${o.toTable}</button>
             </div>
             <div class="rel-card-path">
-              <span style="color: var(--purple); font-weight: bold;">[FK]</span>
+              <span style="color: \${o.color}; font-weight: bold;">[FK]</span>
               <span>\${tableName}.\${o.fromField}</span>
-              <span style="color: var(--primary);">➔</span>
+              <span style="color: \${o.color}; margin: 0 2px;">➔</span>
               <span>\${o.toTable}.\${o.toField}</span>
-              <span class="rel-cardinality-badge">\${o.cardinality}</span>
+              <span class="rel-cardinality-badge" style="color: \${o.color}; background: rgba(255,255,255,0.08);">\${o.cardinality}</span>
             </div>
             <div class="rel-actions">
               <button class="rel-act-btn" onclick="focusRelationshipEdge('\${tableName}', '\${o.fromField}', '\${o.toTable}', '\${o.toField}')">🎯 Focus Link</button>
@@ -1292,17 +1315,20 @@ class HTMLRenderer {
         inList.innerHTML = '<div style="font-size: 11px; color: var(--text-muted); font-style: italic; padding: 4px 0;">No other tables reference this model</div>';
       } else {
         inList.innerHTML = data.incoming.map(i => \`
-          <div class="rel-card">
+          <div class="rel-card" style="border-left: 3.5px solid \${i.color}; cursor: pointer;" onmouseenter="spotlightEdge('\${i.fromTable}', '\${i.fromField}', '\${tableName}', '\${i.toField}')" onmouseleave="unspotlightEdges()">
             <div class="rel-card-row">
-              <span style="font-size: 11px; color: var(--text-muted);">⬅ Referenced By:</span>
-              <button class="rel-target-btn" onclick="selectModel('\${i.fromTable}', true)">\${i.fromTable}</button>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: \${i.color}; flex-shrink: 0;"></span>
+                <span style="font-size: 11px; color: var(--text-muted);">⬅ Referenced By:</span>
+              </div>
+              <button class="rel-target-btn" style="color: \${i.color}; font-weight: 700;" onclick="selectModel('\${i.fromTable}', true)">\${i.fromTable}</button>
             </div>
             <div class="rel-card-path">
-              <span style="color: var(--yellow); font-weight: bold;">[REF]</span>
+              <span style="color: \${i.color}; font-weight: bold;">[REF]</span>
               <span>\${i.fromTable}.\${i.fromField}</span>
-              <span style="color: var(--primary);">➔</span>
+              <span style="color: \${i.color}; margin: 0 2px;">➔</span>
               <span>\${tableName}.\${i.toField}</span>
-              <span class="rel-cardinality-badge">\${i.cardinality}</span>
+              <span class="rel-cardinality-badge" style="color: \${i.color}; background: rgba(255,255,255,0.08);">\${i.cardinality}</span>
             </div>
             <div class="rel-actions">
               <button class="rel-act-btn" onclick="focusRelationshipEdge('\${i.fromTable}', '\${i.fromField}', '\${tableName}', '\${i.toField}')">🎯 Focus Link</button>
@@ -1363,8 +1389,10 @@ class HTMLRenderer {
           connectedTables.add(to);
           activeEdges.add(edge.id);
           edge.classList.add('highlighted');
+          edge.classList.remove('dimmed');
         } else {
           edge.classList.remove('highlighted');
+          edge.classList.remove('spotlight');
         }
       });
 
@@ -1392,6 +1420,7 @@ class HTMLRenderer {
           anchor.classList.remove('dimmed');
         } else {
           anchor.classList.remove('highlighted');
+          anchor.classList.remove('spotlight');
           anchor.classList.add('dimmed');
         }
       });
@@ -1408,11 +1437,11 @@ class HTMLRenderer {
         const toField = edge.getAttribute('data-to-field');
 
         if ((from === tableName && fromField === colName) || (to === tableName && toField === colName)) {
-          edge.classList.add('highlighted');
+          edge.classList.add('spotlight');
           edge.classList.remove('dimmed');
           foundEdge = true;
         } else {
-          edge.classList.remove('highlighted');
+          edge.classList.remove('spotlight');
           edge.classList.add('dimmed');
         }
       });
@@ -1421,11 +1450,52 @@ class HTMLRenderer {
         document.querySelectorAll('.table-card').forEach(card => {
           const name = card.getAttribute('data-table');
           const isRelated = Array.from(edges).some(e => 
-            e.classList.contains('highlighted') && 
+            e.classList.contains('spotlight') && 
             (e.getAttribute('data-from') === name || e.getAttribute('data-to') === name)
           );
           card.classList.toggle('dimmed', !isRelated);
         });
+      }
+    }
+
+    function spotlightEdge(fromTable, fromField, toTable, toField) {
+      const edgeId = \`edge-\${fromTable}-\${fromField}-\${toTable}-\${toField}\`;
+      const targetEdge = document.getElementById(edgeId);
+      if (!targetEdge) return;
+
+      document.querySelectorAll('.rel-edge').forEach(e => {
+        if (e.id === edgeId) {
+          e.classList.add('spotlight');
+          e.classList.remove('dimmed');
+        } else {
+          e.classList.remove('spotlight');
+          e.classList.add('dimmed');
+        }
+      });
+
+      document.querySelectorAll('.rel-anchor').forEach(a => {
+        if (a.getAttribute('data-edge') === edgeId) {
+          a.classList.add('spotlight');
+          a.classList.remove('dimmed');
+        } else {
+          a.classList.remove('spotlight');
+          a.classList.add('dimmed');
+        }
+      });
+
+      document.querySelectorAll('.table-card').forEach(card => {
+        const name = card.getAttribute('data-table');
+        card.classList.toggle('dimmed', name !== fromTable && name !== toTable);
+      });
+    }
+
+    function unspotlightEdges() {
+      document.querySelectorAll('.rel-edge').forEach(e => e.classList.remove('spotlight'));
+      document.querySelectorAll('.rel-anchor').forEach(a => a.classList.remove('spotlight'));
+      if (selectedModel) {
+        highlightConnections(selectedModel);
+      } else {
+        clearHighlights();
       }
     }
 
@@ -1434,10 +1504,12 @@ class HTMLRenderer {
       document.querySelectorAll('.rel-edge').forEach(e => {
         e.classList.remove('dimmed');
         e.classList.remove('highlighted');
+        e.classList.remove('spotlight');
       });
       document.querySelectorAll('.rel-anchor').forEach(a => {
         a.classList.remove('dimmed');
         a.classList.remove('highlighted');
+        a.classList.remove('spotlight');
       });
     }
 
