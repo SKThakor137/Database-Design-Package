@@ -14,6 +14,7 @@ const JSONRenderer = require('./renderers/json-renderer');
 const DBMLRenderer = require('./renderers/dbml-renderer');
 const DOTRenderer = require('./renderers/dot-renderer');
 const SQLRenderer = require('./renderers/sql-renderer');
+const AIRenderer = require('./renderers/ai-renderer');
 
 function printBanner() {
     console.log('\x1b[36m%s\x1b[0m', `
@@ -139,7 +140,7 @@ function parseArgs(args) {
     }
 
     if (options.formats.includes('all')) {
-        options.formats = ['svg', 'html', 'md', 'json', 'dbml', 'dot', 'sql'];
+        options.formats = ['svg', 'html', 'md', 'json', 'dbml', 'dot', 'sql', 'ai'];
     }
 
     return options;
@@ -179,8 +180,8 @@ function runCLI() {
 
     const parser = new UniversalSchemaParser({ exclude: options.exclude });
     const schemaMap = parser.scanDirectory(targetPath);
-
     const modelNames = Object.keys(schemaMap);
+
     if (modelNames.length === 0) {
         console.log('\x1b[33m⚠️  No supported database schemas or data models found in this directory.\x1b[0m\n');
         console.log('   \x1b[1mWhat was checked across all ecosystems:\x1b[0m');
@@ -261,6 +262,13 @@ function runCLI() {
         const sqlFile = path.join(outPath, 'database-design.sql');
         fs.writeFileSync(sqlFile, sql, 'utf-8');
         generatedFiles.push({ format: 'Standard SQL DDL', path: sqlFile });
+    }
+
+    if (options.formats.includes('ai') || options.formats.includes('prompt')) {
+        const aiPrompt = AIRenderer.generateAIContext(schemaMap, renderOptions);
+        const aiFile = path.join(outPath, 'database-schema-ai-prompt.md');
+        fs.writeFileSync(aiFile, aiPrompt, 'utf-8');
+        generatedFiles.push({ format: 'AI Prompt Context (LLMs)', path: aiFile });
     }
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);

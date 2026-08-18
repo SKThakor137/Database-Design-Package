@@ -1,7 +1,7 @@
 {
   "name": "schemagraph",
-  "version": "1.3.0",
-  "description": "Zero-dependency pure Node.js CLI & library to parse schemas across any framework (Laravel, Django, Rails, Go, Spring JPA, Prisma, Mongoose, Sequelize, TypeORM, GraphQL, SQL) and generate responsive SVG ERDs, interactive HTML viewers, Mermaid markdown, DBML, DOT, and JSON schema maps.",
+  "version": "1.4.1",
+  "description": "Zero-dependency pure Node.js CLI & library to parse schemas across any framework (Laravel, Django, Rails, Go, Spring JPA, Prisma, Mongoose, Sequelize, TypeORM, GraphQL, SQL) and generate responsive SVG ERDs, interactive HTML viewers, Mermaid markdown, DBML, DOT, AI context prompts (ChatGPT/Gemini/Claude), and JSON schema maps.",
   "main": "src/index.js",
   "bin": {
     "schemagraph": "bin/schemagraph.js",
@@ -11,7 +11,9 @@
     "bin",
     "src",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "llms.txt",
+    "llms-full.txt"
   ],
   "scripts": {
     "start": "node bin/schemagraph.js",
@@ -28,6 +30,16 @@
     "database-diagram",
     "schema-visualizer",
     "database-design",
+    "generate-erd",
+    "erd-generator",
+    "ai-prompt",
+    "llm-context",
+    "chatgpt-database",
+    "claude-schema",
+    "cursor-rules",
+    "laravel-erd",
+    "django-erd",
+    "prisma-erd",
     "laravel",
     "django",
     "rails",

@@ -24,6 +24,7 @@ const JSONRenderer = require('./renderers/json-renderer');
 const DBMLRenderer = require('./renderers/dbml-renderer');
 const DOTRenderer = require('./renderers/dot-renderer');
 const SQLRenderer = require('./renderers/sql-renderer');
+const AIRenderer = require('./renderers/ai-renderer');
 
 /**
  * Parses a project directory or single schema file
@@ -85,6 +86,13 @@ function generateSQL(schemaMap, options = {}) {
     return SQLRenderer.generateSQL(schemaMap, options);
 }
 
+/**
+ * Generates token-optimized AI context prompt for ChatGPT / Gemini / Claude
+ */
+function generateAIContext(schemaMap, options = {}) {
+    return AIRenderer.generateAIContext(schemaMap, options);
+}
+
 module.exports = {
     parseProject,
     generateSVG,
@@ -94,6 +102,7 @@ module.exports = {
     generateDBML,
     generateDOT,
     generateSQL,
+    generateAIContext,
     // Parsers
     UniversalSchemaParser,
     SQLParser,
@@ -116,5 +125,6 @@ module.exports = {
     JSONRenderer,
     DBMLRenderer,
     DOTRenderer,
-    SQLRenderer
+    SQLRenderer,
+    AIRenderer
 };

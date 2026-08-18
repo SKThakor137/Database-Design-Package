@@ -46,16 +46,19 @@ npx schemagraph --format=sql
 # 🧜‍♂️ 3. Generate Mermaid Markdown (for GitHub README)
 npx schemagraph --format=md
 
-# 📋 4. Generate Machine-Readable JSON AST
+# 🤖 4. Generate Token-Optimized AI Prompt Context (for ChatGPT, Gemini, Claude, Cursor)
+npx schemagraph --format=ai
+
+# 📋 5. Generate Machine-Readable JSON AST
 npx schemagraph --format=json
 
-# 🕸 5. Generate Graphviz DOT Digraph
+# 🕸 6. Generate Graphviz DOT Digraph
 npx schemagraph --format=dot
 
-# 📦 6. Generate Multiple Specific Formats (Comma-separated)
-npx schemagraph --format=dbml,sql,md --output=./docs
+# 📦 7. Generate Multiple Specific Formats (Comma-separated)
+npx schemagraph --format=dbml,sql,ai,md --output=./docs
 
-# 🚀 7. Generate ALL 7 Formats Simultaneously
+# 🚀 8. Generate ALL Formats Simultaneously
 npx schemagraph --format=all --output=./docs
 ```
 
@@ -176,7 +179,7 @@ schemagraph [targetDir] [options]
 
 | Option | Flag | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `--format` | `-f` | `svg,html` | Comma-separated: `svg`, `html`, `md`, `json`, `dbml`, `dot`, `sql`, or `all` |
+| `--format` | `-f` | `svg,html` | Comma-separated: `svg`, `html`, `md`, `json`, `dbml`, `dot`, `sql`, `ai`, or `all` |
 | `--output` | `-o` | `.` | Target output directory for generated assets |
 | `--theme` | `-t` | `catppuccin` | Visual theme: `catppuccin`, `dark`, or `light` |
 | `--title` | | `Database Schema Topology` | Custom diagram header title |
@@ -185,6 +188,16 @@ schemagraph [targetDir] [options]
 | `--exclude`| `-e` | `node_modules,.git,...` | Comma-separated directories to ignore |
 | `--help` | `-h` | | Display help manual |
 | `--version`| `-v` | | Display version number |
+
+---
+
+## 🤖 AI & LLM Integration (ChatGPT, Gemini, Claude, Cursor)
+
+`schemagraph` is designed from the ground up for modern AI coding agents and LLMs:
+
+1. **`llms.txt` & `llms-full.txt` Native Support**: Follows the [llms.txt standard](https://llmstxt.org/) for automated package discovery and tool ingestion by LLMs.
+2. **Instant AI Database Prompt**: Run `npx schemagraph --format=ai` to produce a token-efficient architecture context file (`database-schema-ai-prompt.md`) ready to paste directly into ChatGPT, Gemini, Claude, or Cursor to ask complex questions about your database design, generate backend APIs, or plan SQL optimizations!
+3. **1-Click Copy in Browser**: Click **`🤖 Copy AI Schema Prompt`** inside the interactive HTML viewer to copy your complete database prompt directly to your clipboard.
 
 ---
 
@@ -201,7 +214,8 @@ const {
     generateJSON,
     generateDBML,
     generateDOT,
-    generateSQL
+    generateSQL,
+    generateAIContext
 } = require('schemagraph');
 
 // 1. Scan and parse workspace schema models
@@ -224,10 +238,13 @@ const dbml = generateDBML(schemaMap);
 // 5. Generate Standard SQL DDL
 const sql = generateSQL(schemaMap);
 
-// 6. Generate Mermaid Markdown
+// 6. Generate Token-Optimized AI Context Prompt
+const aiPrompt = generateAIContext(schemaMap);
+
+// 7. Generate Mermaid Markdown
 const markdown = generateMarkdown(schemaMap);
 
-// 7. Generate JSON AST
+// 8. Generate JSON AST
 const jsonAst = generateJSON(schemaMap);
 ```
 
@@ -301,6 +318,53 @@ jobs:
 
 ---
 
+## ❓ Frequently Asked Questions (FAQ)
+
+<details>
+<summary><strong>1. How do I generate an ERD from Prisma schemas without installing Graphviz?</strong></summary>
+
+Simply navigate to your Prisma project root and run:
+```bash
+npx schemagraph
+```
+`schemagraph` has **zero external dependencies** and directly parses `.prisma` files without needing Graphviz C++ libraries or Python runtimes.
+</details>
+
+<details>
+<summary><strong>2. Can schemagraph visualize Laravel database migrations?</strong></summary>
+
+Yes! Run `npx schemagraph ./database/migrations`. `schemagraph` natively parses `Schema::create`, `Blueprint`, `foreignId()`, and `constrained()` methods to map the entire relational architecture automatically.
+</details>
+
+<details>
+<summary><strong>3. How do I export my schema to dbdiagram.io (DBML)?</strong></summary>
+
+Run:
+```bash
+npx schemagraph --format=dbml
+```
+This generates `database-design.dbml` which you can paste directly into [dbdiagram.io](https://dbdiagram.io).
+</details>
+
+<details>
+<summary><strong>4. How can I share my database schema with ChatGPT, Gemini, or Claude?</strong></summary>
+
+Run:
+```bash
+npx schemagraph --format=ai
+```
+Or click **`🤖 Copy AI Schema Prompt`** in the interactive HTML viewer to copy a token-optimized database context directly to your clipboard.
+</details>
+
+<details>
+<summary><strong>5. Does schemagraph work completely offline?</strong></summary>
+
+Yes. `schemagraph` uses pure Node.js standard libraries (`fs`, `path`, `crypto`). The generated HTML viewer is 100% self-contained with no external CDN or web fonts required.
+</details>
+
+---
+
 ## 📄 License
 
 MIT License © 2026 [Shailesh Thakor](https://github.com/SKThakor137)
+

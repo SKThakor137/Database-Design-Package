@@ -7,6 +7,7 @@ const JSONRenderer = require('../src/renderers/json-renderer');
 const DBMLRenderer = require('../src/renderers/dbml-renderer');
 const DOTRenderer = require('../src/renderers/dot-renderer');
 const SQLRenderer = require('../src/renderers/sql-renderer');
+const AIRenderer = require('../src/renderers/ai-renderer');
 
 const mockSchemaMap = {
     User: {
@@ -89,3 +90,13 @@ test('SQLRenderer generates standard SQL DDL with FKs', () => {
     assert.ok(sql.includes('CREATE TABLE Post'));
     assert.ok(sql.includes('FOREIGN KEY (user_id) REFERENCES User(id)'));
 });
+
+test('AIRenderer generates token-optimized LLM context prompt', () => {
+    const ai = AIRenderer.generateAIContext(mockSchemaMap);
+    assert.ok(ai.includes('Database Architecture Summary'));
+    assert.ok(ai.includes('`Post.user_id` ➔ `User.id`'));
+    assert.ok(ai.includes('Table: `User`'));
+    assert.ok(ai.includes('PRIMARY KEY'));
+    assert.ok(ai.includes('AI System Instructions'));
+});
+
