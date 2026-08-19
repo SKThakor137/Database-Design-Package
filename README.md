@@ -18,48 +18,68 @@
 
 ---
 
-## ⚡ Instant Run (Single Command - No Install Needed)
+## ⚡ Quick Start (Instant Run)
 
-Run `schemagraph` in your project folder right now with `npx`:
+Run `schemagraph` directly in any project folder with `npx` — **zero installation or setup needed**:
 
 ```bash
 npx schemagraph
 ```
 
-> 🌐 **Auto-Opens Browser**: Automatically scans your schemas, generates the core visual formats (`database-design.html` & `database-design.svg`), and launches the interactive explorer in your default browser! (Pass `--no-open` to suppress in CI/CD).
->
-> 💡 **Optional Global Install**: `npm install -g schemagraph` (then run `schemagraph` anywhere).
+> [!TIP]
+> **🚀 Zero Setup & Auto-Open**: Automatically scans and parses your project's schemas, generates `database-design.html` + `database-design.svg`, and launches the interactive visual explorer in your default browser. (Pass `--no-open` to suppress in CI/CD).
 
 ---
 
-## 🎯 Individual Format Commands (Export Only What You Need)
+## 📦 Installation Options
 
-By default, `schemagraph` generates **HTML + SVG**. If you want specific formats, use `--format`:
+Choose how you prefer to run `schemagraph`:
 
 ```bash
-# 📊 1. Generate DBML Schema (Ready for dbdiagram.io)
+# ⚡ Option 1: Instant Run with npx (Recommended — Zero install)
+npx schemagraph
+
+# 🌐 Option 2: Global CLI Install (Run `schemagraph` anywhere)
+npm install -g schemagraph
+schemagraph
+
+# 🛠️ Option 3: Project Dev Dependency (For npm scripts & team workflows)
+npm install --save-dev schemagraph
+```
+
+---
+
+## 🎯 Individual Format Commands (Export On-Demand)
+
+By default, `schemagraph` generates **HTML + SVG**. You can easily export to any specific format using `--format`:
+
+```bash
+# 🌐 1. Interactive HTML Explorer & SVG Diagram (Default)
+npx schemagraph
+
+# 📊 2. DBML Schema (Ready for dbdiagram.io & dbdocs.io)
 npx schemagraph --format=dbml
 
-# 🐬 2. Generate Standard SQL DDL (CREATE TABLE & FOREIGN KEYs)
+# 🐬 3. Standard SQL DDL (Normalized CREATE TABLE & FOREIGN KEYs)
 npx schemagraph --format=sql
 
-# 🧜‍♂️ 3. Generate Mermaid Markdown (for GitHub README)
+# 🧜‍♂️ 4. Mermaid Markdown (For GitHub/GitLab READMEs)
 npx schemagraph --format=md
 
-# 🤖 4. Generate Token-Optimized AI Prompt Context (for ChatGPT, Gemini, Claude, Cursor)
+# 🤖 5. Token-Optimized AI Prompt Context (For ChatGPT, Gemini, Claude, Cursor)
 npx schemagraph --format=ai
 
-# 📋 5. Generate Machine-Readable JSON AST
+# 📋 6. Machine-Readable JSON AST (For custom tooling & pipelines)
 npx schemagraph --format=json
 
-# 🕸 6. Generate Graphviz DOT Digraph
+# 🕸 7. Graphviz DOT Digraph (For Graphviz / D3)
 npx schemagraph --format=dot
 
-# 📦 7. Generate Multiple Specific Formats (Comma-separated)
-npx schemagraph --format=dbml,sql,ai,md --output=./docs
+# 📦 8. Export Multiple Formats to a Custom Directory
+npx schemagraph ./backend --format=dbml,sql,ai,md --output=./docs
 
-# 🚀 8. Generate ALL Formats Simultaneously
-npx schemagraph --format=all --output=./docs
+# 🚀 9. Export ALL Formats Simultaneously (Headless / CI Mode)
+npx schemagraph ./ --format=all --output=./docs --no-open
 ```
 
 ---
