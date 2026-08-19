@@ -1,0 +1,123 @@
+{
+  "name": "schemagraph-vscode",
+  "displayName": "SchemaGraph - Live Database ERD & Architecture Explorer",
+  "description": "Interactive live database schema visualizer, relational ERD explorer & multi-format export for VS Code, Cursor, Windsurf, and Antigravity IDE.",
+  "version": "1.0.0",
+  "publisher": "schemagraph",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Visualization",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "database",
+    "erd",
+    "schema",
+    "diagram",
+    "sql",
+    "prisma",
+    "graphql",
+    "laravel",
+    "django",
+    "gorm",
+    "typeorm",
+    "mongoose",
+    "dbml"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onCommand:schemagraph.openPreview",
+    "onCommand:schemagraph.exportAll",
+    "onCommand:schemagraph.generateAIContext"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "schemagraph.openPreview",
+        "title": "SchemaGraph: Open Live ERD Visualizer",
+        "icon": "$(type-hierarchy)",
+        "category": "SchemaGraph"
+      },
+      {
+        "command": "schemagraph.exportAll",
+        "title": "SchemaGraph: Export All Diagram Formats (SVG, HTML, DBML, SQL, AI)",
+        "icon": "$(cloud-download)",
+        "category": "SchemaGraph"
+      },
+      {
+        "command": "schemagraph.generateAIContext",
+        "title": "SchemaGraph: Copy Token-Optimized AI Schema Prompt",
+        "icon": "$(sparkle)",
+        "category": "SchemaGraph"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "schemagraph.openPreview",
+          "group": "navigation",
+          "when": "resourceExtname =~ /\\.(sql|prisma|graphql|gql|php|py|rb|go|java|kt|ts|js|json)$/"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "schemagraph.openPreview",
+          "group": "7_modification@1"
+        },
+        {
+          "command": "schemagraph.exportAll",
+          "group": "7_modification@2"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "SchemaGraph",
+      "properties": {
+        "schemagraph.theme": {
+          "type": "string",
+          "default": "catppuccin",
+          "enum": [
+            "catppuccin",
+            "dark",
+            "light"
+          ],
+          "enumDescriptions": [
+            "Catppuccin Mocha (Soothing dark pastel palette)",
+            "Tokyo Dark (Deep slate blue with vibrant pink connectors)",
+            "Slate Light (High-contrast clean indigo light mode)"
+          ],
+          "description": "Default color theme for diagrams and interactive viewer."
+        },
+        "schemagraph.autoReloadOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically hot-reload the interactive ERD when saving schema files."
+        },
+        "schemagraph.exportDirectory": {
+          "type": "string",
+          "default": "./docs",
+          "description": "Default directory where generated schema diagrams and documentation are exported."
+        }
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SKThakor137/Database-Design-Package.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "echo 'SchemaGraph ready.'",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "schemagraph": "^1.4.2"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^2.24.0"
+  }
+}

@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "bin": {
     "schemagraph": "bin/schemagraph.js",
+    "schemagraph-mcp": "bin/schemagraph-mcp.js",
     "pure-erd": "bin/schemagraph.js"
   },
   "files": [
@@ -18,7 +19,8 @@
   "scripts": {
     "start": "node bin/schemagraph.js",
     "demo": "node bin/schemagraph.js ./examples --format=all --output=./demo-output",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "mcp": "node bin/schemagraph-mcp.js"
   },
   "repository": {
     "type": "git",
