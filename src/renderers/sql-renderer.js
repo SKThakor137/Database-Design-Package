@@ -36,7 +36,9 @@ class SQLRenderer {
 
             // Foreign keys
             table.relations.forEach(rel => {
-                colDefs.push(`    FOREIGN KEY (${rel.from}) REFERENCES ${rel.toTable}(${rel.toField}) ON DELETE CASCADE`);
+                const fromField = rel.from || rel.fromColumn;
+                const toField = rel.toField || rel.toColumn || 'id';
+                colDefs.push(`    FOREIGN KEY (${fromField}) REFERENCES ${rel.toTable}(${toField}) ON DELETE CASCADE`);
             });
 
             sql += colDefs.join(',\n') + '\n);\n\n';

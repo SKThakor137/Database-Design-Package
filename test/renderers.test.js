@@ -33,17 +33,34 @@ const mockSchemaMap = {
     }
 };
 
-test('SVGRenderer generates valid XML SVG with themes and nodes', () => {
-    const svg = SVGRenderer.generateSVG(mockSchemaMap, { theme: 'catppuccin', title: 'Test Schema' });
+test('SVGRenderer generates valid XML SVG with themes, nodes, and composite PK+FK badges', () => {
+    const compositeSchemaMap = {
+        Membership: {
+            name: 'Membership',
+            sourceType: 'sql',
+            columns: [
+                { name: 'user_id', type: 'INT', isPrimary: true, isForeign: true, isNullable: false, isUnique: false },
+                { name: 'group_id', type: 'INT', isPrimary: true, isForeign: true, isNullable: false, isUnique: false },
+                { name: 'role', type: 'VARCHAR(50)', isPrimary: false, isForeign: false, isNullable: false, isUnique: false }
+            ],
+            relations: [
+                { from: 'user_id', toTable: 'User', toField: 'id' }
+            ]
+        }
+    };
+
+    const svg = SVGRenderer.generateSVG(compositeSchemaMap, { theme: 'catppuccin', title: 'Composite Schema' });
     assert.ok(svg.startsWith('<svg'));
-    assert.ok(svg.includes('Test Schema'));
-    assert.ok(svg.includes('User'));
-    assert.ok(svg.includes('Post'));
-    assert.ok(svg.includes('PK'));
-    assert.ok(svg.includes('FK'));
+    assert.ok(svg.includes('PK'), 'Should include PK badge');
+    assert.ok(svg.includes('FK'), 'Should include FK badge on composite key');
+
+    // Default test schema
+    const regularSvg = SVGRenderer.generateSVG(mockSchemaMap, { theme: 'catppuccin', title: 'Test Schema' });
+    assert.ok(regularSvg.includes('PK'));
+    assert.ok(regularSvg.includes('FK'));
 });
 
-test('HTMLRenderer generates full standalone HTML page', () => {
+test('HTMLRenderer generates full standalone HTML page with FK badges and inspector', () => {
     const html = HTMLRenderer.generateHTML(mockSchemaMap, { title: 'Test Explorer' });
     assert.ok(html.includes('<!DOCTYPE html>'));
     assert.ok(html.includes('Test Explorer'));
@@ -54,6 +71,8 @@ test('HTMLRenderer generates full standalone HTML page', () => {
     assert.ok(html.includes('zoom-presets-menu'));
     assert.ok(html.includes('insp-outgoing-list'));
     assert.ok(html.includes('insp-incoming-list'));
+    assert.ok(html.includes('fk-tag'));
+    assert.ok(html.includes('pk-tag'));
 });
 
 test('MermaidRenderer generates erDiagram markdown block and tables', () => {

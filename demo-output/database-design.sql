@@ -6,6 +6,7 @@ CREATE TABLE Account (
     email VARCHAR(255) NOT NULL,
     username VARCHAR(255) NOT NULL,
     isActive BOOLEAN NOT NULL,
+    posts INTEGER,
     PRIMARY KEY (id),
     FOREIGN KEY (posts) REFERENCES Post(id) ON DELETE CASCADE
 );
@@ -15,10 +16,13 @@ CREATE TABLE Post (
     title VARCHAR(255) NOT NULL,
     body VARCHAR(255) NOT NULL,
     publishedAt VARCHAR(255),
+    author INTEGER,
+    tags INTEGER,
     id VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
     body VARCHAR(255),
     published BOOLEAN NOT NULL,
+    comments INTEGER,
     id VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
     content VARCHAR(255),
@@ -36,6 +40,7 @@ CREATE TABLE Post (
 CREATE TABLE Tag (
     id VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
+    posts INTEGER,
     id VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL UNIQUE,
     PRIMARY KEY (id, id),
@@ -54,6 +59,8 @@ CREATE TABLE User (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     createdAt VARCHAR(255) NOT NULL,
+    posts INTEGER,
+    comments INTEGER,
     id VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255),
@@ -97,6 +104,7 @@ CREATE TABLE Comment (
     id VARCHAR(255) NOT NULL,
     message VARCHAR(255) NOT NULL,
     createdAt VARCHAR(255) NOT NULL,
+    post INTEGER,
     id VARCHAR(255) NOT NULL,
     taskId VARCHAR(255) NOT NULL,
     authorId VARCHAR(255) NOT NULL,
@@ -124,6 +132,7 @@ CREATE TABLE users (
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     is_active BOOLEAN NOT NULL,
+    user_id INTEGER,
     password VARCHAR(255) NOT NULL,
     orders VARCHAR(255),
     id VARCHAR(255) NOT NULL,
@@ -134,7 +143,7 @@ CREATE TABLE users (
     role VARCHAR(255),
     created_at TIMESTAMP,
     PRIMARY KEY (id, id, id),
-    FOREIGN KEY (undefined) REFERENCES orders(undefined) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES orders(id) ON DELETE CASCADE
 );
 
 CREATE TABLE categories (
@@ -180,7 +189,7 @@ CREATE TABLE products (
     is_active BOOLEAN,
     created_at TIMESTAMP,
     PRIMARY KEY (id, id, id),
-    FOREIGN KEY (undefined) REFERENCES categories(undefined) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
@@ -211,7 +220,7 @@ CREATE TABLE orders (
     shipping_address VARCHAR(255) NOT NULL,
     created_at TIMESTAMP,
     PRIMARY KEY (id, id, id),
-    FOREIGN KEY (undefined) REFERENCES users(undefined) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -232,8 +241,6 @@ CREATE TABLE order_items (
     PRIMARY KEY (id, id),
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    FOREIGN KEY (undefined) REFERENCES orders(undefined) ON DELETE CASCADE,
-    FOREIGN KEY (undefined) REFERENCES products(undefined) ON DELETE CASCADE,
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
@@ -328,7 +335,7 @@ CREATE TABLE posts (
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (undefined) REFERENCES users(undefined) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE comments (
@@ -339,8 +346,8 @@ CREATE TABLE comments (
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (undefined) REFERENCES users(undefined) ON DELETE CASCADE,
-    FOREIGN KEY (undefined) REFERENCES posts(undefined) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
 
 CREATE TABLE Organization (
@@ -353,6 +360,7 @@ CREATE TABLE Organization (
     id VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     domain VARCHAR(255) NOT NULL UNIQUE,
+    teams INTEGER,
     PRIMARY KEY (id, id),
     FOREIGN KEY (teams) REFERENCES Team(id) ON DELETE CASCADE
 );
@@ -366,10 +374,10 @@ CREATE TABLE Member (
     id VARCHAR(255) NOT NULL,
     fullName VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    teamId INTEGER NOT NULL,
+    team_id INTEGER NOT NULL,
     PRIMARY KEY (id, id),
     FOREIGN KEY (organizationId) REFERENCES Organization(id) ON DELETE CASCADE,
-    FOREIGN KEY (team) REFERENCES Team(id) ON DELETE CASCADE
+    FOREIGN KEY (team_id) REFERENCES Team(id) ON DELETE CASCADE
 );
 
 CREATE TABLE Project (
@@ -421,8 +429,8 @@ CREATE TABLE Employee (
 CREATE TABLE Team (
     id VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
-    organizationId INTEGER NOT NULL,
+    organization_id INTEGER NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (organization) REFERENCES Organization(id) ON DELETE CASCADE
+    FOREIGN KEY (organization_id) REFERENCES Organization(id) ON DELETE CASCADE
 );
 

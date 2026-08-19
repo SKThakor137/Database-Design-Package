@@ -1,63 +1,75 @@
-# E-Commerce Architecture ERD
+# Database Schema Topology
 
 ```mermaid
 erDiagram
+    categories ||--o{ categories : "parent_id -> id"
     products ||--o{ categories : "category_id -> id"
     orders ||--o{ users : "user_id -> id"
     order_items ||--o{ orders : "order_id -> id"
     order_items ||--o{ products : "product_id -> id"
-    reviews ||--o{ users : "user_id -> id"
     reviews ||--o{ products : "product_id -> id"
+    reviews ||--o{ users : "user_id -> id"
+    payments ||--o{ orders : "order_id -> id"
 
     users {
-        SERIAL id PK
-        VARCHAR_100_ name
+        UUID id PK
         VARCHAR_255_ email
-        VARCHAR_255_ password_hash
+        VARCHAR_100_ full_name
         VARCHAR_500_ avatar_url
-        VARCHAR_20_ role
+        VARCHAR_30_ role
         TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
     categories {
         SERIAL id PK
         VARCHAR_100_ name
-        VARCHAR_120_ slug
+        VARCHAR_100_ slug
         TEXT description
+        INT parent_id FK
+        TIMESTAMP created_at
     }
     products {
-        SERIAL id PK
+        UUID id PK
         INT category_id FK
-        VARCHAR_200_ name
-        VARCHAR_220_ slug
+        VARCHAR_255_ title
+        VARCHAR_64_ sku
         DECIMAL_10__2_ price
-        INT stock
-        BOOLEAN is_active
+        INT stock_quantity
+        BOOLEAN is_published
         TIMESTAMP created_at
     }
     orders {
-        SERIAL id PK
-        INT user_id FK
+        UUID id PK
+        UUID user_id FK
         VARCHAR_50_ order_number
-        DECIMAL_10__2_ total_amount
-        VARCHAR_50_ status
-        VARCHAR_50_ payment_status
+        VARCHAR_30_ status
+        DECIMAL_12__2_ total_amount
         TEXT shipping_address
         TIMESTAMP created_at
     }
     order_items {
         SERIAL id PK
-        INT order_id FK
-        INT product_id FK
-        INT quantity
+        UUID order_id FK
+        UUID product_id FK
         DECIMAL_10__2_ unit_price
+        INT quantity
     }
     reviews {
         SERIAL id PK
-        INT user_id FK
-        INT product_id FK
+        UUID product_id FK
+        UUID user_id FK
         INT rating
         TEXT comment
         TIMESTAMP created_at
+    }
+    payments {
+        UUID id PK
+        UUID order_id FK
+        VARCHAR_50_ provider
+        VARCHAR_100_ transaction_id
+        DECIMAL_12__2_ amount
+        VARCHAR_30_ status
+        TIMESTAMP paid_at
     }
 ```
 
@@ -67,67 +79,80 @@ erDiagram
 
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
-| `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
-| `name` | `VARCHAR(100)` | `NOT NULL` | | 
+| `id` | `UUID` | `PRIMARY KEY`, `NOT NULL` | | 
 | `email` | `VARCHAR(255)` | `NOT NULL`, `UNIQUE` | | 
-| `password_hash` | `VARCHAR(255)` | `NOT NULL` | | 
+| `full_name` | `VARCHAR(100)` | `NOT NULL` | | 
 | `avatar_url` | `VARCHAR(500)` | — | | 
-| `role` | `VARCHAR(20)` | — | | 
-| `created_at` | `TIMESTAMP` | — | | 
+| `role` | `VARCHAR(30)` | — | | 
+| `created_at` | `TIMESTAMP` | `NOT NULL` | | 
+| `updated_at` | `TIMESTAMP` | `NOT NULL` | | 
 
 ### Table: `categories`
 
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
-| `name` | `VARCHAR(100)` | `NOT NULL` | | 
-| `slug` | `VARCHAR(120)` | `NOT NULL`, `UNIQUE` | | 
+| `name` | `VARCHAR(100)` | `NOT NULL`, `UNIQUE` | | 
+| `slug` | `VARCHAR(100)` | `NOT NULL`, `UNIQUE` | | 
 | `description` | `TEXT` | — | | 
+| `parent_id` | `INT` | `FOREIGN KEY` | | 
+| `created_at` | `TIMESTAMP` | `NOT NULL` | | 
 
 ### Table: `products`
 
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
-| `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
+| `id` | `UUID` | `PRIMARY KEY`, `NOT NULL` | | 
 | `category_id` | `INT` | `FOREIGN KEY`, `NOT NULL` | | 
-| `name` | `VARCHAR(200)` | `NOT NULL` | | 
-| `slug` | `VARCHAR(220)` | `NOT NULL`, `UNIQUE` | | 
+| `title` | `VARCHAR(255)` | `NOT NULL` | | 
+| `sku` | `VARCHAR(64)` | `NOT NULL`, `UNIQUE` | | 
 | `price` | `DECIMAL(10, 2)` | `NOT NULL` | | 
-| `stock` | `INT` | — | | 
-| `is_active` | `BOOLEAN` | — | | 
-| `created_at` | `TIMESTAMP` | — | | 
+| `stock_quantity` | `INT` | `NOT NULL` | | 
+| `is_published` | `BOOLEAN` | — | | 
+| `created_at` | `TIMESTAMP` | `NOT NULL` | | 
 
 ### Table: `orders`
 
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
-| `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
-| `user_id` | `INT` | `FOREIGN KEY`, `NOT NULL` | | 
+| `id` | `UUID` | `PRIMARY KEY`, `NOT NULL` | | 
+| `user_id` | `UUID` | `FOREIGN KEY`, `NOT NULL` | | 
 | `order_number` | `VARCHAR(50)` | `NOT NULL`, `UNIQUE` | | 
-| `total_amount` | `DECIMAL(10, 2)` | `NOT NULL` | | 
-| `status` | `VARCHAR(50)` | — | | 
-| `payment_status` | `VARCHAR(50)` | — | | 
+| `status` | `VARCHAR(30)` | `NOT NULL` | | 
+| `total_amount` | `DECIMAL(12, 2)` | `NOT NULL` | | 
 | `shipping_address` | `TEXT` | `NOT NULL` | | 
-| `created_at` | `TIMESTAMP` | — | | 
+| `created_at` | `TIMESTAMP` | `NOT NULL` | | 
 
 ### Table: `order_items`
 
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
-| `order_id` | `INT` | `FOREIGN KEY`, `NOT NULL` | | 
-| `product_id` | `INT` | `FOREIGN KEY`, `NOT NULL` | | 
-| `quantity` | `INT` | `NOT NULL` | | 
+| `order_id` | `UUID` | `FOREIGN KEY`, `NOT NULL` | | 
+| `product_id` | `UUID` | `FOREIGN KEY`, `NOT NULL` | | 
 | `unit_price` | `DECIMAL(10, 2)` | `NOT NULL` | | 
+| `quantity` | `INT` | `NOT NULL` | | 
 
 ### Table: `reviews`
 
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
-| `user_id` | `INT` | `FOREIGN KEY`, `NOT NULL` | | 
-| `product_id` | `INT` | `FOREIGN KEY`, `NOT NULL` | | 
+| `product_id` | `UUID` | `FOREIGN KEY`, `NOT NULL` | | 
+| `user_id` | `UUID` | `FOREIGN KEY`, `NOT NULL` | | 
 | `rating` | `INT` | `NOT NULL` | | 
 | `comment` | `TEXT` | — | | 
-| `created_at` | `TIMESTAMP` | — | | 
+| `created_at` | `TIMESTAMP` | `NOT NULL` | | 
+
+### Table: `payments`
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `UUID` | `PRIMARY KEY`, `NOT NULL` | | 
+| `order_id` | `UUID` | `FOREIGN KEY`, `NOT NULL`, `UNIQUE` | | 
+| `provider` | `VARCHAR(50)` | `NOT NULL` | | 
+| `transaction_id` | `VARCHAR(100)` | `NOT NULL` | | 
+| `amount` | `DECIMAL(12, 2)` | `NOT NULL` | | 
+| `status` | `VARCHAR(30)` | `NOT NULL` | | 
+| `paid_at` | `TIMESTAMP` | — | | 
 

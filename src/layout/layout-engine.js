@@ -74,15 +74,17 @@ class LayoutEngine {
             if (!fromPos) return;
 
             fromTable.relations.forEach(rel => {
+                const fromField = rel.from || rel.fromColumn;
                 const toTableName = rel.toTable;
+                const toField = rel.toField || rel.toColumn || 'id';
                 const toPos = positions[toTableName];
                 if (!toPos) return; // Target table not in scanned models
 
                 const toTable = schemaMap[toTableName];
 
                 // Find column indices
-                const fromColIdx = fromTable.columns.findIndex(c => c.name === rel.from);
-                const toColIdx = toTable ? toTable.columns.findIndex(c => c.name === rel.toField) : -1;
+                const fromColIdx = fromTable.columns.findIndex(c => c.name === fromField);
+                const toColIdx = toTable ? toTable.columns.findIndex(c => c.name === toField) : -1;
 
                 const fromY = fromPos.y + headerHeight + (fromColIdx >= 0 ? fromColIdx * rowHeight + rowHeight / 2 : 20);
                 const toY = toPos.y + headerHeight + (toColIdx >= 0 ? toColIdx * rowHeight + rowHeight / 2 : 20);
@@ -112,9 +114,9 @@ class LayoutEngine {
 
                 connectors.push({
                     fromTable: fromTableName,
-                    fromField: rel.from,
+                    fromField: fromField,
                     toTable: toTableName,
-                    toField: rel.toField,
+                    toField: toField,
                     cardinality: rel.cardinality || 'N:1',
                     startX,
                     startY: fromY,

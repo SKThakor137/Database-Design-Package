@@ -2,64 +2,77 @@
 // Use this DBML at https://dbdiagram.io/
 
 Table users {
-  id SERIAL [pk, not null]
-  name VARCHAR(100) [not null]
+  id UUID [pk, not null]
   email VARCHAR(255) [unique, not null]
-  password_hash VARCHAR(255) [not null]
+  full_name VARCHAR(100) [not null]
   avatar_url VARCHAR(500)
-  role VARCHAR(20)
-  created_at TIMESTAMP
+  role VARCHAR(30)
+  created_at TIMESTAMP [not null]
+  updated_at TIMESTAMP [not null]
 }
 
 Table categories {
   id SERIAL [pk, not null]
-  name VARCHAR(100) [not null]
-  slug VARCHAR(120) [unique, not null]
+  name VARCHAR(100) [unique, not null]
+  slug VARCHAR(100) [unique, not null]
   description TEXT
+  parent_id INT
+  created_at TIMESTAMP [not null]
 }
 
 Table products {
-  id SERIAL [pk, not null]
+  id UUID [pk, not null]
   category_id INT [not null]
-  name VARCHAR(200) [not null]
-  slug VARCHAR(220) [unique, not null]
+  title VARCHAR(255) [not null]
+  sku VARCHAR(64) [unique, not null]
   price DECIMAL(10, 2) [not null]
-  stock INT
-  is_active BOOLEAN
-  created_at TIMESTAMP
+  stock_quantity INT [not null]
+  is_published BOOLEAN
+  created_at TIMESTAMP [not null]
 }
 
 Table orders {
-  id SERIAL [pk, not null]
-  user_id INT [not null]
+  id UUID [pk, not null]
+  user_id UUID [not null]
   order_number VARCHAR(50) [unique, not null]
-  total_amount DECIMAL(10, 2) [not null]
-  status VARCHAR(50)
-  payment_status VARCHAR(50)
+  status VARCHAR(30) [not null]
+  total_amount DECIMAL(12, 2) [not null]
   shipping_address TEXT [not null]
-  created_at TIMESTAMP
+  created_at TIMESTAMP [not null]
 }
 
 Table order_items {
   id SERIAL [pk, not null]
-  order_id INT [not null]
-  product_id INT [not null]
-  quantity INT [not null]
+  order_id UUID [not null]
+  product_id UUID [not null]
   unit_price DECIMAL(10, 2) [not null]
+  quantity INT [not null]
 }
 
 Table reviews {
   id SERIAL [pk, not null]
-  user_id INT [not null]
-  product_id INT [not null]
+  product_id UUID [not null]
+  user_id UUID [not null]
   rating INT [not null]
   comment TEXT
-  created_at TIMESTAMP
+  created_at TIMESTAMP [not null]
 }
 
+Table payments {
+  id UUID [pk, not null]
+  order_id UUID [unique, not null]
+  provider VARCHAR(50) [not null]
+  transaction_id VARCHAR(100) [not null]
+  amount DECIMAL(12, 2) [not null]
+  status VARCHAR(30) [not null]
+  paid_at TIMESTAMP
+}
+
+Ref: categories.parent_id > categories.id
 Ref: products.category_id > categories.id
 Ref: orders.user_id > users.id
 Ref: order_items.order_id > orders.id
 Ref: order_items.product_id > products.id
-Ref: reviews.user_id > users.id
 Ref: reviews.product_id > products.id
+Ref: reviews.user_id > users.id
+Ref: payments.order_id > orders.id

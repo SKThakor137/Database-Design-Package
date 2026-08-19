@@ -71,11 +71,28 @@ class GoParser {
                         if (targetTable.endsWith('y')) targetTable = targetTable.slice(0, -1) + 'ies';
                         else if (!targetTable.endsWith('s')) targetTable = targetTable + 's';
 
-                        if (!models[tableName].relations.some(r => r.fromColumn === fkCol && r.toTable === targetTable)) {
+                        const existingCol = models[tableName].columns.find(c => c.name === fkCol);
+                        if (!existingCol) {
+                            models[tableName].columns.push({
+                                name: fkCol,
+                                type: 'BIGINT',
+                                isPrimary: false,
+                                isForeign: true,
+                                isUnique: false,
+                                isNullable: true
+                            });
+                        } else {
+                            existingCol.isForeign = true;
+                        }
+
+                        if (!models[tableName].relations.some(r => (r.from === fkCol || r.fromColumn === fkCol) && r.toTable === targetTable)) {
                             models[tableName].relations.push({
+                                from: fkCol,
                                 fromColumn: fkCol,
                                 toTable: targetTable,
+                                toField: 'id',
                                 toColumn: 'id',
+                                cardinality: 'N:1',
                                 relationType: 'many-to-one'
                             });
                         }
@@ -90,20 +107,28 @@ class GoParser {
                         if (targetTable.endsWith('y')) targetTable = targetTable.slice(0, -1) + 'ies';
                         else if (!targetTable.endsWith('s')) targetTable = targetTable + 's';
 
-                        if (!models[tableName].columns.some(c => c.name === colName)) {
+                        const existingCol = models[tableName].columns.find(c => c.name === colName);
+                        if (!existingCol) {
                             models[tableName].columns.push({
                                 name: colName,
                                 type: 'BIGINT',
                                 isPrimary: false,
+                                isForeign: true,
                                 isUnique: false,
                                 isNullable
                             });
+                        } else {
+                            existingCol.isForeign = true;
                         }
-                        if (!models[tableName].relations.some(r => r.fromColumn === colName && r.toTable === targetTable)) {
+
+                        if (!models[tableName].relations.some(r => (r.from === colName || r.fromColumn === colName) && r.toTable === targetTable)) {
                             models[tableName].relations.push({
+                                from: colName,
                                 fromColumn: colName,
                                 toTable: targetTable,
+                                toField: 'id',
                                 toColumn: 'id',
+                                cardinality: 'N:1',
                                 relationType: 'many-to-one'
                             });
                         }
@@ -123,6 +148,7 @@ class GoParser {
                             name: colName,
                             type: dbType,
                             isPrimary,
+                            isForeign: false,
                             isUnique,
                             isNullable
                         });

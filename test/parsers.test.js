@@ -109,6 +109,7 @@ test('SequelizeParser parses sequelize.define and associations', () => {
     assert.ok(models.Product);
     assert.strictEqual(models.Product.relations.length, 1);
     assert.strictEqual(models.Product.relations[0].toTable, 'Category');
+    assert.strictEqual(models.Product.columns.find(c => c.name === 'categoryId').isForeign, true);
 });
 
 test('TypeORMParser parses @Entity and decorators', () => {
@@ -142,6 +143,8 @@ test('TypeORMParser parses @Entity and decorators', () => {
     assert.ok(models.Profile);
     assert.strictEqual(models.Profile.relations.length, 1);
     assert.strictEqual(models.Profile.relations[0].toTable, 'User');
+    assert.strictEqual(models.Profile.relations[0].from, 'user_id');
+    assert.strictEqual(models.Profile.columns.find(c => c.name === 'user_id').isForeign, true);
 });
 
 test('GraphQLParser parses SDL types and relations', () => {
@@ -200,5 +203,7 @@ test('TSTypeParser parses TypeScript interfaces, types, and Zod schemas', () => 
     assert.strictEqual(models.Customer.relations[0].toTable, 'Order');
     assert.strictEqual(models.Order.relations[0].toTable, 'Customer');
     assert.strictEqual(models.Product.relations[0].toTable, 'Category');
+    assert.strictEqual(models.Order.columns.find(c => c.name === 'customerId').isForeign, true);
+    assert.strictEqual(models.Product.columns.find(c => c.name === 'categoryId').isForeign, true);
 });
 

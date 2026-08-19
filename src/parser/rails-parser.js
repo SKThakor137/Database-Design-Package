@@ -43,21 +43,28 @@ class RailsParser {
 
                     const isNullable = !refArgs.includes('null: false');
 
-                    if (!models[tableName].columns.some(c => c.name === colName)) {
+                    const existingCol = models[tableName].columns.find(c => c.name === colName);
+                    if (!existingCol) {
                         models[tableName].columns.push({
                             name: colName,
                             type: 'BIGINT',
                             isPrimary: false,
+                            isForeign: true,
                             isUnique: false,
                             isNullable
                         });
+                    } else {
+                        existingCol.isForeign = true;
                     }
 
-                    if (!models[tableName].relations.some(r => r.fromColumn === colName && r.toTable === targetTable)) {
+                    if (!models[tableName].relations.some(r => (r.from === colName || r.fromColumn === colName) && r.toTable === targetTable)) {
                         models[tableName].relations.push({
+                            from: colName,
                             fromColumn: colName,
                             toTable: targetTable,
+                            toField: 'id',
                             toColumn: 'id',
+                            cardinality: 'N:1',
                             relationType: 'many-to-one'
                         });
                     }
@@ -83,6 +90,7 @@ class RailsParser {
                             name: colName,
                             type: dbType,
                             isPrimary: colName === 'id',
+                            isForeign: false,
                             isUnique: colName === 'id' || isUnique,
                             isNullable
                         });
@@ -100,11 +108,28 @@ class RailsParser {
             const fromCol = fkMatch[3] || `${toTable.replace(/s$/, '')}_id`;
 
             if (models[fromTable]) {
-                if (!models[fromTable].relations.some(r => r.fromColumn === fromCol && r.toTable === toTable)) {
+                const col = models[fromTable].columns.find(c => c.name === fromCol);
+                if (col) {
+                    col.isForeign = true;
+                } else {
+                    models[fromTable].columns.push({
+                        name: fromCol,
+                        type: 'BIGINT',
+                        isPrimary: false,
+                        isForeign: true,
+                        isUnique: false,
+                        isNullable: true
+                    });
+                }
+
+                if (!models[fromTable].relations.some(r => (r.from === fromCol || r.fromColumn === fromCol) && r.toTable === toTable)) {
                     models[fromTable].relations.push({
+                        from: fromCol,
                         fromColumn: fromCol,
                         toTable: toTable,
+                        toField: 'id',
                         toColumn: 'id',
+                        cardinality: 'N:1',
                         relationType: 'many-to-one'
                     });
                 }
@@ -130,7 +155,7 @@ class RailsParser {
             models[tableName] = {
                 name: tableName,
                 columns: [
-                    { name: 'id', type: 'BIGINT', isPrimary: true, isUnique: true, isNullable: false }
+                    { name: 'id', type: 'BIGINT', isPrimary: true, isForeign: false, isUnique: true, isNullable: false }
                 ],
                 relations: [],
                 sourceType: 'rails-model'
@@ -150,20 +175,28 @@ class RailsParser {
                 else if (!targetTable.endsWith('s')) targetTable = targetTable + 's';
 
                 const fkCol = `${targetName}_id`;
-                if (!models[tableName].columns.some(c => c.name === fkCol)) {
+                const existingCol = models[tableName].columns.find(c => c.name === fkCol);
+                if (!existingCol) {
                     models[tableName].columns.push({
                         name: fkCol,
                         type: 'BIGINT',
                         isPrimary: false,
+                        isForeign: true,
                         isUnique: false,
                         isNullable: true
                     });
+                } else {
+                    existingCol.isForeign = true;
                 }
-                if (!models[tableName].relations.some(r => r.fromColumn === fkCol && r.toTable === targetTable)) {
+
+                if (!models[tableName].relations.some(r => (r.from === fkCol || r.fromColumn === fkCol) && r.toTable === targetTable)) {
                     models[tableName].relations.push({
+                        from: fkCol,
                         fromColumn: fkCol,
                         toTable: targetTable,
+                        toField: 'id',
                         toColumn: 'id',
+                        cardinality: 'N:1',
                         relationType: 'many-to-one'
                     });
                 }

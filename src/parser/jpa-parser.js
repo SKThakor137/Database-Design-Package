@@ -57,21 +57,28 @@ class JPAParser {
                         if (targetTable.endsWith('y')) targetTable = targetTable.slice(0, -1) + 'ies';
                         else if (!targetTable.endsWith('s')) targetTable = targetTable + 's';
 
-                        if (!models[tableName].columns.some(c => c.name === fkCol)) {
+                        const existingCol = models[tableName].columns.find(c => c.name === fkCol);
+                        if (!existingCol) {
                             models[tableName].columns.push({
                                 name: fkCol,
                                 type: 'BIGINT',
                                 isPrimary: isId,
+                                isForeign: true,
                                 isUnique,
                                 isNullable
                             });
+                        } else {
+                            existingCol.isForeign = true;
                         }
 
-                        if (!models[tableName].relations.some(r => r.fromColumn === fkCol && r.toTable === targetTable)) {
+                        if (!models[tableName].relations.some(r => (r.from === fkCol || r.fromColumn === fkCol) && r.toTable === targetTable)) {
                             models[tableName].relations.push({
+                                from: fkCol,
                                 fromColumn: fkCol,
                                 toTable: targetTable,
+                                toField: 'id',
                                 toColumn: 'id',
+                                cardinality: trimmed.includes('@OneToOne') ? '1:1' : 'N:1',
                                 relationType: trimmed.includes('@OneToOne') ? 'one-to-one' : 'many-to-one'
                             });
                         }
@@ -104,6 +111,7 @@ class JPAParser {
                             name: colName,
                             type: dbType,
                             isPrimary: isId,
+                            isForeign: false,
                             isUnique,
                             isNullable
                         });

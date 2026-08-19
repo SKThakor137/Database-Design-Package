@@ -121,9 +121,12 @@ class LaravelParser {
                         name: colName,
                         type,
                         isPrimary,
+                        isForeign: method === 'foreignId' || method === 'foreignIdFor',
                         isUnique,
                         isNullable
                     });
+                } else if (method === 'foreignId' || method === 'foreignIdFor') {
+                    existing.isForeign = true;
                 }
 
                 // Check for foreignId(...)->constrained(...)
@@ -177,11 +180,28 @@ class LaravelParser {
     }
 
     static addRelation(model, fromCol, toTable, toCol = 'id') {
-        if (!model.relations.some(r => r.fromColumn === fromCol && r.toTable === toTable)) {
+        const col = model.columns.find(c => c.name === fromCol);
+        if (col) {
+            col.isForeign = true;
+        } else {
+            model.columns.push({
+                name: fromCol,
+                type: 'BIGINT',
+                isPrimary: false,
+                isForeign: true,
+                isUnique: false,
+                isNullable: true
+            });
+        }
+
+        if (!model.relations.some(r => (r.from === fromCol || r.fromColumn === fromCol) && r.toTable === toTable)) {
             model.relations.push({
+                from: fromCol,
                 fromColumn: fromCol,
                 toTable: toTable,
+                toField: toCol,
                 toColumn: toCol,
+                cardinality: 'N:1',
                 relationType: 'many-to-one'
             });
         }
@@ -211,7 +231,7 @@ class LaravelParser {
             models[tableName] = {
                 name: tableName,
                 columns: [
-                    { name: 'id', type: 'BIGINT', isPrimary: true, isUnique: true, isNullable: false }
+                    { name: 'id', type: 'BIGINT', isPrimary: true, isForeign: false, isUnique: true, isNullable: false }
                 ],
                 relations: [],
                 sourceType: 'eloquent'
@@ -234,14 +254,18 @@ class LaravelParser {
 
             if (relType === 'belongsTo') {
                 const fkCol = customFk || `${targetClassRaw.toLowerCase()}_id`;
-                if (!models[tableName].columns.some(c => c.name === fkCol)) {
+                const col = models[tableName].columns.find(c => c.name === fkCol);
+                if (!col) {
                     models[tableName].columns.push({
                         name: fkCol,
                         type: 'BIGINT',
                         isPrimary: false,
+                        isForeign: true,
                         isUnique: false,
                         isNullable: true
                     });
+                } else {
+                    col.isForeign = true;
                 }
                 this.addRelation(models[tableName], fkCol, targetTable, 'id');
             }

@@ -2,56 +2,58 @@
 -- Normalized SQL DDL Schema
 
 CREATE TABLE users (
-    id VARCHAR(255) NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    id UUID NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
     avatar_url VARCHAR(255),
     role VARCHAR(255),
-    created_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE categories (
     id VARCHAR(255) NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL UNIQUE,
     slug VARCHAR(255) NOT NULL UNIQUE,
     description VARCHAR(255),
-    PRIMARY KEY (id)
+    parent_id INTEGER,
+    created_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE CASCADE
 );
 
 CREATE TABLE products (
-    id VARCHAR(255) NOT NULL,
+    id UUID NOT NULL,
     category_id INTEGER NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    sku VARCHAR(255) NOT NULL UNIQUE,
     price NUMERIC(10,2) NOT NULL,
-    stock INTEGER,
-    is_active BOOLEAN,
-    created_at TIMESTAMP,
+    stock_quantity INTEGER NOT NULL,
+    is_published BOOLEAN,
+    created_at TIMESTAMP NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
 
 CREATE TABLE orders (
-    id VARCHAR(255) NOT NULL,
-    user_id INTEGER NOT NULL,
+    id UUID NOT NULL,
+    user_id UUID NOT NULL,
     order_number VARCHAR(255) NOT NULL UNIQUE,
+    status VARCHAR(255) NOT NULL,
     total_amount NUMERIC(10,2) NOT NULL,
-    status VARCHAR(255),
-    payment_status VARCHAR(255),
     shipping_address VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE order_items (
     id VARCHAR(255) NOT NULL,
-    order_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL,
-    quantity INTEGER NOT NULL,
+    order_id UUID NOT NULL,
+    product_id UUID NOT NULL,
     unit_price NUMERIC(10,2) NOT NULL,
+    quantity INTEGER NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
@@ -59,13 +61,25 @@ CREATE TABLE order_items (
 
 CREATE TABLE reviews (
     id VARCHAR(255) NOT NULL,
-    user_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL,
+    product_id UUID NOT NULL,
+    user_id UUID NOT NULL,
     rating INTEGER NOT NULL,
     comment VARCHAR(255),
-    created_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE payments (
+    id UUID NOT NULL,
+    order_id UUID NOT NULL UNIQUE,
+    provider VARCHAR(255) NOT NULL,
+    transaction_id VARCHAR(255) NOT NULL,
+    amount NUMERIC(10,2) NOT NULL,
+    status VARCHAR(255) NOT NULL,
+    paid_at TIMESTAMP,
+    PRIMARY KEY (id),
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 );
 

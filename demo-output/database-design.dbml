@@ -6,6 +6,7 @@ Table Account {
   email String! [not null]
   username String! [not null]
   isActive Boolean! [not null]
+  posts BIGINT
 }
 
 Table Post {
@@ -13,10 +14,13 @@ Table Post {
   title String! [not null]
   body String! [not null]
   publishedAt String
+  author BIGINT
+  tags BIGINT
   id ID! [pk, unique, not null]
   title String! [not null]
   body String
   published Boolean! [not null]
+  comments BIGINT
   id String [pk, not null]
   title String [not null]
   content String?
@@ -28,6 +32,7 @@ Table Post {
 Table Tag {
   id ID! [pk, unique, not null]
   name String! [not null]
+  posts BIGINT
   id String [pk, not null]
   name String [unique, not null]
 }
@@ -44,6 +49,8 @@ Table User {
   name String! [not null]
   email String! [not null]
   createdAt String! [not null]
+  posts BIGINT
+  comments BIGINT
   id String [pk, not null]
   email String [unique, not null]
   name String?
@@ -80,6 +87,7 @@ Table Comment {
   id ID! [pk, unique, not null]
   message String! [not null]
   createdAt String! [not null]
+  post BIGINT
   id String [pk, not null]
   taskId String [not null]
   authorId String [not null]
@@ -101,6 +109,7 @@ Table users {
   created_at TIMESTAMP [not null]
   updated_at TIMESTAMP [not null]
   is_active BOOLEAN [not null]
+  user_id BIGINT
   password VARCHAR(255) [not null]
   orders TEXT
   id SERIAL [pk, not null]
@@ -288,6 +297,7 @@ Table Organization {
   id string [pk, not null]
   name varchar [not null]
   domain varchar [unique, not null]
+  teams BIGINT
 }
 
 Table Member {
@@ -299,7 +309,7 @@ Table Member {
   id string [pk, not null]
   fullName varchar [not null]
   email varchar [unique, not null]
-  teamId UUID/Int [not null]
+  team_id UUID/Int [not null]
 }
 
 Table Project {
@@ -341,7 +351,7 @@ Table Employee {
 Table Team {
   id string [pk, not null]
   title varchar [not null]
-  organizationId UUID/Int [not null]
+  organization_id UUID/Int [not null]
 }
 
 Ref: Account.posts > Post.id
@@ -360,18 +370,16 @@ Ref: Comment.author > User._id
 Ref: Comment.author > User.id
 Ref: Comment.post > Post.id
 Ref: Comment.taskId > Task.id
-Ref: users.undefined > orders.undefined
+Ref: users.user_id > orders.id
 Ref: categories.parent_id > categories.id
-Ref: products.undefined > categories.undefined
 Ref: products.category_id > categories.id
 Ref: products.category_id > categories.id
-Ref: orders.undefined > users.undefined
+Ref: products.category_id > categories.id
+Ref: orders.user_id > users.id
 Ref: orders.user_id > users.id
 Ref: orders.user_id > users.id
 Ref: order_items.order_id > orders.id
 Ref: order_items.product_id > products.id
-Ref: order_items.undefined > orders.undefined
-Ref: order_items.undefined > products.undefined
 Ref: order_items.order_id > orders.id
 Ref: order_items.product_id > products.id
 Ref: reviews.product_id > products.id
@@ -385,16 +393,16 @@ Ref: Enrollment.courseId > Course._id
 Ref: Profile.userId > User.id
 Ref: PostTag.postId > Post.id
 Ref: PostTag.tagId > Tag.id
-Ref: posts.undefined > users.undefined
-Ref: comments.undefined > users.undefined
-Ref: comments.undefined > posts.undefined
+Ref: posts.user_id > users.id
+Ref: comments.user_id > users.id
+Ref: comments.post_id > posts.id
 Ref: Organization.teams > Team.id
 Ref: Member.organizationId > Organization.id
-Ref: Member.team > Team.id
+Ref: Member.team_id > Team.id
 Ref: Project.organizationId > Organization.id
 Ref: Project.leadEmployeeId > Employee.id
 Ref: Task.projectId > Project.id
 Ref: Employee.departmentId > Department.id
 Ref: Employee.departmentId > Department.id
 Ref: Employee.departmentId > Department.id
-Ref: Team.organization > Organization.id
+Ref: Team.organization_id > Organization.id

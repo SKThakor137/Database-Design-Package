@@ -24,8 +24,10 @@ class AIRenderer {
             const table = schemaMap[tableName];
             table.relations.forEach(rel => {
                 hasRels = true;
+                const fromField = rel.from || rel.fromColumn;
+                const toField = rel.toField || rel.toColumn || 'id';
                 const card = rel.cardinality || 'N:1';
-                out += `- \`${tableName}.${rel.from}\` ➔ \`${rel.toTable}.${rel.toField}\` [Cardinality: ${card}]\n`;
+                out += `- \`${tableName}.${fromField}\` ➔ \`${rel.toTable}.${toField}\` [Cardinality: ${card}]\n`;
             });
         });
         if (!hasRels) {
@@ -44,9 +46,12 @@ class AIRenderer {
             table.columns.forEach(col => {
                 const flags = [];
                 if (col.isPrimary) flags.push('PRIMARY KEY');
-                if (col.isForeign) {
-                    const rel = table.relations.find(r => r.from === col.name);
-                    flags.push(rel ? `FOREIGN KEY ➔ ${rel.toTable}.${rel.toField}` : 'FOREIGN KEY');
+                const rel = table.relations.find(r => (r.from === col.name || r.fromColumn === col.name));
+                const isFk = !!(col.isForeign || rel);
+                if (isFk) {
+                    const toTable = rel ? rel.toTable : '';
+                    const toField = rel ? (rel.toField || rel.toColumn || 'id') : '';
+                    flags.push(rel ? `FOREIGN KEY ➔ ${toTable}.${toField}` : 'FOREIGN KEY');
                 }
                 if (col.isUnique) flags.push('UNIQUE');
                 if (!col.isNullable) flags.push('NOT NULL');

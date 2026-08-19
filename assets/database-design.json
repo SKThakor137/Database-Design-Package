@@ -1,12 +1,12 @@
 {
   "generator": "schemagraph",
   "version": "1.0.0",
-  "generatedAt": "2026-08-16T12:17:06.057Z",
+  "generatedAt": "2026-08-19T16:53:25.644Z",
   "metadata": {
-    "title": "E-Commerce Architecture ERD",
-    "totalTables": 6,
-    "totalColumns": 38,
-    "totalRelations": 6
+    "title": "Database Schema Topology",
+    "totalTables": 7,
+    "totalColumns": 46,
+    "totalRelations": 8
   },
   "tables": {
     "users": {
@@ -14,16 +14,8 @@
       "columns": [
         {
           "name": "id",
-          "type": "SERIAL",
+          "type": "UUID",
           "isPrimary": true,
-          "isForeign": false,
-          "isNullable": false,
-          "isUnique": false
-        },
-        {
-          "name": "name",
-          "type": "VARCHAR(100)",
-          "isPrimary": false,
           "isForeign": false,
           "isNullable": false,
           "isUnique": false
@@ -37,8 +29,8 @@
           "isUnique": true
         },
         {
-          "name": "password_hash",
-          "type": "VARCHAR(255)",
+          "name": "full_name",
+          "type": "VARCHAR(100)",
           "isPrimary": false,
           "isForeign": false,
           "isNullable": false,
@@ -54,7 +46,7 @@
         },
         {
           "name": "role",
-          "type": "VARCHAR(20)",
+          "type": "VARCHAR(30)",
           "isPrimary": false,
           "isForeign": false,
           "isNullable": true,
@@ -65,7 +57,15 @@
           "type": "TIMESTAMP",
           "isPrimary": false,
           "isForeign": false,
-          "isNullable": true,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
           "isUnique": false
         }
       ],
@@ -89,11 +89,11 @@
           "isPrimary": false,
           "isForeign": false,
           "isNullable": false,
-          "isUnique": false
+          "isUnique": true
         },
         {
           "name": "slug",
-          "type": "VARCHAR(120)",
+          "type": "VARCHAR(100)",
           "isPrimary": false,
           "isForeign": false,
           "isNullable": false,
@@ -106,9 +106,32 @@
           "isForeign": false,
           "isNullable": true,
           "isUnique": false
+        },
+        {
+          "name": "parent_id",
+          "type": "INT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
         }
       ],
-      "relations": [],
+      "relations": [
+        {
+          "from": "parent_id",
+          "toTable": "categories",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
       "sourceType": "sql"
     },
     "products": {
@@ -116,7 +139,7 @@
       "columns": [
         {
           "name": "id",
-          "type": "SERIAL",
+          "type": "UUID",
           "isPrimary": true,
           "isForeign": false,
           "isNullable": false,
@@ -131,16 +154,16 @@
           "isUnique": false
         },
         {
-          "name": "name",
-          "type": "VARCHAR(200)",
+          "name": "title",
+          "type": "VARCHAR(255)",
           "isPrimary": false,
           "isForeign": false,
           "isNullable": false,
           "isUnique": false
         },
         {
-          "name": "slug",
-          "type": "VARCHAR(220)",
+          "name": "sku",
+          "type": "VARCHAR(64)",
           "isPrimary": false,
           "isForeign": false,
           "isNullable": false,
@@ -155,15 +178,15 @@
           "isUnique": false
         },
         {
-          "name": "stock",
+          "name": "stock_quantity",
           "type": "INT",
           "isPrimary": false,
           "isForeign": false,
-          "isNullable": true,
+          "isNullable": false,
           "isUnique": false
         },
         {
-          "name": "is_active",
+          "name": "is_published",
           "type": "BOOLEAN",
           "isPrimary": false,
           "isForeign": false,
@@ -175,7 +198,7 @@
           "type": "TIMESTAMP",
           "isPrimary": false,
           "isForeign": false,
-          "isNullable": true,
+          "isNullable": false,
           "isUnique": false
         }
       ],
@@ -194,7 +217,7 @@
       "columns": [
         {
           "name": "id",
-          "type": "SERIAL",
+          "type": "UUID",
           "isPrimary": true,
           "isForeign": false,
           "isNullable": false,
@@ -202,7 +225,7 @@
         },
         {
           "name": "user_id",
-          "type": "INT",
+          "type": "UUID",
           "isPrimary": false,
           "isForeign": true,
           "isNullable": false,
@@ -217,27 +240,19 @@
           "isUnique": true
         },
         {
-          "name": "total_amount",
-          "type": "DECIMAL(10, 2)",
+          "name": "status",
+          "type": "VARCHAR(30)",
           "isPrimary": false,
           "isForeign": false,
           "isNullable": false,
           "isUnique": false
         },
         {
-          "name": "status",
-          "type": "VARCHAR(50)",
+          "name": "total_amount",
+          "type": "DECIMAL(12, 2)",
           "isPrimary": false,
           "isForeign": false,
-          "isNullable": true,
-          "isUnique": false
-        },
-        {
-          "name": "payment_status",
-          "type": "VARCHAR(50)",
-          "isPrimary": false,
-          "isForeign": false,
-          "isNullable": true,
+          "isNullable": false,
           "isUnique": false
         },
         {
@@ -253,7 +268,7 @@
           "type": "TIMESTAMP",
           "isPrimary": false,
           "isForeign": false,
-          "isNullable": true,
+          "isNullable": false,
           "isUnique": false
         }
       ],
@@ -280,7 +295,7 @@
         },
         {
           "name": "order_id",
-          "type": "INT",
+          "type": "UUID",
           "isPrimary": false,
           "isForeign": true,
           "isNullable": false,
@@ -288,23 +303,23 @@
         },
         {
           "name": "product_id",
-          "type": "INT",
+          "type": "UUID",
           "isPrimary": false,
           "isForeign": true,
           "isNullable": false,
           "isUnique": false
         },
         {
-          "name": "quantity",
-          "type": "INT",
+          "name": "unit_price",
+          "type": "DECIMAL(10, 2)",
           "isPrimary": false,
           "isForeign": false,
           "isNullable": false,
           "isUnique": false
         },
         {
-          "name": "unit_price",
-          "type": "DECIMAL(10, 2)",
+          "name": "quantity",
+          "type": "INT",
           "isPrimary": false,
           "isForeign": false,
           "isNullable": false,
@@ -339,16 +354,16 @@
           "isUnique": false
         },
         {
-          "name": "user_id",
-          "type": "INT",
+          "name": "product_id",
+          "type": "UUID",
           "isPrimary": false,
           "isForeign": true,
           "isNullable": false,
           "isUnique": false
         },
         {
-          "name": "product_id",
-          "type": "INT",
+          "name": "user_id",
+          "type": "UUID",
           "isPrimary": false,
           "isForeign": true,
           "isNullable": false,
@@ -375,20 +390,90 @@
           "type": "TIMESTAMP",
           "isPrimary": false,
           "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        }
+      ],
+      "relations": [
+        {
+          "from": "product_id",
+          "toTable": "products",
+          "toField": "id",
+          "cardinality": "N:1"
+        },
+        {
+          "from": "user_id",
+          "toTable": "users",
+          "toField": "id",
+          "cardinality": "N:1"
+        }
+      ],
+      "sourceType": "sql"
+    },
+    "payments": {
+      "name": "payments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "isPrimary": true,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "order_id",
+          "type": "UUID",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": false,
+          "isUnique": true
+        },
+        {
+          "name": "provider",
+          "type": "VARCHAR(50)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "transaction_id",
+          "type": "VARCHAR(100)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "amount",
+          "type": "DECIMAL(12, 2)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(30)",
+          "isPrimary": false,
+          "isForeign": false,
+          "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "paid_at",
+          "type": "TIMESTAMP",
+          "isPrimary": false,
+          "isForeign": false,
           "isNullable": true,
           "isUnique": false
         }
       ],
       "relations": [
         {
-          "from": "user_id",
-          "toTable": "users",
-          "toField": "id",
-          "cardinality": "N:1"
-        },
-        {
-          "from": "product_id",
-          "toTable": "products",
+          "from": "order_id",
+          "toTable": "orders",
           "toField": "id",
           "cardinality": "N:1"
         }

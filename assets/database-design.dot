@@ -6,13 +6,13 @@ digraph DatabaseSchema {
   "users" [label=<
     <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
       <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>users</b></font></td></tr>
-      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
-      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">VARCHAR(100)</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
       <tr><td align="left" port="email"><font color="#cdd6f4">email</font></td><td align="right"><font color="#9399b2">VARCHAR(255)</font></td></tr>
-      <tr><td align="left" port="password_hash"><font color="#cdd6f4">password_hash</font></td><td align="right"><font color="#9399b2">VARCHAR(255)</font></td></tr>
+      <tr><td align="left" port="full_name"><font color="#cdd6f4">full_name</font></td><td align="right"><font color="#9399b2">VARCHAR(100)</font></td></tr>
       <tr><td align="left" port="avatar_url"><font color="#cdd6f4">avatar_url</font></td><td align="right"><font color="#9399b2">VARCHAR(500)</font></td></tr>
-      <tr><td align="left" port="role"><font color="#cdd6f4">role</font></td><td align="right"><font color="#9399b2">VARCHAR(20)</font></td></tr>
+      <tr><td align="left" port="role"><font color="#cdd6f4">role</font></td><td align="right"><font color="#9399b2">VARCHAR(30)</font></td></tr>
       <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+      <tr><td align="left" port="updated_at"><font color="#cdd6f4">updated_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
     </table>
   >];
 
@@ -21,21 +21,23 @@ digraph DatabaseSchema {
       <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>categories</b></font></td></tr>
       <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
       <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">VARCHAR(100)</font></td></tr>
-      <tr><td align="left" port="slug"><font color="#cdd6f4">slug</font></td><td align="right"><font color="#9399b2">VARCHAR(120)</font></td></tr>
+      <tr><td align="left" port="slug"><font color="#cdd6f4">slug</font></td><td align="right"><font color="#9399b2">VARCHAR(100)</font></td></tr>
       <tr><td align="left" port="description"><font color="#cdd6f4">description</font></td><td align="right"><font color="#9399b2">TEXT</font></td></tr>
+      <tr><td align="left" port="parent_id"><font color="#cdd6f4">parent_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
     </table>
   >];
 
   "products" [label=<
     <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
       <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>products</b></font></td></tr>
-      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
       <tr><td align="left" port="category_id"><font color="#cdd6f4">category_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
-      <tr><td align="left" port="name"><font color="#cdd6f4">name</font></td><td align="right"><font color="#9399b2">VARCHAR(200)</font></td></tr>
-      <tr><td align="left" port="slug"><font color="#cdd6f4">slug</font></td><td align="right"><font color="#9399b2">VARCHAR(220)</font></td></tr>
+      <tr><td align="left" port="title"><font color="#cdd6f4">title</font></td><td align="right"><font color="#9399b2">VARCHAR(255)</font></td></tr>
+      <tr><td align="left" port="sku"><font color="#cdd6f4">sku</font></td><td align="right"><font color="#9399b2">VARCHAR(64)</font></td></tr>
       <tr><td align="left" port="price"><font color="#cdd6f4">price</font></td><td align="right"><font color="#9399b2">DECIMAL(10, 2)</font></td></tr>
-      <tr><td align="left" port="stock"><font color="#cdd6f4">stock</font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
-      <tr><td align="left" port="is_active"><font color="#cdd6f4">is_active</font></td><td align="right"><font color="#9399b2">BOOLEAN</font></td></tr>
+      <tr><td align="left" port="stock_quantity"><font color="#cdd6f4">stock_quantity</font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="is_published"><font color="#cdd6f4">is_published</font></td><td align="right"><font color="#9399b2">BOOLEAN</font></td></tr>
       <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
     </table>
   >];
@@ -43,12 +45,11 @@ digraph DatabaseSchema {
   "orders" [label=<
     <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
       <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>orders</b></font></td></tr>
-      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
-      <tr><td align="left" port="user_id"><font color="#cdd6f4">user_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="user_id"><font color="#cdd6f4">user_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
       <tr><td align="left" port="order_number"><font color="#cdd6f4">order_number</font></td><td align="right"><font color="#9399b2">VARCHAR(50)</font></td></tr>
-      <tr><td align="left" port="total_amount"><font color="#cdd6f4">total_amount</font></td><td align="right"><font color="#9399b2">DECIMAL(10, 2)</font></td></tr>
-      <tr><td align="left" port="status"><font color="#cdd6f4">status</font></td><td align="right"><font color="#9399b2">VARCHAR(50)</font></td></tr>
-      <tr><td align="left" port="payment_status"><font color="#cdd6f4">payment_status</font></td><td align="right"><font color="#9399b2">VARCHAR(50)</font></td></tr>
+      <tr><td align="left" port="status"><font color="#cdd6f4">status</font></td><td align="right"><font color="#9399b2">VARCHAR(30)</font></td></tr>
+      <tr><td align="left" port="total_amount"><font color="#cdd6f4">total_amount</font></td><td align="right"><font color="#9399b2">DECIMAL(12, 2)</font></td></tr>
       <tr><td align="left" port="shipping_address"><font color="#cdd6f4">shipping_address</font></td><td align="right"><font color="#9399b2">TEXT</font></td></tr>
       <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
     </table>
@@ -58,10 +59,10 @@ digraph DatabaseSchema {
     <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
       <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>order_items</b></font></td></tr>
       <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
-      <tr><td align="left" port="order_id"><font color="#cdd6f4">order_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
-      <tr><td align="left" port="product_id"><font color="#cdd6f4">product_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
-      <tr><td align="left" port="quantity"><font color="#cdd6f4">quantity</font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="order_id"><font color="#cdd6f4">order_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="product_id"><font color="#cdd6f4">product_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
       <tr><td align="left" port="unit_price"><font color="#cdd6f4">unit_price</font></td><td align="right"><font color="#9399b2">DECIMAL(10, 2)</font></td></tr>
+      <tr><td align="left" port="quantity"><font color="#cdd6f4">quantity</font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
     </table>
   >];
 
@@ -69,18 +70,33 @@ digraph DatabaseSchema {
     <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
       <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>reviews</b></font></td></tr>
       <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">SERIAL</font></td></tr>
-      <tr><td align="left" port="user_id"><font color="#cdd6f4">user_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
-      <tr><td align="left" port="product_id"><font color="#cdd6f4">product_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
+      <tr><td align="left" port="product_id"><font color="#cdd6f4">product_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="user_id"><font color="#cdd6f4">user_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
       <tr><td align="left" port="rating"><font color="#cdd6f4">rating</font></td><td align="right"><font color="#9399b2">INT</font></td></tr>
       <tr><td align="left" port="comment"><font color="#cdd6f4">comment</font></td><td align="right"><font color="#9399b2">TEXT</font></td></tr>
       <tr><td align="left" port="created_at"><font color="#cdd6f4">created_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
     </table>
   >];
 
+  "payments" [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#1e1e2e" style="rounded">
+      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>payments</b></font></td></tr>
+      <tr><td align="left" port="id"><font color="#cdd6f4">id <b>[PK]</b></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="order_id"><font color="#cdd6f4">order_id <i>[FK]</i></font></td><td align="right"><font color="#9399b2">UUID</font></td></tr>
+      <tr><td align="left" port="provider"><font color="#cdd6f4">provider</font></td><td align="right"><font color="#9399b2">VARCHAR(50)</font></td></tr>
+      <tr><td align="left" port="transaction_id"><font color="#cdd6f4">transaction_id</font></td><td align="right"><font color="#9399b2">VARCHAR(100)</font></td></tr>
+      <tr><td align="left" port="amount"><font color="#cdd6f4">amount</font></td><td align="right"><font color="#9399b2">DECIMAL(12, 2)</font></td></tr>
+      <tr><td align="left" port="status"><font color="#cdd6f4">status</font></td><td align="right"><font color="#9399b2">VARCHAR(30)</font></td></tr>
+      <tr><td align="left" port="paid_at"><font color="#cdd6f4">paid_at</font></td><td align="right"><font color="#9399b2">TIMESTAMP</font></td></tr>
+    </table>
+  >];
+
+  "categories":"parent_id" -> "categories":"id";
   "products":"category_id" -> "categories":"id";
   "orders":"user_id" -> "users":"id";
   "order_items":"order_id" -> "orders":"id";
   "order_items":"product_id" -> "products":"id";
-  "reviews":"user_id" -> "users":"id";
   "reviews":"product_id" -> "products":"id";
+  "reviews":"user_id" -> "users":"id";
+  "payments":"order_id" -> "orders":"id";
 }

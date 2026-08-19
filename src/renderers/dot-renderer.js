@@ -21,7 +21,11 @@ class DOTRenderer {
             dot += `      <tr><td bgcolor="#89b4fa" align="center" colspan="2"><font color="#11111b"><b>${tableName}</b></font></td></tr>\n`;
 
             table.columns.forEach(col => {
-                const pkLabel = col.isPrimary ? ' <b>[PK]</b>' : col.isForeign ? ' <i>[FK]</i>' : '';
+                const isFk = !!(col.isForeign || table.relations.some(r => (r.from || r.fromColumn) === col.name));
+                let pkLabel = '';
+                if (col.isPrimary && isFk) pkLabel = ' <b>[PK]</b> <i>[FK]</i>';
+                else if (col.isPrimary) pkLabel = ' <b>[PK]</b>';
+                else if (isFk) pkLabel = ' <i>[FK]</i>';
                 dot += `      <tr><td align="left" port="${col.name}"><font color="#cdd6f4">${col.name}${pkLabel}</font></td><td align="right"><font color="#9399b2">${col.type}</font></td></tr>\n`;
             });
 
@@ -32,7 +36,9 @@ class DOTRenderer {
         tables.forEach(tableName => {
             const table = schemaMap[tableName];
             table.relations.forEach(rel => {
-                dot += `  "${tableName}":"${rel.from}" -> "${rel.toTable}":"${rel.toField}";\n`;
+                const fromField = rel.from || rel.fromColumn;
+                const toField = rel.toField || rel.toColumn || 'id';
+                dot += `  "${tableName}":"${fromField}" -> "${rel.toTable}":"${toField}";\n`;
             });
         });
 

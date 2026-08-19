@@ -59,23 +59,33 @@ class TypeORMParser {
                     if (relMatch) {
                         const relKind = relMatch[1];
                         const targetEntity = relMatch[2];
+                        const joinColMatch = fullContext.match(/@JoinColumn\s*\(\s*(?:{\s*name\s*:\s*['"`](\w+)['"`]\s*})?/);
+                        const fkColName = joinColMatch && joinColMatch[1] ? joinColMatch[1] : (relKind === 'ManyToOne' || relKind === 'OneToOne' ? `${propName}Id` : propName);
 
                         models[modelName].relations.push({
-                            from: propName,
+                            from: fkColName,
+                            fromColumn: fkColName,
                             toTable: targetEntity,
                             toField: 'id',
-                            cardinality: relKind === 'ManyToOne' ? 'N:1' : relKind === 'OneToMany' ? '1:N' : '1:1'
+                            toColumn: 'id',
+                            cardinality: relKind === 'ManyToOne' ? 'N:1' : relKind === 'OneToMany' ? '1:N' : '1:1',
+                            relationType: relKind === 'ManyToOne' ? 'many-to-one' : relKind === 'OneToMany' ? 'one-to-many' : 'one-to-one'
                         });
 
-                        if (relKind === 'ManyToOne') {
-                            models[modelName].columns.push({
-                                name: `${propName}Id`,
-                                type: 'UUID/Int',
-                                isPrimary: false,
-                                isForeign: true,
-                                isNullable: isOptional,
-                                isUnique: false
-                            });
+                        if (relKind === 'ManyToOne' || relKind === 'OneToOne' || fullContext.includes('@JoinColumn')) {
+                            const existingCol = models[modelName].columns.find(c => c.name === fkColName);
+                            if (!existingCol) {
+                                models[modelName].columns.push({
+                                    name: fkColName,
+                                    type: 'UUID/Int',
+                                    isPrimary: false,
+                                    isForeign: true,
+                                    isNullable: isOptional,
+                                    isUnique: isUnique
+                                });
+                            } else {
+                                existingCol.isForeign = true;
+                            }
                         }
                     } else {
                         // Extract DB column type if specified: @Column({ type: 'varchar', length: 100 })

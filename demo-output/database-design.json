@@ -1,12 +1,12 @@
 {
   "generator": "schemagraph",
   "version": "1.0.0",
-  "generatedAt": "2026-08-18T17:57:23.551Z",
+  "generatedAt": "2026-08-19T16:52:45.804Z",
   "metadata": {
     "title": "Database Schema Topology",
     "totalTables": 28,
-    "totalColumns": 259,
-    "totalRelations": 54
+    "totalColumns": 269,
+    "totalRelations": 52
   },
   "tables": {
     "Account": {
@@ -43,13 +43,23 @@
           "isForeign": false,
           "isNullable": false,
           "isUnique": false
+        },
+        {
+          "name": "posts",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
         }
       ],
       "relations": [
         {
           "from": "posts",
+          "fromColumn": "posts",
           "toTable": "Post",
           "toField": "id",
+          "toColumn": "id",
           "cardinality": "1:N"
         }
       ],
@@ -91,6 +101,22 @@
           "isUnique": false
         },
         {
+          "name": "author",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "tags",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
           "name": "id",
           "type": "ID!",
           "isPrimary": true,
@@ -120,6 +146,14 @@
           "isPrimary": false,
           "isForeign": false,
           "isNullable": false,
+          "isUnique": false
+        },
+        {
+          "name": "comments",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
           "isUnique": false
         },
         {
@@ -174,26 +208,34 @@
       "relations": [
         {
           "from": "author",
+          "fromColumn": "author",
           "toTable": "Account",
           "toField": "id",
+          "toColumn": "id",
           "cardinality": "N:1"
         },
         {
           "from": "tags",
+          "fromColumn": "tags",
           "toTable": "Tag",
           "toField": "id",
+          "toColumn": "id",
           "cardinality": "1:N"
         },
         {
           "from": "author",
+          "fromColumn": "author",
           "toTable": "User",
           "toField": "id",
+          "toColumn": "id",
           "cardinality": "N:1"
         },
         {
           "from": "comments",
+          "fromColumn": "comments",
           "toTable": "Comment",
           "toField": "id",
+          "toColumn": "id",
           "cardinality": "1:N"
         },
         {
@@ -225,6 +267,14 @@
           "isUnique": false
         },
         {
+          "name": "posts",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
           "name": "id",
           "type": "String",
           "isPrimary": true,
@@ -244,8 +294,10 @@
       "relations": [
         {
           "from": "posts",
+          "fromColumn": "posts",
           "toTable": "Post",
           "toField": "id",
+          "toColumn": "id",
           "cardinality": "1:N"
         }
       ],
@@ -343,6 +395,22 @@
           "isUnique": false
         },
         {
+          "name": "posts",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
+          "name": "comments",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
           "name": "id",
           "type": "String",
           "isPrimary": true,
@@ -386,14 +454,18 @@
       "relations": [
         {
           "from": "posts",
+          "fromColumn": "posts",
           "toTable": "Post",
           "toField": "id",
+          "toColumn": "id",
           "cardinality": "1:N"
         },
         {
           "from": "comments",
+          "fromColumn": "comments",
           "toTable": "Comment",
           "toField": "id",
+          "toColumn": "id",
           "cardinality": "1:N"
         }
       ],
@@ -606,6 +678,14 @@
           "isUnique": false
         },
         {
+          "name": "post",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
+        },
+        {
           "name": "id",
           "type": "String",
           "isPrimary": true,
@@ -661,14 +741,18 @@
         },
         {
           "from": "author",
+          "fromColumn": "author",
           "toTable": "User",
           "toField": "id",
+          "toColumn": "id",
           "cardinality": "N:1"
         },
         {
           "from": "post",
+          "fromColumn": "post",
           "toTable": "Post",
           "toField": "id",
+          "toColumn": "id",
           "cardinality": "N:1"
         },
         {
@@ -688,12 +772,14 @@
           "type": "BIGINT",
           "isPrimary": true,
           "isUnique": true,
-          "isNullable": false
+          "isNullable": false,
+          "isForeign": false
         },
         {
           "name": "name",
           "type": "VARCHAR(150)",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -701,6 +787,7 @@
           "name": "email",
           "type": "VARCHAR(254)",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": true,
           "isNullable": false
         },
@@ -708,6 +795,7 @@
           "name": "is_staff",
           "type": "BOOLEAN",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -715,6 +803,7 @@
           "name": "created_at",
           "type": "DATETIME",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -778,13 +867,23 @@
           "name": "is_active",
           "type": "BOOLEAN",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isUnique": false,
+          "isNullable": true
         },
         {
           "name": "password",
           "type": "VARCHAR(255)",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -792,6 +891,7 @@
           "name": "orders",
           "type": "TEXT",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": true
         },
@@ -854,9 +954,12 @@
       ],
       "relations": [
         {
+          "from": "user_id",
           "fromColumn": "user_id",
           "toTable": "orders",
+          "toField": "id",
           "toColumn": "id",
+          "cardinality": "N:1",
           "relationType": "many-to-one"
         }
       ],
@@ -870,12 +973,14 @@
           "type": "BIGINT",
           "isPrimary": true,
           "isUnique": true,
-          "isNullable": false
+          "isNullable": false,
+          "isForeign": false
         },
         {
           "name": "name",
           "type": "VARCHAR(100)",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -883,6 +988,7 @@
           "name": "slug",
           "type": "SLUGFIELD",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": true,
           "isNullable": false
         },
@@ -939,7 +1045,8 @@
           "type": "TIMESTAMP",
           "isPrimary": false,
           "isUnique": false,
-          "isNullable": true
+          "isNullable": true,
+          "isForeign": false
         },
         {
           "name": "id",
@@ -992,20 +1099,22 @@
           "type": "BIGINT",
           "isPrimary": true,
           "isUnique": true,
-          "isNullable": false
+          "isNullable": false,
+          "isForeign": false
         },
         {
           "name": "category_id",
           "type": "BIGINT",
           "isPrimary": false,
+          "isForeign": true,
           "isUnique": false,
-          "isNullable": false,
-          "isForeign": true
+          "isNullable": false
         },
         {
           "name": "title",
           "type": "VARCHAR(200)",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -1013,6 +1122,7 @@
           "name": "price",
           "type": "DECIMAL(10,2)",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -1020,6 +1130,7 @@
           "name": "stock",
           "type": "INT",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -1092,7 +1203,8 @@
           "type": "TIMESTAMP",
           "isPrimary": false,
           "isUnique": false,
-          "isNullable": true
+          "isNullable": true,
+          "isForeign": false
         },
         {
           "name": "id",
@@ -1161,9 +1273,12 @@
       ],
       "relations": [
         {
+          "from": "category_id",
           "fromColumn": "category_id",
           "toTable": "categories",
+          "toField": "id",
           "toColumn": "id",
+          "cardinality": "N:1",
           "relationType": "many-to-one"
         },
         {
@@ -1189,20 +1304,22 @@
           "type": "BIGINT",
           "isPrimary": true,
           "isUnique": true,
-          "isNullable": false
+          "isNullable": false,
+          "isForeign": false
         },
         {
           "name": "user_id",
           "type": "BIGINT",
           "isPrimary": false,
+          "isForeign": true,
           "isUnique": false,
-          "isNullable": false,
-          "isForeign": true
+          "isNullable": false
         },
         {
           "name": "order_number",
           "type": "VARCHAR(64)",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": true,
           "isNullable": false
         },
@@ -1210,6 +1327,7 @@
           "name": "total_price",
           "type": "DECIMAL(10,2)",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -1217,6 +1335,7 @@
           "name": "created_at",
           "type": "DATETIME",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -1280,6 +1399,7 @@
           "name": "amount",
           "type": "FLOAT",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": true
         },
@@ -1288,12 +1408,14 @@
           "type": "TIMESTAMP",
           "isPrimary": false,
           "isUnique": false,
-          "isNullable": true
+          "isNullable": true,
+          "isForeign": false
         },
         {
           "name": "order_code",
           "type": "VARCHAR(50)",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": true,
           "isNullable": false
         },
@@ -1301,6 +1423,7 @@
           "name": "order_status",
           "type": "VARCHAR(30)",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": true
         },
@@ -1371,9 +1494,12 @@
       ],
       "relations": [
         {
+          "from": "user_id",
           "fromColumn": "user_id",
           "toTable": "users",
+          "toField": "id",
           "toColumn": "id",
+          "cardinality": "N:1",
           "relationType": "many-to-one"
         },
         {
@@ -1439,14 +1565,16 @@
           "type": "TIMESTAMP",
           "isPrimary": false,
           "isUnique": false,
-          "isNullable": true
+          "isNullable": true,
+          "isForeign": false
         },
         {
           "name": "updated_at",
           "type": "TIMESTAMP",
           "isPrimary": false,
           "isUnique": false,
-          "isNullable": true
+          "isNullable": true,
+          "isForeign": false
         },
         {
           "name": "id",
@@ -1501,18 +1629,6 @@
           "toTable": "products",
           "toField": "id",
           "cardinality": "N:1"
-        },
-        {
-          "fromColumn": "order_id",
-          "toTable": "orders",
-          "toColumn": "id",
-          "relationType": "many-to-one"
-        },
-        {
-          "fromColumn": "product_id",
-          "toTable": "products",
-          "toColumn": "id",
-          "relationType": "many-to-one"
         },
         {
           "from": "order_id",
@@ -1994,12 +2110,14 @@
           "type": "BIGINT",
           "isPrimary": true,
           "isUnique": true,
-          "isNullable": false
+          "isNullable": false,
+          "isForeign": false
         },
         {
           "name": "user_id",
           "type": "BIGINT",
           "isPrimary": false,
+          "isForeign": true,
           "isUnique": false,
           "isNullable": false
         },
@@ -2007,6 +2125,7 @@
           "name": "title",
           "type": "VARCHAR(255)",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -2014,6 +2133,7 @@
           "name": "body",
           "type": "TEXT",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": true
         },
@@ -2021,6 +2141,7 @@
           "name": "published",
           "type": "BOOLEAN",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": true
         },
@@ -2028,6 +2149,7 @@
           "name": "created_at",
           "type": "TIMESTAMP",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -2035,15 +2157,19 @@
           "name": "updated_at",
           "type": "TIMESTAMP",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         }
       ],
       "relations": [
         {
+          "from": "user_id",
           "fromColumn": "user_id",
           "toTable": "users",
+          "toField": "id",
           "toColumn": "id",
+          "cardinality": "N:1",
           "relationType": "many-to-one"
         }
       ],
@@ -2057,12 +2183,14 @@
           "type": "BIGINT",
           "isPrimary": true,
           "isUnique": true,
-          "isNullable": false
+          "isNullable": false,
+          "isForeign": false
         },
         {
           "name": "user_id",
           "type": "BIGINT",
           "isPrimary": false,
+          "isForeign": true,
           "isUnique": false,
           "isNullable": false
         },
@@ -2070,6 +2198,7 @@
           "name": "post_id",
           "type": "BIGINT",
           "isPrimary": false,
+          "isForeign": true,
           "isUnique": false,
           "isNullable": false
         },
@@ -2077,6 +2206,7 @@
           "name": "content",
           "type": "TEXT",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -2084,6 +2214,7 @@
           "name": "created_at",
           "type": "TIMESTAMP",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         },
@@ -2091,21 +2222,28 @@
           "name": "updated_at",
           "type": "TIMESTAMP",
           "isPrimary": false,
+          "isForeign": false,
           "isUnique": false,
           "isNullable": false
         }
       ],
       "relations": [
         {
+          "from": "user_id",
           "fromColumn": "user_id",
           "toTable": "users",
+          "toField": "id",
           "toColumn": "id",
+          "cardinality": "N:1",
           "relationType": "many-to-one"
         },
         {
+          "from": "post_id",
           "fromColumn": "post_id",
           "toTable": "posts",
+          "toField": "id",
           "toColumn": "id",
+          "cardinality": "N:1",
           "relationType": "many-to-one"
         }
       ],
@@ -2185,14 +2323,25 @@
           "isForeign": false,
           "isNullable": false,
           "isUnique": true
+        },
+        {
+          "name": "teams",
+          "type": "BIGINT",
+          "isPrimary": false,
+          "isForeign": true,
+          "isNullable": true,
+          "isUnique": false
         }
       ],
       "relations": [
         {
           "from": "teams",
+          "fromColumn": "teams",
           "toTable": "Team",
           "toField": "id",
-          "cardinality": "1:N"
+          "toColumn": "id",
+          "cardinality": "1:N",
+          "relationType": "one-to-many"
         }
       ],
       "sourceType": "prisma"
@@ -2265,7 +2414,7 @@
           "isUnique": true
         },
         {
-          "name": "teamId",
+          "name": "team_id",
           "type": "UUID/Int",
           "isPrimary": false,
           "isForeign": true,
@@ -2281,10 +2430,13 @@
           "cardinality": "N:1"
         },
         {
-          "from": "team",
+          "from": "team_id",
+          "fromColumn": "team_id",
           "toTable": "Team",
           "toField": "id",
-          "cardinality": "N:1"
+          "toColumn": "id",
+          "cardinality": "N:1",
+          "relationType": "many-to-one"
         }
       ],
       "sourceType": "prisma"
@@ -2568,7 +2720,7 @@
           "isUnique": false
         },
         {
-          "name": "organizationId",
+          "name": "organization_id",
           "type": "UUID/Int",
           "isPrimary": false,
           "isForeign": true,
@@ -2578,10 +2730,13 @@
       ],
       "relations": [
         {
-          "from": "organization",
+          "from": "organization_id",
+          "fromColumn": "organization_id",
           "toTable": "Organization",
           "toField": "id",
-          "cardinality": "N:1"
+          "toColumn": "id",
+          "cardinality": "N:1",
+          "relationType": "many-to-one"
         }
       ],
       "sourceType": "typeorm"

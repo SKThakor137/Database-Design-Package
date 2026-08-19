@@ -30,7 +30,9 @@ class DBMLRenderer {
         tables.forEach(tableName => {
             const table = schemaMap[tableName];
             table.relations.forEach(rel => {
-                dbml += `Ref: ${tableName}.${rel.from} > ${rel.toTable}.${rel.toField}\n`;
+                const fromField = rel.from || rel.fromColumn;
+                const toField = rel.toField || rel.toColumn || 'id';
+                dbml += `Ref: ${tableName}.${fromField} > ${rel.toTable}.${toField}\n`;
             });
         });
 

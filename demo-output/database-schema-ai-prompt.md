@@ -1,6 +1,6 @@
 # 🤖 Database Schema Topology
 
-> **Metadata**: 28 Models | 259 Columns | 54 Relational Constraints
+> **Metadata**: 28 Models | 269 Columns | 52 Relational Constraints
 > **Optimized For**: ChatGPT, Google Gemini, Anthropic Claude, Cursor AI, GitHub Copilot
 
 ## 📋 Database Architecture Summary
@@ -23,18 +23,16 @@ This document contains the complete normalized schema topology, primary keys, da
 - `Comment.author` ➔ `User.id` [Cardinality: N:1]
 - `Comment.post` ➔ `Post.id` [Cardinality: N:1]
 - `Comment.taskId` ➔ `Task.id` [Cardinality: N:1]
-- `users.undefined` ➔ `orders.undefined` [Cardinality: N:1]
+- `users.user_id` ➔ `orders.id` [Cardinality: N:1]
 - `categories.parent_id` ➔ `categories.id` [Cardinality: N:1]
-- `products.undefined` ➔ `categories.undefined` [Cardinality: N:1]
 - `products.category_id` ➔ `categories.id` [Cardinality: N:1]
 - `products.category_id` ➔ `categories.id` [Cardinality: N:1]
-- `orders.undefined` ➔ `users.undefined` [Cardinality: N:1]
+- `products.category_id` ➔ `categories.id` [Cardinality: N:1]
+- `orders.user_id` ➔ `users.id` [Cardinality: N:1]
 - `orders.user_id` ➔ `users.id` [Cardinality: N:1]
 - `orders.user_id` ➔ `users.id` [Cardinality: N:1]
 - `order_items.order_id` ➔ `orders.id` [Cardinality: N:1]
 - `order_items.product_id` ➔ `products.id` [Cardinality: N:1]
-- `order_items.undefined` ➔ `orders.undefined` [Cardinality: N:1]
-- `order_items.undefined` ➔ `products.undefined` [Cardinality: N:1]
 - `order_items.order_id` ➔ `orders.id` [Cardinality: N:1]
 - `order_items.product_id` ➔ `products.id` [Cardinality: N:1]
 - `reviews.product_id` ➔ `products.id` [Cardinality: N:1]
@@ -48,19 +46,19 @@ This document contains the complete normalized schema topology, primary keys, da
 - `Profile.userId` ➔ `User.id` [Cardinality: N:1]
 - `PostTag.postId` ➔ `Post.id` [Cardinality: N:1]
 - `PostTag.tagId` ➔ `Tag.id` [Cardinality: N:1]
-- `posts.undefined` ➔ `users.undefined` [Cardinality: N:1]
-- `comments.undefined` ➔ `users.undefined` [Cardinality: N:1]
-- `comments.undefined` ➔ `posts.undefined` [Cardinality: N:1]
+- `posts.user_id` ➔ `users.id` [Cardinality: N:1]
+- `comments.user_id` ➔ `users.id` [Cardinality: N:1]
+- `comments.post_id` ➔ `posts.id` [Cardinality: N:1]
 - `Organization.teams` ➔ `Team.id` [Cardinality: 1:N]
 - `Member.organizationId` ➔ `Organization.id` [Cardinality: N:1]
-- `Member.team` ➔ `Team.id` [Cardinality: N:1]
+- `Member.team_id` ➔ `Team.id` [Cardinality: N:1]
 - `Project.organizationId` ➔ `Organization.id` [Cardinality: N:1]
 - `Project.leadEmployeeId` ➔ `Employee.id` [Cardinality: N:1]
 - `Task.projectId` ➔ `Project.id` [Cardinality: N:1]
 - `Employee.departmentId` ➔ `Department.id` [Cardinality: N:1]
 - `Employee.departmentId` ➔ `Department.id` [Cardinality: N:1]
 - `Employee.departmentId` ➔ `Department.id` [Cardinality: N:1]
-- `Team.organization` ➔ `Organization.id` [Cardinality: N:1]
+- `Team.organization_id` ➔ `Organization.id` [Cardinality: N:1]
 
 ---
 
@@ -71,16 +69,20 @@ This document contains the complete normalized schema topology, primary keys, da
 - `email`: `String!` [NOT NULL]
 - `username`: `String!` [NOT NULL]
 - `isActive`: `Boolean!` [NOT NULL]
+- `posts`: `BIGINT` [FOREIGN KEY ➔ Post.id]
 
 #### Table: `Post` (GRAPHQL)
 - `id`: `ID!` [PRIMARY KEY, UNIQUE, NOT NULL]
 - `title`: `String!` [NOT NULL]
 - `body`: `String!` [NOT NULL]
 - `publishedAt`: `String`
+- `author`: `BIGINT` [FOREIGN KEY ➔ Account.id]
+- `tags`: `BIGINT` [FOREIGN KEY ➔ Tag.id]
 - `id`: `ID!` [PRIMARY KEY, UNIQUE, NOT NULL]
 - `title`: `String!` [NOT NULL]
 - `body`: `String`
 - `published`: `Boolean!` [NOT NULL]
+- `comments`: `BIGINT` [FOREIGN KEY ➔ Comment.id]
 - `id`: `String` [PRIMARY KEY, NOT NULL]
 - `title`: `String` [NOT NULL]
 - `content`: `String?`
@@ -91,6 +93,7 @@ This document contains the complete normalized schema topology, primary keys, da
 #### Table: `Tag` (GRAPHQL)
 - `id`: `ID!` [PRIMARY KEY, UNIQUE, NOT NULL]
 - `name`: `String!` [NOT NULL]
+- `posts`: `BIGINT` [FOREIGN KEY ➔ Post.id]
 - `id`: `String` [PRIMARY KEY, NOT NULL]
 - `name`: `String` [UNIQUE, NOT NULL]
 
@@ -106,6 +109,8 @@ This document contains the complete normalized schema topology, primary keys, da
 - `name`: `String!` [NOT NULL]
 - `email`: `String!` [NOT NULL]
 - `createdAt`: `String!` [NOT NULL]
+- `posts`: `BIGINT` [FOREIGN KEY ➔ Post.id]
+- `comments`: `BIGINT` [FOREIGN KEY ➔ Comment.id]
 - `id`: `String` [PRIMARY KEY, NOT NULL]
 - `email`: `String` [UNIQUE, NOT NULL]
 - `name`: `String?`
@@ -139,6 +144,7 @@ This document contains the complete normalized schema topology, primary keys, da
 - `id`: `ID!` [PRIMARY KEY, UNIQUE, NOT NULL]
 - `message`: `String!` [NOT NULL]
 - `createdAt`: `String!` [NOT NULL]
+- `post`: `BIGINT` [FOREIGN KEY ➔ Post.id]
 - `id`: `String` [PRIMARY KEY, NOT NULL]
 - `taskId`: `String` [FOREIGN KEY ➔ Task.id, NOT NULL]
 - `authorId`: `String` [NOT NULL]
@@ -159,6 +165,7 @@ This document contains the complete normalized schema topology, primary keys, da
 - `created_at`: `TIMESTAMP` [NOT NULL]
 - `updated_at`: `TIMESTAMP` [NOT NULL]
 - `is_active`: `BOOLEAN` [NOT NULL]
+- `user_id`: `BIGINT` [FOREIGN KEY ➔ orders.id]
 - `password`: `VARCHAR(255)` [NOT NULL]
 - `orders`: `TEXT`
 - `id`: `SERIAL` [PRIMARY KEY, NOT NULL]
@@ -307,7 +314,7 @@ This document contains the complete normalized schema topology, primary keys, da
 
 #### Table: `posts` (RAILS)
 - `id`: `BIGINT` [PRIMARY KEY, UNIQUE, NOT NULL]
-- `user_id`: `BIGINT` [NOT NULL]
+- `user_id`: `BIGINT` [FOREIGN KEY ➔ users.id, NOT NULL]
 - `title`: `VARCHAR(255)` [NOT NULL]
 - `body`: `TEXT`
 - `published`: `BOOLEAN`
@@ -316,8 +323,8 @@ This document contains the complete normalized schema topology, primary keys, da
 
 #### Table: `comments` (RAILS)
 - `id`: `BIGINT` [PRIMARY KEY, UNIQUE, NOT NULL]
-- `user_id`: `BIGINT` [NOT NULL]
-- `post_id`: `BIGINT` [NOT NULL]
+- `user_id`: `BIGINT` [FOREIGN KEY ➔ users.id, NOT NULL]
+- `post_id`: `BIGINT` [FOREIGN KEY ➔ posts.id, NOT NULL]
 - `content`: `TEXT` [NOT NULL]
 - `created_at`: `TIMESTAMP` [NOT NULL]
 - `updated_at`: `TIMESTAMP` [NOT NULL]
@@ -332,6 +339,7 @@ This document contains the complete normalized schema topology, primary keys, da
 - `id`: `string` [PRIMARY KEY, NOT NULL]
 - `name`: `varchar` [NOT NULL]
 - `domain`: `varchar` [UNIQUE, NOT NULL]
+- `teams`: `BIGINT` [FOREIGN KEY ➔ Team.id]
 
 #### Table: `Member` (PRISMA)
 - `id`: `String` [PRIMARY KEY, NOT NULL]
@@ -342,7 +350,7 @@ This document contains the complete normalized schema topology, primary keys, da
 - `id`: `string` [PRIMARY KEY, NOT NULL]
 - `fullName`: `varchar` [NOT NULL]
 - `email`: `varchar` [UNIQUE, NOT NULL]
-- `teamId`: `UUID/Int` [FOREIGN KEY, NOT NULL]
+- `team_id`: `UUID/Int` [FOREIGN KEY ➔ Team.id, NOT NULL]
 
 #### Table: `Project` (PRISMA)
 - `id`: `String` [PRIMARY KEY, NOT NULL]
@@ -379,7 +387,7 @@ This document contains the complete normalized schema topology, primary keys, da
 #### Table: `Team` (TYPEORM)
 - `id`: `string` [PRIMARY KEY, NOT NULL]
 - `title`: `varchar` [NOT NULL]
-- `organizationId`: `UUID/Int` [FOREIGN KEY, NOT NULL]
+- `organization_id`: `UUID/Int` [FOREIGN KEY ➔ Organization.id, NOT NULL]
 
 ---
 

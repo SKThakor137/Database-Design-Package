@@ -42,22 +42,40 @@ class GraphQLParser {
                     const baseType = rawType.replace(/[!\[\]]/g, '');
 
                     const isScalar = ['ID', 'String', 'Int', 'Float', 'Boolean', 'DateTime', 'JSON', 'Date'].includes(baseType);
+                    const isFk = fieldName !== 'id' && (fieldName.endsWith('Id') || fieldName.endsWith('_id'));
 
                     if (isScalar) {
                         models[typeName].columns.push({
                             name: fieldName,
                             type: rawType,
-                            isPrimary: fieldName === 'id' || baseType === 'ID',
-                            isForeign: false,
+                            isPrimary: fieldName === 'id' || (baseType === 'ID' && !isFk),
+                            isForeign: isFk,
                             isNullable: !isRequired,
                             isUnique: fieldName === 'id'
                         });
+
+                        if (isFk) {
+                            const target = fieldName.replace(/_?id$/i, '');
+                            const targetTable = target.charAt(0).toUpperCase() + target.slice(1);
+                            if (!models[typeName].relations.some(r => r.from === fieldName && r.toTable === targetTable)) {
+                                models[typeName].relations.push({
+                                    from: fieldName,
+                                    fromColumn: fieldName,
+                                    toTable: targetTable,
+                                    toField: 'id',
+                                    toColumn: 'id',
+                                    cardinality: 'N:1'
+                                });
+                            }
+                        }
                     } else {
                         // Object reference -> Relation
                         models[typeName].relations.push({
                             from: fieldName,
+                            fromColumn: fieldName,
                             toTable: baseType,
                             toField: 'id',
+                            toColumn: 'id',
                             cardinality: isArray ? '1:N' : 'N:1'
                         });
                     }

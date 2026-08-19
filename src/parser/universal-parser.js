@@ -40,7 +40,7 @@ class UniversalSchemaParser {
 
         if (stats.isFile()) {
             this.parseFile(targetPath);
-            return this.models;
+            return UniversalSchemaParser.normalizeSchema(this.models);
         }
 
         const entries = fs.readdirSync(targetPath, { withFileTypes: true });
@@ -60,7 +60,58 @@ class UniversalSchemaParser {
             }
         }
 
-        return this.models;
+        return UniversalSchemaParser.normalizeSchema(this.models);
+    }
+
+    static normalizeSchema(models) {
+        if (!models || typeof models !== 'object') return models;
+
+        Object.keys(models).forEach(tableName => {
+            const table = models[tableName];
+            if (!table) return;
+
+            if (!Array.isArray(table.columns)) table.columns = [];
+            if (!Array.isArray(table.relations)) table.relations = [];
+
+            // Standardize relations
+            table.relations.forEach(rel => {
+                const from = rel.from || rel.fromColumn;
+                const toField = rel.toField || rel.toColumn || 'id';
+                rel.from = from;
+                rel.toField = toField;
+                if (!rel.cardinality) {
+                    rel.cardinality = rel.relationType === 'one-to-one' ? '1:1' : rel.relationType === 'one-to-many' ? '1:N' : 'N:1';
+                }
+
+                // If column exists, mark isForeign: true
+                if (from) {
+                    const col = table.columns.find(c => c.name === from);
+                    if (col) {
+                        col.isForeign = true;
+                    } else {
+                        table.columns.push({
+                            name: from,
+                            type: 'BIGINT',
+                            isPrimary: false,
+                            isForeign: true,
+                            isNullable: true,
+                            isUnique: false
+                        });
+                    }
+                }
+            });
+
+            // Mark any column as foreign key if it is present in relations
+            table.columns.forEach(col => {
+                if (col.isForeign === undefined) {
+                    col.isForeign = table.relations.some(r => (r.from === col.name || r.fromColumn === col.name));
+                } else if (table.relations.some(r => (r.from === col.name || r.fromColumn === col.name))) {
+                    col.isForeign = true;
+                }
+            });
+        });
+
+        return models;
     }
 
     parseFile(filePath) {

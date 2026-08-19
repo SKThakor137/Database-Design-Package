@@ -203,15 +203,18 @@ ${markersXml}
                 const textY = rowY + 18;
 
                 // Check if this column has an outgoing relation
-                const rel = table.relations.find(r => r.from === col.name);
-                const fkTargetAttr = rel ? ` data-fk-target="${rel.toTable}.${rel.toField}"` : '';
+                const rel = table.relations.find(r => (r.from === col.name || r.fromColumn === col.name));
+                const toTable = rel ? rel.toTable : '';
+                const toField = rel ? (rel.toField || rel.toColumn || 'id') : '';
+                const fkTargetAttr = rel ? ` data-fk-target="${toTable}.${toField}"` : '';
 
                 // Subtle row divider line (except last row)
                 if (cIdx > 0) {
                     nodesXml += `        <line class="row-divider" data-row-idx="${cIdx}" x1="8" y1="${rowY}" x2="${boxWidth - 8}" y2="${rowY}" stroke="${theme.rowDivider}" stroke-width="1" opacity="0.6"/>\n`;
                 }
 
-                const isKey = col.isPrimary || col.isForeign;
+                const isFk = !!(col.isForeign || rel);
+                const isKey = col.isPrimary || isFk;
                 const keyAttr = ` data-is-key="${isKey ? 'true' : 'false'}" data-orig-y="${rowY}"`;
 
                 // Row hover hit area
@@ -220,12 +223,13 @@ ${markersXml}
 
                 let badgeOffset = 14;
 
-                // PK / FK Badge Pills
+                // PK / FK Badge Pills (Support composite PK + FK)
                 if (col.isPrimary) {
                     nodesXml += `          <rect x="${badgeOffset}" y="${rowY + 6}" width="22" height="15" rx="3" fill="${theme.pkBg}"/>\n`;
                     nodesXml += `          <text x="${badgeOffset + 11}" y="${rowY + 17}" fill="${theme.pkText}" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">PK</text>\n`;
                     badgeOffset += 28;
-                } else if (col.isForeign) {
+                }
+                if (isFk) {
                     nodesXml += `          <rect x="${badgeOffset}" y="${rowY + 6}" width="22" height="15" rx="3" fill="${theme.fkBg}"/>\n`;
                     nodesXml += `          <text x="${badgeOffset + 11}" y="${rowY + 17}" fill="${theme.fkText}" font-family="monospace" font-size="8.5" font-weight="bold" text-anchor="middle">FK</text>\n`;
                     badgeOffset += 28;

@@ -18,18 +18,16 @@ erDiagram
     Comment ||--o{ User : "author -> id"
     Comment ||--o{ Post : "post -> id"
     Comment ||--o{ Task : "taskId -> id"
-    users ||--o{ orders : "undefined -> undefined"
+    users ||--o{ orders : "user_id -> id"
     categories ||--o{ categories : "parent_id -> id"
-    products ||--o{ categories : "undefined -> undefined"
     products ||--o{ categories : "category_id -> id"
     products ||--o{ categories : "category_id -> id"
-    orders ||--o{ users : "undefined -> undefined"
+    products ||--o{ categories : "category_id -> id"
+    orders ||--o{ users : "user_id -> id"
     orders ||--o{ users : "user_id -> id"
     orders ||--o{ users : "user_id -> id"
     order_items ||--o{ orders : "order_id -> id"
     order_items ||--o{ products : "product_id -> id"
-    order_items ||--o{ orders : "undefined -> undefined"
-    order_items ||--o{ products : "undefined -> undefined"
     order_items ||--o{ orders : "order_id -> id"
     order_items ||--o{ products : "product_id -> id"
     reviews ||--o{ products : "product_id -> id"
@@ -43,35 +41,39 @@ erDiagram
     Profile ||--o{ User : "userId -> id"
     PostTag ||--o{ Post : "postId -> id"
     PostTag ||--o{ Tag : "tagId -> id"
-    posts ||--o{ users : "undefined -> undefined"
-    comments ||--o{ users : "undefined -> undefined"
-    comments ||--o{ posts : "undefined -> undefined"
+    posts ||--o{ users : "user_id -> id"
+    comments ||--o{ users : "user_id -> id"
+    comments ||--o{ posts : "post_id -> id"
     Organization ||--o{ Team : "teams -> id"
     Member ||--o{ Organization : "organizationId -> id"
-    Member ||--o{ Team : "team -> id"
+    Member ||--o{ Team : "team_id -> id"
     Project ||--o{ Organization : "organizationId -> id"
     Project ||--o{ Employee : "leadEmployeeId -> id"
     Task ||--o{ Project : "projectId -> id"
     Employee ||--o{ Department : "departmentId -> id"
     Employee ||--o{ Department : "departmentId -> id"
     Employee ||--o{ Department : "departmentId -> id"
-    Team ||--o{ Organization : "organization -> id"
+    Team ||--o{ Organization : "organization_id -> id"
 
     Account {
         ID_ id PK
         String_ email
         String_ username
         Boolean_ isActive
+        BIGINT posts FK
     }
     Post {
         ID_ id PK
         String_ title
         String_ body
         String publishedAt
+        BIGINT author FK
+        BIGINT tags FK
         ID_ id PK
         String_ title
         String body
         Boolean_ published
+        BIGINT comments FK
         String id PK
         String title
         String_ content
@@ -82,6 +84,7 @@ erDiagram
     Tag {
         ID_ id PK
         String_ name
+        BIGINT posts FK
         String id PK
         String name
     }
@@ -97,6 +100,8 @@ erDiagram
         String_ name
         String_ email
         String_ createdAt
+        BIGINT posts FK
+        BIGINT comments FK
         String id PK
         String email
         String_ name
@@ -130,6 +135,7 @@ erDiagram
         ID_ id PK
         String_ message
         String_ createdAt
+        BIGINT post FK
         String id PK
         String taskId FK
         String authorId
@@ -150,6 +156,7 @@ erDiagram
         TIMESTAMP created_at
         TIMESTAMP updated_at
         BOOLEAN is_active
+        BIGINT user_id FK
         VARCHAR_255_ password
         TEXT orders
         SERIAL id PK
@@ -293,12 +300,12 @@ erDiagram
         String userId FK
     }
     PostTag {
-        String postId PK
-        String tagId PK
+        String postId PK,FK
+        String tagId PK,FK
     }
     posts {
         BIGINT id PK
-        BIGINT user_id
+        BIGINT user_id FK
         VARCHAR_255_ title
         TEXT body
         BOOLEAN published
@@ -307,8 +314,8 @@ erDiagram
     }
     comments {
         BIGINT id PK
-        BIGINT user_id
-        BIGINT post_id
+        BIGINT user_id FK
+        BIGINT post_id FK
         TEXT content
         TIMESTAMP created_at
         TIMESTAMP updated_at
@@ -323,6 +330,7 @@ erDiagram
         string id PK
         varchar name
         varchar domain
+        BIGINT teams FK
     }
     Member {
         String id PK
@@ -333,7 +341,7 @@ erDiagram
         string id PK
         varchar fullName
         varchar email
-        UUID_Int teamId FK
+        UUID_Int team_id FK
     }
     Project {
         String id PK
@@ -370,7 +378,7 @@ erDiagram
     Team {
         string id PK
         varchar title
-        UUID_Int organizationId FK
+        UUID_Int organization_id FK
     }
 ```
 
@@ -384,6 +392,7 @@ erDiagram
 | `email` | `String!` | `NOT NULL` | | 
 | `username` | `String!` | `NOT NULL` | | 
 | `isActive` | `Boolean!` | `NOT NULL` | | 
+| `posts` | `BIGINT` | `FOREIGN KEY` | | 
 
 ### Table: `Post`
 
@@ -393,10 +402,13 @@ erDiagram
 | `title` | `String!` | `NOT NULL` | | 
 | `body` | `String!` | `NOT NULL` | | 
 | `publishedAt` | `String` | — | | 
+| `author` | `BIGINT` | `FOREIGN KEY` | | 
+| `tags` | `BIGINT` | `FOREIGN KEY` | | 
 | `id` | `ID!` | `PRIMARY KEY`, `NOT NULL`, `UNIQUE` | | 
 | `title` | `String!` | `NOT NULL` | | 
 | `body` | `String` | — | | 
 | `published` | `Boolean!` | `NOT NULL` | | 
+| `comments` | `BIGINT` | `FOREIGN KEY` | | 
 | `id` | `String` | `PRIMARY KEY`, `NOT NULL` | | 
 | `title` | `String` | `NOT NULL` | | 
 | `content` | `String?` | — | | 
@@ -410,6 +422,7 @@ erDiagram
 | :--- | :--- | :--- | :--- |
 | `id` | `ID!` | `PRIMARY KEY`, `NOT NULL`, `UNIQUE` | | 
 | `name` | `String!` | `NOT NULL` | | 
+| `posts` | `BIGINT` | `FOREIGN KEY` | | 
 | `id` | `String` | `PRIMARY KEY`, `NOT NULL` | | 
 | `name` | `String` | `NOT NULL`, `UNIQUE` | | 
 
@@ -428,6 +441,8 @@ erDiagram
 | `name` | `String!` | `NOT NULL` | | 
 | `email` | `String!` | `NOT NULL` | | 
 | `createdAt` | `String!` | `NOT NULL` | | 
+| `posts` | `BIGINT` | `FOREIGN KEY` | | 
+| `comments` | `BIGINT` | `FOREIGN KEY` | | 
 | `id` | `String` | `PRIMARY KEY`, `NOT NULL` | | 
 | `email` | `String` | `NOT NULL`, `UNIQUE` | | 
 | `name` | `String?` | — | | 
@@ -470,6 +485,7 @@ erDiagram
 | `id` | `ID!` | `PRIMARY KEY`, `NOT NULL`, `UNIQUE` | | 
 | `message` | `String!` | `NOT NULL` | | 
 | `createdAt` | `String!` | `NOT NULL` | | 
+| `post` | `BIGINT` | `FOREIGN KEY` | | 
 | `id` | `String` | `PRIMARY KEY`, `NOT NULL` | | 
 | `taskId` | `String` | `FOREIGN KEY`, `NOT NULL` | | 
 | `authorId` | `String` | `NOT NULL` | | 
@@ -493,6 +509,7 @@ erDiagram
 | `created_at` | `TIMESTAMP` | `NOT NULL` | | 
 | `updated_at` | `TIMESTAMP` | `NOT NULL` | | 
 | `is_active` | `BOOLEAN` | `NOT NULL` | | 
+| `user_id` | `BIGINT` | `FOREIGN KEY` | | 
 | `password` | `VARCHAR(255)` | `NOT NULL` | | 
 | `orders` | `TEXT` | — | | 
 | `id` | `SERIAL` | `PRIMARY KEY`, `NOT NULL` | | 
@@ -677,7 +694,7 @@ erDiagram
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `BIGINT` | `PRIMARY KEY`, `NOT NULL`, `UNIQUE` | | 
-| `user_id` | `BIGINT` | `NOT NULL` | | 
+| `user_id` | `BIGINT` | `FOREIGN KEY`, `NOT NULL` | | 
 | `title` | `VARCHAR(255)` | `NOT NULL` | | 
 | `body` | `TEXT` | — | | 
 | `published` | `BOOLEAN` | — | | 
@@ -689,8 +706,8 @@ erDiagram
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `BIGINT` | `PRIMARY KEY`, `NOT NULL`, `UNIQUE` | | 
-| `user_id` | `BIGINT` | `NOT NULL` | | 
-| `post_id` | `BIGINT` | `NOT NULL` | | 
+| `user_id` | `BIGINT` | `FOREIGN KEY`, `NOT NULL` | | 
+| `post_id` | `BIGINT` | `FOREIGN KEY`, `NOT NULL` | | 
 | `content` | `TEXT` | `NOT NULL` | | 
 | `created_at` | `TIMESTAMP` | `NOT NULL` | | 
 | `updated_at` | `TIMESTAMP` | `NOT NULL` | | 
@@ -708,6 +725,7 @@ erDiagram
 | `id` | `string` | `PRIMARY KEY`, `NOT NULL` | | 
 | `name` | `varchar` | `NOT NULL` | | 
 | `domain` | `varchar` | `NOT NULL`, `UNIQUE` | | 
+| `teams` | `BIGINT` | `FOREIGN KEY` | | 
 
 ### Table: `Member`
 
@@ -721,7 +739,7 @@ erDiagram
 | `id` | `string` | `PRIMARY KEY`, `NOT NULL` | | 
 | `fullName` | `varchar` | `NOT NULL` | | 
 | `email` | `varchar` | `NOT NULL`, `UNIQUE` | | 
-| `teamId` | `UUID/Int` | `FOREIGN KEY`, `NOT NULL` | | 
+| `team_id` | `UUID/Int` | `FOREIGN KEY`, `NOT NULL` | | 
 
 ### Table: `Project`
 
@@ -773,5 +791,5 @@ erDiagram
 | :--- | :--- | :--- | :--- |
 | `id` | `string` | `PRIMARY KEY`, `NOT NULL` | | 
 | `title` | `varchar` | `NOT NULL` | | 
-| `organizationId` | `UUID/Int` | `FOREIGN KEY`, `NOT NULL` | | 
+| `organization_id` | `UUID/Int` | `FOREIGN KEY`, `NOT NULL` | | 
 

@@ -33,10 +33,14 @@ test('LaravelParser parses Schema::create migrations with foreignId constraints'
     assert.strictEqual(models.users.columns.find(c => c.name === 'id').isPrimary, true);
     assert.strictEqual(models.users.columns.find(c => c.name === 'email').isUnique, true);
 
-    const userRel = models.orders.relations.find(r => r.fromColumn === 'user_id');
+    const userCol = models.orders.columns.find(c => c.name === 'user_id');
+    assert.ok(userCol, 'user_id column should exist');
+    assert.strictEqual(userCol.isForeign, true, 'user_id column should have isForeign: true');
+
+    const userRel = models.orders.relations.find(r => r.from === 'user_id' || r.fromColumn === 'user_id');
     assert.ok(userRel, 'Relation user_id -> users should exist');
     assert.strictEqual(userRel.toTable, 'users');
-    assert.strictEqual(userRel.toColumn, 'id');
+    assert.strictEqual(userRel.toField || userRel.toColumn, 'id');
 });
 
 test('PythonParser parses Django models and relationships', () => {
@@ -58,7 +62,11 @@ class Book(models.Model):
     assert.ok(models.authors, 'Authors table should exist');
     assert.ok(models.books, 'Books table should exist');
 
-    const authorRel = models.books.relations.find(r => r.fromColumn === 'author_id');
+    const authorCol = models.books.columns.find(c => c.name === 'author_id');
+    assert.ok(authorCol, 'author_id column should exist');
+    assert.strictEqual(authorCol.isForeign, true, 'author_id column should have isForeign: true');
+
+    const authorRel = models.books.relations.find(r => r.from === 'author_id' || r.fromColumn === 'author_id');
     assert.ok(authorRel, 'Relation author_id -> authors should exist');
     assert.strictEqual(authorRel.toTable, 'authors');
 });
@@ -82,7 +90,11 @@ class Post(Base):
     assert.ok(models.users, 'Users table should exist');
     assert.ok(models.posts, 'Posts table should exist');
 
-    const fkRel = models.posts.relations.find(r => r.fromColumn === 'user_id');
+    const userCol = models.posts.columns.find(c => c.name === 'user_id');
+    assert.ok(userCol, 'user_id column should exist');
+    assert.strictEqual(userCol.isForeign, true, 'user_id column should have isForeign: true');
+
+    const fkRel = models.posts.relations.find(r => r.from === 'user_id' || r.fromColumn === 'user_id');
     assert.ok(fkRel, 'Relation user_id -> users should exist');
     assert.strictEqual(fkRel.toTable, 'users');
 });
@@ -107,7 +119,11 @@ add_foreign_key "users", "accounts"
     assert.ok(models.accounts, 'Accounts table should exist');
     assert.ok(models.users, 'Users table should exist');
 
-    const accountRel = models.users.relations.find(r => r.fromColumn === 'account_id');
+    const accountCol = models.users.columns.find(c => c.name === 'account_id');
+    assert.ok(accountCol, 'account_id column should exist');
+    assert.strictEqual(accountCol.isForeign, true, 'account_id column should have isForeign: true');
+
+    const accountRel = models.users.relations.find(r => r.from === 'account_id' || r.fromColumn === 'account_id');
     assert.ok(accountRel, 'Relation account_id -> accounts should exist');
 });
 
@@ -133,7 +149,11 @@ type Employee struct {
     assert.ok(models.companies, 'Companies table should exist');
     assert.ok(models.employees, 'Employees table should exist');
 
-    const companyRel = models.employees.relations.find(r => r.fromColumn === 'company_id');
+    const companyCol = models.employees.columns.find(c => c.name === 'company_id');
+    assert.ok(companyCol, 'company_id column should exist');
+    assert.strictEqual(companyCol.isForeign, true, 'company_id column should have isForeign: true');
+
+    const companyRel = models.employees.relations.find(r => r.from === 'company_id' || r.fromColumn === 'company_id');
     assert.ok(companyRel, 'Relation company_id -> companies should exist');
     assert.strictEqual(companyRel.toTable, 'companies');
 });
@@ -172,7 +192,11 @@ public class Invoice {
     assert.ok(models.customers, 'Customers table should exist');
     assert.ok(models.invoices, 'Invoices table should exist');
 
-    const customerRel = models.invoices.relations.find(r => r.fromColumn === 'customer_id');
+    const customerCol = models.invoices.columns.find(c => c.name === 'customer_id');
+    assert.ok(customerCol, 'customer_id column should exist');
+    assert.strictEqual(customerCol.isForeign, true, 'customer_id column should have isForeign: true');
+
+    const customerRel = models.invoices.relations.find(r => r.from === 'customer_id' || r.fromColumn === 'customer_id');
     assert.ok(customerRel, 'Relation customer_id -> customers should exist');
     assert.strictEqual(customerRel.toTable, 'customers');
 });

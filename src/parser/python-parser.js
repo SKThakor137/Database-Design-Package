@@ -81,21 +81,28 @@ class PythonParser {
 
                             const fkCol = fieldName.endsWith('_id') ? fieldName : `${fieldName}_id`;
 
-                            if (!models[tableName].columns.some(c => c.name === fkCol)) {
+                            const existingCol = models[tableName].columns.find(c => c.name === fkCol);
+                            if (!existingCol) {
                                 models[tableName].columns.push({
                                     name: fkCol,
                                     type: 'BIGINT',
                                     isPrimary,
+                                    isForeign: true,
                                     isUnique,
                                     isNullable
                                 });
+                            } else {
+                                existingCol.isForeign = true;
                             }
 
-                            if (!models[tableName].relations.some(r => r.fromColumn === fkCol && r.toTable === targetTable)) {
+                            if (!models[tableName].relations.some(r => (r.from === fkCol || r.fromColumn === fkCol) && r.toTable === targetTable)) {
                                 models[tableName].relations.push({
+                                    from: fkCol,
                                     fromColumn: fkCol,
                                     toTable: targetTable,
+                                    toField: 'id',
                                     toColumn: 'id',
+                                    cardinality: fieldType === 'OneToOneField' ? '1:1' : 'N:1',
                                     relationType: fieldType === 'OneToOneField' ? 'one-to-one' : 'many-to-one'
                                 });
                             }
@@ -108,6 +115,7 @@ class PythonParser {
                                 name: fieldName,
                                 type: dbType,
                                 isPrimary,
+                                isForeign: false,
                                 isUnique,
                                 isNullable
                             });
@@ -160,6 +168,7 @@ class PythonParser {
                     const isPrimary = colArgs.includes('primary_key=True');
                     const isUnique = isPrimary || colArgs.includes('unique=True');
                     const isNullable = !isPrimary && !colArgs.includes('nullable=False');
+                    const isFk = colArgs.includes('ForeignKey(');
 
                     let dbType = 'VARCHAR(255)';
                     const typeMatch = colArgs.match(/(?:db\.)?([A-Z][a-zA-Z0-9_]+)(?:\(([^)]*)\))?/);
@@ -167,14 +176,18 @@ class PythonParser {
                         dbType = this.mapSQLAlchemyType(typeMatch[1], typeMatch[2]);
                     }
 
-                    if (!models[tableName].columns.some(c => c.name === colName)) {
+                    const existingCol = models[tableName].columns.find(c => c.name === colName);
+                    if (!existingCol) {
                         models[tableName].columns.push({
                             name: colName,
                             type: dbType,
                             isPrimary,
+                            isForeign: isFk,
                             isUnique,
                             isNullable
                         });
+                    } else if (isFk) {
+                        existingCol.isForeign = true;
                     }
 
                     // Check for ForeignKey('table.column') in colArgs or line
@@ -183,11 +196,14 @@ class PythonParser {
                         const toTable = fkMatch[1];
                         const toCol = fkMatch[2];
 
-                        if (!models[tableName].relations.some(r => r.fromColumn === colName && r.toTable === toTable)) {
+                        if (!models[tableName].relations.some(r => (r.from === colName || r.fromColumn === colName) && r.toTable === toTable)) {
                             models[tableName].relations.push({
+                                from: colName,
                                 fromColumn: colName,
                                 toTable: toTable,
+                                toField: toCol,
                                 toColumn: toCol,
+                                cardinality: 'N:1',
                                 relationType: 'many-to-one'
                             });
                         }

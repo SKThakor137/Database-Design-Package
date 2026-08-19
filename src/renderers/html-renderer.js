@@ -35,6 +35,33 @@ class HTMLRenderer {
         const dotContent = DOTRenderer.generateDOT(schemaMap, options);
         const aiContent = AIRenderer.generateAIContext(schemaMap, options);
 
+        // Ensure all tables and relations have standardized fields and isForeign is set on columns
+        tables.forEach(tableName => {
+            const table = schemaMap[tableName];
+            if (!Array.isArray(table.columns)) table.columns = [];
+            if (!Array.isArray(table.relations)) table.relations = [];
+
+            table.relations.forEach(r => {
+                const fromField = r.from || r.fromColumn;
+                const toField = r.toField || r.toColumn || 'id';
+                r.from = fromField;
+                r.toField = toField;
+                if (!r.cardinality) {
+                    r.cardinality = r.relationType === 'one-to-one' ? '1:1' : r.relationType === 'one-to-many' ? '1:N' : 'N:1';
+                }
+                const col = table.columns.find(c => c.name === fromField);
+                if (col) {
+                    col.isForeign = true;
+                }
+            });
+
+            table.columns.forEach(col => {
+                if (table.relations.some(r => (r.from === col.name || r.fromColumn === col.name))) {
+                    col.isForeign = true;
+                }
+            });
+        });
+
         // Precompute relations map for each table for instant client-side lookup
         const schemaMetadata = {};
         tables.forEach(tableName => {
@@ -43,11 +70,13 @@ class HTMLRenderer {
             const incoming = [];
 
             table.relations.forEach((r, rIdx) => {
-                const color = SVGRenderer.getEdgeColor(tableName, r.from, r.toTable, r.toField);
+                const fromField = r.from || r.fromColumn;
+                const toField = r.toField || r.toColumn || 'id';
+                const color = SVGRenderer.getEdgeColor(tableName, fromField, r.toTable, toField);
                 outgoing.push({
-                    fromField: r.from,
+                    fromField,
                     toTable: r.toTable,
-                    toField: r.toField,
+                    toField,
                     cardinality: r.cardinality || 'N:1',
                     color
                 });
@@ -58,11 +87,13 @@ class HTMLRenderer {
                 const otherTable = schemaMap[otherName];
                 otherTable.relations.forEach(r => {
                     if (r.toTable === tableName) {
-                        const color = SVGRenderer.getEdgeColor(otherName, r.from, tableName, r.toField);
+                        const fromField = r.from || r.fromColumn;
+                        const toField = r.toField || r.toColumn || 'id';
+                        const color = SVGRenderer.getEdgeColor(otherName, fromField, tableName, toField);
                         incoming.push({
                             fromTable: otherName,
-                            fromField: r.from,
-                            toField: r.toField,
+                            fromField,
+                            toField,
                             cardinality: r.cardinality || 'N:1',
                             color
                         });
@@ -1463,16 +1494,19 @@ class HTMLRenderer {
 
       // Columns Definitions
       const colList = document.getElementById('insp-cols-list');
-      colList.innerHTML = data.columns.map(c => \`
+      colList.innerHTML = data.columns.map(c => {
+        const isFk = !!(c.isForeign || data.outgoing.some(o => o.fromField === c.name));
+        return \`
         <div class="col-row">
           <div class="col-row-name">
             \${c.isPrimary ? '<span class="pk-tag">PK</span>' : ''}
-            \${c.isForeign ? '<span class="fk-tag">FK</span>' : ''}
+            \${isFk ? '<span class="fk-tag">FK</span>' : ''}
             <span>\${c.name}</span>
           </div>
           <div class="col-row-type">\${c.type || 'any'}</div>
         </div>
-      \`).join('');
+      \`;
+      }).join('');
     }
 
     function switchSidebarTab(tabName) {
