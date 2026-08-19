@@ -1,7 +1,7 @@
 # ⚡ schemagraph
 
 <p align="center">
-  <img src="./assets/database-design.svg" alt="schemagraph Relational ERD Preview" width="100%" />
+  <img src="https://raw.githubusercontent.com/SKThakor137/Database-Design-Package/main/assets/database-design.svg" alt="schemagraph Relational ERD Preview" width="100%" />
 </p>
 
 <p align="center">
@@ -12,8 +12,8 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/schemagraph"><img src="https://img.shields.io/npm/v/schemagraph.svg?color=38bdf8&style=flat-square" alt="npm version" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D16.0.0-68a063.svg?style=flat-square" alt="node version" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/dependencies-0%20(Zero)-success.svg?style=flat-square" alt="Zero Dependencies" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license" /></a>
+  <a href="https://github.com/SKThakor137/Database-Design-Package/blob/main/LICENSE"><img src="https://img.shields.io/badge/dependencies-0%20(Zero)-success.svg?style=flat-square" alt="Zero Dependencies" /></a>
+  <a href="https://github.com/SKThakor137/Database-Design-Package/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license" /></a>
 </p>
 
 ---
